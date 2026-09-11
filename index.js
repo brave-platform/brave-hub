@@ -8,15 +8,15 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /* =========================================================
    SERVE PUBLIC FOLDER
 ========================================================= */
 
-app.use(express.static(path.join(__dirname, "public")));
-
-
-/* =========================================================
+app.use(express.static(path.join(__dirname, "public"), {
+    index: false
+}));/* =========================================================
    BACKEND DATA FOLDER
 ========================================================= */
 
@@ -31,32 +31,35 @@ if (!fs.existsSync(backendFolder)) {
    DATABASE FILES
 ========================================================= */
 
-const registrationFile =
-    path.join(backendFolder, "registration.json");
+const registrationFile = path.join(
+    backendFolder,
+    "registration.json"
+);
 
-const productsFile =
-    path.join(backendFolder, "products.json");
+const productsFile = path.join(
+    backendFolder,
+    "products.json"
+);
 
-const servicesFile =
-    path.join(backendFolder, "services.json");
+const servicesFile = path.join(
+    backendFolder,
+    "services.json"
+);
 
-const businessesFile =
-    path.join(backendFolder, "businesses.json");
+const businessesFile = path.join(
+    backendFolder,
+    "businesses.json"
+);
 
 
 /* =========================================================
-   CREATE DATABASE FILES IF NEEDED
+   CREATE FILES IF MISSING
 ========================================================= */
 
 function createFileIfMissing(filePath) {
 
     if (!fs.existsSync(filePath)) {
-
-        fs.writeFileSync(
-            filePath,
-            "[]"
-        );
-
+        fs.writeFileSync(filePath, "[]");
     }
 
 }
@@ -76,18 +79,12 @@ function readData(filePath) {
     try {
 
         return JSON.parse(
-            fs.readFileSync(
-                filePath,
-                "utf8"
-            )
+            fs.readFileSync(filePath, "utf8")
         );
 
     } catch (error) {
 
-        console.error(
-            "Database read error:",
-            error
-        );
+        console.error("Database read error:", error);
 
         return [];
 
@@ -99,19 +96,28 @@ function readData(filePath) {
 function writeData(filePath, data) {
 
     fs.writeFileSync(
-
         filePath,
-
-        JSON.stringify(
-            data,
-            null,
-            2
-        )
-
+        JSON.stringify(data, null, 2)
     );
 
 }
 
+
+/* =========================================================
+   PUBLIC HOMEPAGE
+========================================================= */
+
+app.get("/", (req, res) => {
+
+    res.sendFile(
+        path.join(
+            __dirname,
+            "public",
+            "home.html"
+        )
+    );
+
+});
 
 /* =========================================================
    REGISTER
@@ -124,22 +130,17 @@ app.post("/register", async (req, res) => {
         const registrations =
             readData(registrationFile);
 
-
         const fullname =
             String(req.body.fullname || "").trim();
-
 
         const email =
             String(req.body.email || "").trim();
 
-
         const country =
             String(req.body.country || "").trim();
 
-
         const password =
             String(req.body.password || "");
-
 
         if (
             !fullname ||
@@ -149,14 +150,11 @@ app.post("/register", async (req, res) => {
         ) {
 
             return res.status(400).json({
-
                 message:
                     "Please complete all fields."
-
             });
 
         }
-
 
         const existingUser =
             registrations.find(
@@ -166,31 +164,22 @@ app.post("/register", async (req, res) => {
                     email.toLowerCase()
             );
 
-
         if (existingUser) {
 
             return res.status(409).json({
-
                 message:
                     "An account with this email already exists."
-
             });
 
         }
 
-
         const hashedPassword =
-            await bcrypt.hash(
-                password,
-                10
-            );
-
+            await bcrypt.hash(password, 10);
 
         const user = {
 
             id:
-                "user_" +
-                Date.now(),
+                "user_" + Date.now(),
 
             fullname:
                 fullname,
@@ -206,20 +195,17 @@ app.post("/register", async (req, res) => {
 
         };
 
-
         registrations.push(user);
-
 
         writeData(
             registrationFile,
             registrations
         );
 
-
         res.json({
 
             message:
-                "Registration submitted successfully!",
+                "Account created successfully!",
 
             user: {
 
@@ -239,16 +225,13 @@ app.post("/register", async (req, res) => {
 
         });
 
-
     } catch (error) {
 
         console.error(error);
 
         res.status(500).json({
-
             message:
                 "Registration failed."
-
         });
 
     }
@@ -267,29 +250,20 @@ app.post("/login", async (req, res) => {
         const registrations =
             readData(registrationFile);
 
-
         const email =
             String(req.body.email || "").trim();
-
 
         const password =
             String(req.body.password || "");
 
-
-        if (
-            !email ||
-            !password
-        ) {
+        if (!email || !password) {
 
             return res.status(400).json({
-
                 message:
                     "Please enter your email and password."
-
             });
 
         }
-
 
         const user =
             [...registrations]
@@ -301,40 +275,29 @@ app.post("/login", async (req, res) => {
                         email.toLowerCase()
                 );
 
-
         if (!user) {
 
             return res.status(401).json({
-
                 message:
                     "Invalid email or password."
-
             });
 
         }
 
-
         const passwordMatch =
             await bcrypt.compare(
-
                 password,
-
                 user.password
-
             );
-
 
         if (!passwordMatch) {
 
             return res.status(401).json({
-
                 message:
                     "Invalid email or password."
-
             });
 
         }
-
 
         res.json({
 
@@ -359,16 +322,13 @@ app.post("/login", async (req, res) => {
 
         });
 
-
     } catch (error) {
 
         console.error(error);
 
         res.status(500).json({
-
             message:
                 "Login failed."
-
         });
 
     }
@@ -377,44 +337,8 @@ app.post("/login", async (req, res) => {
 
 
 /* =========================================================
-   DASHBOARD
-========================================================= */
-
-app.get("/", (req, res) => {
-
-    res.sendFile(
-
-        path.join(
-            __dirname,
-            "public",
-            "dashboard.html"
-        )
-
-    );
-
-});
-
-
-/* =========================================================
    PRODUCTS
 ========================================================= */
-
-
-/*
-   ADD PRODUCT
-
-   The dashboard will send:
-
-   {
-       name,
-       description,
-       category,
-       sellerName,
-       sellerEmail,
-       sellerId
-   }
-
-*/
 
 app.post("/api/products", (req, res) => {
 
@@ -423,12 +347,10 @@ app.post("/api/products", (req, res) => {
         const products =
             readData(productsFile);
 
-
         const product = {
 
             id:
-                "product_" +
-                Date.now(),
+                "product_" + Date.now(),
 
             name:
                 String(req.body.name || "").trim(),
@@ -463,27 +385,21 @@ app.post("/api/products", (req, res) => {
 
         };
 
-
         if (!product.name) {
 
             return res.status(400).json({
-
                 message:
                     "Product name is required."
-
             });
 
         }
 
-
         products.push(product);
-
 
         writeData(
             productsFile,
             products
         );
-
 
         res.json({
 
@@ -497,16 +413,13 @@ app.post("/api/products", (req, res) => {
 
         });
 
-
     } catch (error) {
 
         console.error(error);
 
         res.status(500).json({
-
             message:
                 "Unable to add product."
-
         });
 
     }
@@ -514,78 +427,59 @@ app.post("/api/products", (req, res) => {
 });
 
 
-/*
-   GET ALL PRODUCTS
-*/
-
 app.get("/api/products", (req, res) => {
 
-    const products =
-        readData(productsFile);
-
-    res.json(products);
+    res.json(
+        readData(productsFile)
+    );
 
 });
 
-
-/*
-   SEARCH PRODUCTS
-*/
 
 app.get("/api/products/search", (req, res) => {
 
     const search =
-        String(
-            req.query.q || ""
-        )
-        .trim()
-        .toLowerCase();
-
+        String(req.query.q || "")
+            .trim()
+            .toLowerCase();
 
     const products =
         readData(productsFile);
 
-
     if (!search) {
-
         return res.json(products);
-
     }
-
 
     const results =
         products.filter(product => {
 
-            const name =
-                String(
-                    product.name || ""
-                ).toLowerCase();
-
-            const description =
-                String(
-                    product.description || ""
-                ).toLowerCase();
-
-            const category =
-                String(
-                    product.category || ""
-                ).toLowerCase();
-
-            const sellerName =
-                String(
-                    product.sellerName || ""
-                ).toLowerCase();
-
-
             return (
-                name.includes(search) ||
-                description.includes(search) ||
-                category.includes(search) ||
-                sellerName.includes(search)
+
+                String(product.name || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(product.description || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(product.category || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(product.sellerName || "")
+                    .toLowerCase()
+                    .includes(search)
+
             );
 
         });
-
 
     res.json(results);
 
@@ -596,11 +490,6 @@ app.get("/api/products/search", (req, res) => {
    SERVICES
 ========================================================= */
 
-
-/*
-   ADD SERVICE
-*/
-
 app.post("/api/services", (req, res) => {
 
     try {
@@ -608,27 +497,19 @@ app.post("/api/services", (req, res) => {
         const services =
             readData(servicesFile);
 
-
         const service = {
 
             id:
-                "service_" +
-                Date.now(),
+                "service_" + Date.now(),
 
             name:
-                String(
-                    req.body.name || ""
-                ).trim(),
+                String(req.body.name || "").trim(),
 
             description:
-                String(
-                    req.body.description || ""
-                ).trim(),
+                String(req.body.description || "").trim(),
 
             category:
-                String(
-                    req.body.category || ""
-                ).trim(),
+                String(req.body.category || "").trim(),
 
             providerName:
                 String(
@@ -654,27 +535,21 @@ app.post("/api/services", (req, res) => {
 
         };
 
-
         if (!service.name) {
 
             return res.status(400).json({
-
                 message:
                     "Service name is required."
-
             });
 
         }
 
-
         services.push(service);
-
 
         writeData(
             servicesFile,
             services
         );
-
 
         res.json({
 
@@ -688,16 +563,13 @@ app.post("/api/services", (req, res) => {
 
         });
 
-
     } catch (error) {
 
         console.error(error);
 
         res.status(500).json({
-
             message:
                 "Unable to add service."
-
         });
 
     }
@@ -705,78 +577,59 @@ app.post("/api/services", (req, res) => {
 });
 
 
-/*
-   GET ALL SERVICES
-*/
-
 app.get("/api/services", (req, res) => {
 
-    const services =
-        readData(servicesFile);
-
-    res.json(services);
+    res.json(
+        readData(servicesFile)
+    );
 
 });
 
-
-/*
-   SEARCH SERVICES
-*/
 
 app.get("/api/services/search", (req, res) => {
 
     const search =
-        String(
-            req.query.q || ""
-        )
-        .trim()
-        .toLowerCase();
-
+        String(req.query.q || "")
+            .trim()
+            .toLowerCase();
 
     const services =
         readData(servicesFile);
 
-
     if (!search) {
-
         return res.json(services);
-
     }
-
 
     const results =
         services.filter(service => {
 
-            const name =
-                String(
-                    service.name || ""
-                ).toLowerCase();
-
-            const description =
-                String(
-                    service.description || ""
-                ).toLowerCase();
-
-            const category =
-                String(
-                    service.category || ""
-                ).toLowerCase();
-
-            const providerName =
-                String(
-                    service.providerName || ""
-                ).toLowerCase();
-
-
             return (
-                name.includes(search) ||
-                description.includes(search) ||
-                category.includes(search) ||
-                providerName.includes(search)
+
+                String(service.name || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(service.description || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(service.category || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(service.providerName || "")
+                    .toLowerCase()
+                    .includes(search)
+
             );
 
         });
-
 
     res.json(results);
 
@@ -787,11 +640,6 @@ app.get("/api/services/search", (req, res) => {
    BUSINESSES
 ========================================================= */
 
-
-/*
-   ADD BUSINESS
-*/
-
 app.post("/api/businesses", (req, res) => {
 
     try {
@@ -799,27 +647,19 @@ app.post("/api/businesses", (req, res) => {
         const businesses =
             readData(businessesFile);
 
-
         const business = {
 
             id:
-                "business_" +
-                Date.now(),
+                "business_" + Date.now(),
 
             name:
-                String(
-                    req.body.name || ""
-                ).trim(),
+                String(req.body.name || "").trim(),
 
             description:
-                String(
-                    req.body.description || ""
-                ).trim(),
+                String(req.body.description || "").trim(),
 
             category:
-                String(
-                    req.body.category || ""
-                ).trim(),
+                String(req.body.category || "").trim(),
 
             ownerName:
                 String(
@@ -855,27 +695,21 @@ app.post("/api/businesses", (req, res) => {
 
         };
 
-
         if (!business.name) {
 
             return res.status(400).json({
-
                 message:
                     "Business name is required."
-
             });
 
         }
 
-
         businesses.push(business);
-
 
         writeData(
             businessesFile,
             businesses
         );
-
 
         res.json({
 
@@ -889,16 +723,13 @@ app.post("/api/businesses", (req, res) => {
 
         });
 
-
     } catch (error) {
 
         console.error(error);
 
         res.status(500).json({
-
             message:
                 "Unable to add business."
-
         });
 
     }
@@ -906,84 +737,65 @@ app.post("/api/businesses", (req, res) => {
 });
 
 
-/*
-   GET ALL BUSINESSES
-*/
-
 app.get("/api/businesses", (req, res) => {
 
-    const businesses =
-        readData(businessesFile);
-
-    res.json(businesses);
+    res.json(
+        readData(businessesFile)
+    );
 
 });
 
-
-/*
-   SEARCH BUSINESSES
-*/
 
 app.get("/api/businesses/search", (req, res) => {
 
     const search =
-        String(
-            req.query.q || ""
-        )
-        .trim()
-        .toLowerCase();
-
+        String(req.query.q || "")
+            .trim()
+            .toLowerCase();
 
     const businesses =
         readData(businessesFile);
 
-
     if (!search) {
-
         return res.json(businesses);
-
     }
-
 
     const results =
         businesses.filter(business => {
 
-            const name =
-                String(
-                    business.name || ""
-                ).toLowerCase();
-
-            const description =
-                String(
-                    business.description || ""
-                ).toLowerCase();
-
-            const category =
-                String(
-                    business.category || ""
-                ).toLowerCase();
-
-            const ownerName =
-                String(
-                    business.ownerName || ""
-                ).toLowerCase();
-
-            const location =
-                String(
-                    business.location || ""
-                ).toLowerCase();
-
-
             return (
-                name.includes(search) ||
-                description.includes(search) ||
-                category.includes(search) ||
-                ownerName.includes(search) ||
-                location.includes(search)
+
+                String(business.name || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(business.description || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(business.category || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(business.ownerName || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(business.location || "")
+                    .toLowerCase()
+                    .includes(search)
+
             );
 
         });
-
 
     res.json(results);
 
@@ -1009,7 +821,6 @@ app.get("/api/dashboard", (req, res) => {
 
         const registrations =
             readData(registrationFile);
-
 
         res.json({
 
@@ -1061,7 +872,7 @@ app.get("/api/dashboard", (req, res) => {
 
 
 /* =========================================================
-   TEST ROUTE
+   STATUS
 ========================================================= */
 
 app.get("/api/status", (req, res) => {
@@ -1088,14 +899,10 @@ app.get("/api/status", (req, res) => {
 const PORT =
     process.env.PORT || 3000;
 
+app.listen(PORT, () => {
 
-app.listen(
-    PORT,
-    () => {
+    console.log(
+        `BRAVE backend is running on port ${PORT}`
+    );
 
-        console.log(
-            `BRAVE backend is running on port ${PORT}`
-        );
-
-    }
-);        
+});
