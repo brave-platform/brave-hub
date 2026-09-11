@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BRAVE Registration</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #171a2b, #55587a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #171a2b;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #55587a;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #171a2b;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #55587a;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>BRAVE</h1>
+
+        <p class="subtitle">Create your account</p>
+
+        <form id="registrationForm">
+
+            <label>Full Name</label>
+            <input type="text" name="fullname" placeholder="Enter your full name" required>
+
+            <label>Email</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Create a password" required>
+
+            <label>Country</label>
+            <select name="country" required>
+                <option value="">Select country</option>
+                <option>Nigeria</option>
+                <option>Ghana</option>
+                <option>Kenya</option>
+                <option>South Africa</option>
+                <option>United Kingdom</option>
+                <option>India</option>
+                <option>Tanzania</option>
+                <option>Other</option>
+            </select>
+
+            <button type="submit">Create Account</button>
+
+        </form>
+
+        <p>Already have an account? <a href="login.html">Login</a></p>
+
+        <p id="message"></p>
+        
+
+    </div>
+
+    <script>
+        document.getElementById("registrationForm").addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            const response = await fetch("/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+    document.getElementById("message").textContent = result.message;
+
+    setTimeout(() => {
+        window.location.href = "login.html";
+    }, 1000);
+} else {
+    document.getElementById("message").textContent = result.message;
+}
+
+        });
+    </script>
+
+</body>
+</html>

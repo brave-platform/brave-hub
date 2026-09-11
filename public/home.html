@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BRAVE — Products, Services & Business</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#f7f3ff;
+    color:#24113f;
+}
+
+/* HEADER */
+header{
+    background:linear-gradient(135deg,#32105f,#5b20a8);
+    color:white;
+    padding:14px 6%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    position:sticky;
+    top:0;
+    z-index:1000;
+    box-shadow:0 4px 15px rgba(0,0,0,.18);
+}
+
+.logo-area{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:160px;
+}
+
+.logo-area img{
+    width:48px;
+    height:48px;
+    object-fit:contain;
+}
+
+.logo-text{
+    font-size:28px;
+    font-weight:900;
+    color:#ffd83d;
+    letter-spacing:2px;
+}
+
+.search-wrap{
+    flex:1;
+    max-width:650px;
+    position:relative;
+}
+
+.search{
+    width:100%;
+    padding:14px 55px 14px 18px;
+    border:none;
+    border-radius:30px;
+    outline:none;
+    font-size:15px;
+}
+
+.search-btn{
+    position:absolute;
+    right:5px;
+    top:5px;
+    width:43px;
+    height:43px;
+    border:none;
+    border-radius:50%;
+    background:#ffd83d;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.header-buttons{
+    display:flex;
+    gap:8px;
+}
+
+.header-btn{
+    border:1px solid #ffd83d;
+    background:transparent;
+    color:white;
+    padding:10px 15px;
+    border-radius:22px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.header-btn.primary{
+    background:#ffd83d;
+    color:#32105f;
+}
+
+/* HERO */
+.hero{
+    min-height:500px;
+    background:
+        linear-gradient(135deg,rgba(50,16,95,.97),rgba(102,37,170,.88)),
+        radial-gradient(circle at right,#ffd83d,transparent 35%);
+    color:white;
+    padding:70px 7%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:40px;
+}
+
+.hero-content{
+    max-width:700px;
+}
+
+.badge{
+    display:inline-block;
+    background:rgba(255,216,61,.15);
+    border:1px solid #ffd83d;
+    color:#ffd83d;
+    padding:8px 15px;
+    border-radius:30px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.hero h1{
+    font-size:clamp(38px,6vw,70px);
+    line-height:1;
+    margin-bottom:22px;
+}
+
+.hero h1 span{
+    color:#ffd83d;
+}
+
+.hero p{
+    font-size:19px;
+    line-height:1.7;
+    color:#eee;
+    margin-bottom:30px;
+}
+
+.hero-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+.big-btn{
+    padding:15px 22px;
+    border-radius:30px;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.gold{
+    background:#ffd83d;
+    color:#32105f;
+}
+
+.outline{
+    background:transparent;
+    color:white;
+    border:2px solid #ffd83d;
+}
+
+/* HERO CARD */
+.hero-card{
+    width:330px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:25px;
+    padding:25px;
+    backdrop-filter:blur(12px);
+}
+
+.hero-card h3{
+    color:#ffd83d;
+    margin-bottom:18px;
+}
+
+.hero-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 0;
+    border-bottom:1px solid rgba(255,255,255,.15);
+}
+
+.hero-item:last-child{
+    border-bottom:none;
+}
+
+.icon{
+    width:45px;
+    height:45px;
+    border-radius:14px;
+    background:#ffd83d;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+}
+
+/* SECTION */
+section{
+    padding:55px 6%;
+}
+
+.section-title{
+    text-align:center;
+    margin-bottom:35px;
+}
+
+.section-title h2{
+    font-size:34px;
+    margin-bottom:10px;
+}
+
+.section-title p{
+    color:#6d6480;
+}
+
+/* CATEGORY CARDS */
+.categories{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:25px;
+    max-width:1000px;
+    margin:auto;
+}
+
+.category{
+    background:white;
+    border-radius:25px;
+    padding:30px;
+    box-shadow:0 8px 30px rgba(45,15,80,.1);
+    border:2px solid transparent;
+    transition:.25s;
+}
+
+.category:hover{
+    transform:translateY(-5px);
+    border-color:#ffd83d;
+}
+
+.category-top{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:18px;
+}
+
+.category-icon{
+    width:65px;
+    height:65px;
+    border-radius:20px;
+    background:#f0e5ff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;
+}
+
+.category h3{
+    font-size:25px;
+}
+
+.category p{
+    color:#6d6480;
+    line-height:1.6;
+    margin-bottom:20px;
+}
+
+.category button{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:25px;
+    background:#4b1688;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* MARKETPLACE */
+.marketplace{
+    background:#eee8f8;
+}
+
+.filters{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:30px;
+}
+
+.filter{
+    padding:10px 18px;
+    border:1px solid #d2c5e5;
+    background:white;
+    border-radius:25px;
+    cursor:pointer;
+}
+
+.filter.active{
+    background:#4b1688;
+    color:white;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 5px 20px rgba(45,15,80,.1);
+}
+
+.card-image{
+    height:170px;
+    background:linear-gradient(135deg,#4b1688,#9a55db);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:55px;
+    color:white;
+}
+
+.card-body{
+    padding:17px;
+}
+
+.card-type{
+    font-size:12px;
+    color:#7a55a5;
+    font-weight:bold;
+    text-transform:uppercase;
+}
+
+.card h3{
+    margin:8px 0;
+}
+
+.card p{
+    color:#71687e;
+    font-size:14px;
+}
+
+.price{
+    color:#4b1688;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+.seller{
+    margin-top:12px;
+    font-size:13px;
+    color:#777;
+}
+
+/* WHY BRAVE */
+.features{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
+}
+
+.feature{
+    background:white;
+    padding:25px;
+    text-align:center;
+    border-radius:20px;
+    box-shadow:0 5px 20px rgba(45,15,80,.08);
+}
+
+.feature-icon{
+    font-size:35px;
+    margin-bottom:15px;
+}
+
+.feature h3{
+    margin-bottom:10px;
+}
+
+.feature p{
+    color:#71687e;
+    line-height:1.5;
+}
+
+/* TIMELINE */
+.timeline{
+    background:#32105f;
+    color:white;
+}
+
+.timeline-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.post{
+    background:white;
+    color:#24113f;
+    border-radius:20px;
+    padding:20px;
+}
+
+.post-user{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:15px;
+}
+
+.avatar{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    background:#ffd83d;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+.post-media{
+    height:130px;
+    border-radius:15px;
+    background:#eee8f8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:45px;
+    margin-bottom:15px;
+}
+
+.post-actions{
+    display:flex;
+    justify-content:space-between;
+    color:#6b6278;
+    font-size:14px;
+}
+
+/* CTA */
+.cta{
+    text-align:center;
+    background:linear-gradient(135deg,#ffd83d,#ffea83);
+    color:#32105f;
+}
+
+.cta h2{
+    font-size:40px;
+    margin-bottom:15px;
+}
+
+.cta p{
+    margin-bottom:25px;
+}
+
+/* FOOTER */
+footer{
+    background:#19082f;
+    color:#ddd;
+    padding:40px 6% 25px;
+}
+
+.footer-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr;
+    gap:30px;
+    margin-bottom:30px;
+}
+
+footer h3{
+    color:#ffd83d;
+    margin-bottom:15px;
+}
+
+footer p,
+footer li{
+    color:#bdb3c8;
+    line-height:1.7;
+}
+
+footer ul{
+    list-style:none;
+}
+
+footer li{
+    margin-bottom:7px;
+    cursor:pointer;
+}
+
+.copyright{
+    border-top:1px solid #38204e;
+    padding-top:20px;
+    text-align:center;
+    color:#93879e;
+}
+
+/* AI BUTTON */
+.ai-button{
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    background:#ffd83d;
+    color:#32105f;
+    border:none;
+    padding:15px 20px;
+    border-radius:30px;
+    box-shadow:0 8px 25px rgba(0,0,0,.25);
+    font-weight:bold;
+    cursor:pointer;
+    z-index:2000;
+}
+
+/* AI BOX */
+.ai-box{
+    display:none;
+    position:fixed;
+    right:20px;
+    bottom:85px;
+    width:330px;
+    background:white;
+    border-radius:20px;
+    box-shadow:0 10px 40px rgba(0,0,0,.25);
+    z-index:2001;
+    overflow:hidden;
+}
+
+.ai-head{
+    background:#4b1688;
+    color:white;
+    padding:16px;
+    font-weight:bold;
+}
+
+.ai-content{
+    padding:16px;
+}
+
+.ai-content p{
+    color:#62586d;
+    line-height:1.5;
+    margin-bottom:12px;
+}
+
+.ai-input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    outline:none;
+}
+
+.ai-send{
+    margin-top:10px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:#ffd83d;
+    color:#32105f;
+    font-weight:bold;
+}
+
+/* MOBILE */
+@media(max-width:900px){
+    header{
+        flex-wrap:wrap;
+    }
+
+    .search-wrap{
+        order:3;
+        flex-basis:100%;
+        max-width:none;
+    }
+
+    .hero{
+        flex-direction:column;
+        text-align:center;
+        padding-top:50px;
+    }
+
+    .hero-buttons{
+        justify-content:center;
+    }
+
+    .cards{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .features{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .timeline-grid{
+        grid-template-columns:1fr;
+    }
+
+    .footer-grid{
+        grid-template-columns:1fr 1fr;
+    }
+}
+
+@media(max-width:600px){
+    .logo-text{
+        font-size:23px;
+    }
+
+    .header-buttons .header-btn:first-child{
+        display:none;
+    }
+
+    .hero h1{
+        font-size:43px;
+    }
+
+    .hero-card{
+        width:100%;
+    }
+
+    .categories{
+        grid-template-columns:1fr;
+    }
+
+    .cards{
+        grid-template-columns:1fr;
+    }
+
+    .features{
+        grid-template-columns:1fr;
+    }
+
+    .footer-grid{
+        grid-template-columns:1fr;
+    }
+
+    .ai-box{
+        width:calc(100% - 30px);
+        right:15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+
+    <div class="logo-area">
+        <img src="images/brave-lion.png" alt="BRAVE Logo">
+        <div class="logo-text">BRAVE</div>
+    </div>
+
+    <div class="search-wrap">
+        <input
+            id="publicSearch"
+            class="search"
+            type="text"
+            placeholder="Search products, services, sellers..."
+            oninput="searchPublic()"
+        >
+        <button class="search-btn" onclick="searchPublic()">🔎</button>
+    </div>
+
+    <div class="header-buttons">
+        <button class="header-btn" onclick="goLogin()">Login</button>
+        <button class="header-btn primary" onclick="goRegister()">Join BRAVE</button>
+    </div>
+
+</header>
+
+
+<!-- HERO -->
+<section class="hero">
+
+    <div class="hero-content">
+
+        <div class="badge">🦁 Welcome to BRAVE</div>
+
+        <h1>
+            Buy. Sell.<br>
+            <span>Find Services.</span>
+        </h1>
+
+        <p>
+            BRAVE brings products, services and people together
+            in one simple marketplace. Discover what you need,
+            connect with sellers and find trusted service providers.
+        </p>
+
+        <div class="hero-buttons">
+            <button class="big-btn gold" onclick="browseProducts()">
+                🛍️ Browse Products
+            </button>
+
+            <button class="big-btn outline" onclick="findServices()">
+                🧑‍💼 Find a Service
+            </button>
+        </div>
+
+    </div>
+
+
+    <div class="hero-card">
+
+        <h3>What can you do on BRAVE?</h3>
+
+        <div class="hero-item">
+            <div class="icon">🛍️</div>
+            <div>
+                <strong>Buy Products</strong>
+                <p>Discover products from sellers.</p>
+            </div>
+        </div>
+
+        <div class="hero-item">
+            <div class="icon">🧑‍💼</div>
+            <div>
+                <strong>Find Services</strong>
+                <p>Connect with people offering services.</p>
+            </div>
+        </div>
+
+        <div class="hero-item">
+            <div class="icon">📢</div>
+            <div>
+                <strong>Promote Your Business</strong>
+                <p>Show people what you offer.</p>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- CATEGORIES -->
+<section>
+
+    <div class="section-title">
+        <h2>Explore BRAVE</h2>
+        <p>Choose what you are looking for.</p>
+    </div>
+
+    <div class="categories">
+
+        <div class="category">
+
+            <div class="category-top">
+                <div class="category-icon">🛍️</div>
+
+                <div>
+                    <h3>Products</h3>
+                    <small>Goods & commodities</small>
+                </div>
+            </div>
+
+            <p>
+                Find phones, fashion, electronics, food,
+                accessories and other products from sellers.
+            </p>
+
+            <button onclick="browseProducts()">
+                Explore Products →
+            </button>
+
+        </div>
+
+
+        <div class="category">
+
+            <div class="category-top">
+                <div class="category-icon">🧑‍💼</div>
+
+                <div>
+                    <h3>Services</h3>
+                    <small>People & professionals</small>
+                </div>
+            </div>
+
+            <p>
+                Find designers, writers, technicians,
+                photographers, tutors and other service providers.
+            </p>
+
+            <button onclick="findServices()">
+                Find Services →
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- MARKETPLACE -->
+<section class="marketplace">
+
+    <div class="section-title">
+        <h2>Popular on BRAVE</h2>
+        <p>Discover products and services.</p>
+    </div>
+
+    <div class="filters">
+
+        <button class="filter active" onclick="filterCards('all',this)">
+            All
+        </button>
+
+        <button class="filter" onclick="filterCards('product',this)">
+            🛍️ Products
+        </button>
+
+        <button class="filter" onclick="filterCards('service',this)">
+            🧑‍💼 Services
+        </button>
+
+    </div>
+
+
+    <div class="cards" id="marketCards">
+
+        <div class="card" data-type="product">
+
+            <div class="card-image">📱</div>
+
+            <div class="card-body">
+
+                <div class="card-type">Product</div>
+
+                <h3>Smartphone</h3>
+
+                <p>Quality smartphone from a BRAVE seller.</p>
+
+                <div class="price">Contact seller</div>
+
+                <div class="seller">
+                    👤 BRAVE Seller · ⭐ 4.8
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card" data-type="product">
+
+            <div class="card-image">👟</div>
+
+            <div class="card-body">
+
+                <div class="card-type">Product</div>
+
+                <h3>Fashion Shoes</h3>
+
+                <p>Modern shoes available from a seller.</p>
+
+                <div class="price">Contact seller</div>
+
+                <div class="seller">
+                    👤 Fashion Store · ⭐ 4.7
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card" data-type="service">
+
+            <div class="card-image">🎨</div>
+
+            <div class="card-body">
+
+                <div class="card-type">Service</div>
+
+                <h3>Graphic Design</h3>
+
+                <p>Get professional designs for your business.</p>
+
+                <div class="price">Price negotiable</div>
+
+                <div class="seller">
+                    🧑‍💼 Design Provider · ⭐ 4.9
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card" data-type="service">
+
+            <div class="card-image">💻</div>
+
+            <div class="card-body">
+
+                <div class="card-type">Service</div>
+
+                <h3>Website Development</h3>
+
+                <p>Build websites and digital interfaces.</p>
+
+                <div class="price">Contact provider</div>
+
+                <div class="seller">
+                    🧑‍💼 Web Provider · ⭐ 4.8
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- WHY BRAVE -->
+<section>
+
+    <div class="section-title">
+        <h2>Why BRAVE?</h2>
+        <p>Built to make buying, selling and connecting easier.</p>
+    </div>
+
+    <div class="features">
+
+        <div class="feature">
+            <div class="feature-icon">🔎</div>
+            <h3>Easy Search</h3>
+            <p>Search for products, services and sellers quickly.</p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-icon">⭐</div>
+            <h3>Customer Ratings</h3>
+            <p>Buyers and customers can share ratings and reviews.</p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-icon">✓</div>
+            <h3>Verification</h3>
+            <p>Verified accounts can receive a BRAVE verification badge.</p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-icon">🤖</div>
+            <h3>BRAVE AI</h3>
+            <p>Get help finding products, services and sellers.</p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- TIMELINE -->
+<section class="timeline">
+
+    <div class="section-title">
+
+        <h2>BRAVE Timeline</h2>
+
+        <p style="color:#ddd;">
+            See products, services and updates from people and businesses.
+        </p>
+
+    </div>
+
+
+    <div class="timeline-grid">
+
+        <div class="post">
+
+            <div class="post-user">
+                <div class="avatar">BS</div>
+
+                <div>
+                    <strong>BRAVE Seller</strong>
+                    <p>New product</p>
+                </div>
+            </div>
+
+            <div class="post-media">
+                📦
+            </div>
+
+            <p style="margin-bottom:15px;">
+                New products available. Contact the seller to learn more.
+            </p>
+
+            <div class="post-actions">
+                <span>❤️ Like</span>
+                <span>💬 Comment</span>
+                <span>↗ Share</span>
+            </div>
+
+        </div>
+
+
+        <div class="post">
+
+            <div class="post-user">
+                <div class="avatar">DP</div>
+
+                <div>
+                    <strong>Design Provider</strong>
+                    <p>Service update</p>
+                </div>
+            </div>
+
+            <div class="post-media">
+                🎨
+            </div>
+
+            <p style="margin-bottom:15px;">
+                Need a flyer, logo or business design? Find a provider on BRAVE.
+            </p>
+
+            <div class="post-actions">
+                <span>❤️ Like</span>
+                <span>💬 Comment</span>
+                <span>↗ Share</span>
+            </div>
+
+        </div>
+
+
+        <div class="post">
+
+            <div class="post-user">
+                <div class="avatar">BR</div>
+
+                <div>
+                    <strong>BRAVE Community</strong>
+                    <p>Community update</p>
+                </div>
+            </div>
+
+            <div class="post-media">
+                🦁
+            </div>
+
+            <p style="margin-bottom:15px;">
+                Follow sellers and service providers to see their latest updates.
+            </p>
+
+            <div class="post-actions">
+                <span>❤️ Like</span>
+                <span>💬 Comment</span>
+                <span>↗ Share</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- CTA -->
+<section class="cta">
+
+    <h2>Ready to join BRAVE?</h2>
+
+    <p>
+        Create your account and start exploring products,
+        services and opportunities.
+    </p>
+
+    <button class="big-btn" style="background:#4b1688;color:white;"
+            onclick="goRegister()">
+        Create Your BRAVE Account
+    </button>
+
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+
+    <div class="footer-grid">
+
+        <div>
+            <h3>🦁 BRAVE</h3>
+
+            <p>
+                A marketplace and business platform connecting
+                buyers, sellers and service providers.
+            </p>
+        </div>
+
+
+        <div>
+            <h3>Marketplace</h3>
+
+            <ul>
+                <li onclick="browseProducts()">Products</li>
+                <li onclick="findServices()">Services</li>
+                <li>Timeline</li>
+                <li>Search</li>
+            </ul>
+        </div>
+
+
+        <div>
+            <h3>Business</h3>
+
+            <ul>
+                <li>Sell on BRAVE</li>
+                <li>Offer a Service</li>
+                <li>Business Profile</li>
+                <li>Analytics</li>
+            </ul>
+        </div>
+
+
+        <div>
+            <h3>Support</h3>
+
+            <ul>
+                <li>BRAVE AI</li>
+                <li>Help Centre</li>
+                <li>Suggestion Box</li>
+                <li>Contact BRAVE</li>
+            </ul>
+        </div>
+
+    </div>
+
+
+    <div class="copyright">
+        © 2026 BRAVE. Built for people, businesses and opportunities.
+    </div>
+
+</footer>
+
+
+<!-- AI BUTTON -->
+<button class="ai-button" onclick="toggleAI()">
+    🤖 Ask BRAVE AI
+</button>
+
+
+<!-- AI BOX -->
+<div class="ai-box" id="aiBox">
+
+    <div class="ai-head">
+        🤖 BRAVE AI Advisor
+    </div>
+
+    <div class="ai-content">
+
+        <p id="aiAnswer">
+            Hi 👋 I can help you find products,
+            services or sellers on BRAVE.
+        </p>
+
+        <input
+            id="aiInput"
+            class="ai-input"
+            placeholder="Ask BRAVE AI something..."
+        >
+
+        <button class="ai-send" onclick="askAI()">
+            Ask BRAVE AI
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* LOGIN */
+function goLogin(){
+    window.location.href = "login.html";
+}
+
+
+/* REGISTER */
+function goRegister(){
+    window.location.href = "index.html";
+}
+
+
+/* PRODUCTS */
+function browseProducts(){
+
+    window.location.href =
+        "dashboard.html#products";
+
+}
+
+
+/* SERVICES */
+function findServices(){
+
+    window.location.href =
+        "dashboard.html#services";
+
+}
+
+
+/* MARKET FILTER */
+function filterCards(type,button){
+
+    const cards =
+        document.querySelectorAll(".card");
+
+    document
+        .querySelectorAll(".filter")
+        .forEach(btn => btn.classList.remove("active"));
+
+    button.classList.add("active");
+
+    cards.forEach(card => {
+
+        if(type === "all"){
+            card.style.display = "block";
+        }
+
+        else if(card.dataset.type === type){
+            card.style.display = "block";
+        }
+
+        else{
+            card.style.display = "none";
+        }
+
+    });
+
+}
+
+
+/* SEARCH */
+function searchPublic(){
+
+    const value =
+        document
+        .getElementById("publicSearch")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const cards =
+        document.querySelectorAll(".card");
+
+    cards.forEach(card => {
+
+        const text =
+            card.innerText.toLowerCase();
+
+        if(!value || text.includes(value)){
+            card.style.display = "block";
+        }
+        else{
+            card.style.display = "none";
+        }
+
+    });
+
+}
+
+
+/* AI */
+function toggleAI(){
+
+    const box =
+        document.getElementById("aiBox");
+
+    if(box.style.display === "block"){
+        box.style.display = "none";
+    }
+    else{
+        box.style.display = "block";
+        document.getElementById("aiInput").focus();
+    }
+
+}
+
+
+/* DEMO AI */
+function askAI(){
+
+    const input =
+        document
+        .getElementById("aiInput")
+        .value
+        .trim();
+
+    const answer =
+        document.getElementById("aiAnswer");
+
+    if(!input){
+
+        answer.innerText =
+            "Tell me what you are looking for and I will try to help.";
+
+        return;
+    }
+
+    const question =
+        input.toLowerCase();
+
+    if(
+        question.includes("phone") ||
+        question.includes("product") ||
+        question.includes("buy")
+    ){
+
+        answer.innerText =
+            "You can search BRAVE for products using the search box above. You can also browse the Products section.";
+
+    }
+
+    else if(
+        question.includes("service") ||
+        question.includes("designer") ||
+        question.includes("website")
+    ){
+
+        answer.innerText =
+            "BRAVE helps you find service providers. Search for the service you need or explore the Services section.";
+
+    }
+
+    else if(
+        question.includes("seller") ||
+        question.includes("provider")
+    ){
+
+        answer.innerText =
+            "Search for a seller or service provider by their name or what they offer.";
+
+    }
+
+    else{
+
+        answer.innerText =
+            "I understand your question. The full BRAVE AI will later be connected to the BRAVE backend so I can provide more advanced answers.";
+
+    }
+
+}
+
+
+/* ENTER KEY FOR AI */
+document
+.getElementById("aiInput")
+.addEventListener("keydown",function(event){
+
+    if(event.key === "Enter"){
+        askAI();
+    }
+
+});
+
+</script>
+
+</body>
+</html>

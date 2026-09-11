@@ -1,0 +1,3793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BRAVE Dashboard</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+:root{
+    --purple:#35105f;
+    --purple2:#5b2394;
+    --dark:#170827;
+    --dark2:#211039;
+    --gold:#ffd34d;
+    --gold2:#ffbd22;
+    --white:#ffffff;
+    --soft:#eee7fa;
+    --muted:#cfc2e7;
+    --green:#42e695;
+    --red:#ff6464;
+    --blue:#65b9ff;
+    --card:rgba(255,255,255,.09);
+    --border:rgba(255,211,77,.25);
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    min-height:100vh;
+    color:white;
+    background:
+        radial-gradient(circle at 85% 10%,rgba(255,211,77,.18),transparent 28%),
+        radial-gradient(circle at 10% 90%,rgba(111,42,190,.28),transparent 35%),
+        linear-gradient(135deg,#150722,#35105f 50%,#19082f);
+}
+
+button,
+input,
+textarea,
+select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+input,
+textarea,
+select{
+    user-select:text;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    width:250px;
+    padding:18px 12px;
+    overflow-y:auto;
+    background:rgba(18,6,34,.97);
+    border-right:1px solid rgba(255,211,77,.18);
+    z-index:1000;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:5px 8px 18px;
+    margin-bottom:12px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.brand img{
+    width:50px;
+    height:50px;
+    object-fit:contain;
+    border-radius:50%;
+}
+
+.brand strong{
+    font-size:23px;
+    color:var(--gold);
+}
+
+.brand small{
+    display:block;
+    color:var(--muted);
+    margin-top:3px;
+    font-size:11px;
+}
+
+.nav-title{
+    color:#a999bf;
+    font-size:11px;
+    font-weight:bold;
+    padding:12px 12px 7px;
+    text-transform:uppercase;
+}
+
+.nav-btn{
+    width:100%;
+    border:0;
+    background:transparent;
+    color:#eee8f7;
+    padding:12px 13px;
+    margin:2px 0;
+    border-radius:11px;
+    text-align:left;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:11px;
+}
+
+.nav-btn:hover,
+.nav-btn.active{
+    background:linear-gradient(90deg,rgba(255,211,77,.20),rgba(91,35,148,.35));
+    color:var(--gold);
+}
+
+.nav-icon{
+    width:24px;
+    text-align:center;
+    font-size:17px;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+    margin-left:250px;
+    min-height:100vh;
+}
+
+.topbar{
+    height:76px;
+    padding:13px 25px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:500;
+    background:rgba(23,8,39,.87);
+    backdrop-filter:blur(15px);
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.top-search{
+    position:relative;
+    width:min(520px,55%);
+}
+
+.top-search input{
+    width:100%;
+    height:46px;
+    border:1px solid rgba(255,211,77,.35);
+    border-radius:25px;
+    padding:0 52px 0 18px;
+    outline:none;
+    color:white;
+    background:rgba(255,255,255,.09);
+}
+
+.top-search input::placeholder{
+    color:#d8cfea;
+}
+
+.search-button{
+    position:absolute;
+    right:4px;
+    top:4px;
+    width:38px;
+    height:38px;
+    border:0;
+    border-radius:50%;
+    color:#24103e;
+    font-size:17px;
+    font-weight:bold;
+    background:linear-gradient(135deg,var(--gold),var(--gold2));
+    box-shadow:0 0 16px rgba(255,211,77,.30);
+}
+
+.search-suggestions{
+    position:absolute;
+    left:0;
+    right:0;
+    top:52px;
+    background:#241039;
+    border:1px solid rgba(255,211,77,.3);
+    border-radius:14px;
+    overflow:hidden;
+    display:none;
+    box-shadow:0 15px 35px rgba(0,0,0,.4);
+}
+
+.search-suggestion{
+    width:100%;
+    padding:12px 15px;
+    border:0;
+    background:transparent;
+    color:white;
+    text-align:left;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.search-suggestion:hover{
+    background:rgba(255,211,77,.13);
+    color:var(--gold);
+}
+
+.user-chip{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:rgba(255,255,255,.07);
+    padding:7px 12px;
+    border-radius:25px;
+}
+
+.avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--gold),#fff0a3);
+    color:#28103f;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+.user-name{
+    font-weight:bold;
+}
+
+.user-status{
+    font-size:11px;
+    color:var(--muted);
+}
+
+/* ================= CONTENT ================= */
+
+.content{
+    padding:28px;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.page-title{
+    font-size:28px;
+    margin-bottom:8px;
+}
+
+.page-subtitle{
+    color:var(--muted);
+    margin-bottom:25px;
+}
+
+/* ================= CARDS ================= */
+
+.card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:20px;
+}
+
+.grid{
+    display:grid;
+    gap:18px;
+}
+
+.grid-2{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.grid-3{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+.grid-4{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+.stat{
+    padding:19px;
+    border-radius:17px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,211,77,.18);
+}
+
+.stat-icon{
+    font-size:25px;
+}
+
+.stat-number{
+    font-size:25px;
+    font-weight:900;
+    margin-top:10px;
+    color:var(--gold);
+}
+
+.stat-label{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:4px;
+}
+
+.section-title{
+    font-size:19px;
+    margin-bottom:15px;
+}
+
+.gold{
+    color:var(--gold);
+}
+
+/* ================= BUTTONS ================= */
+
+.btn{
+    border:0;
+    border-radius:10px;
+    padding:11px 16px;
+    font-weight:bold;
+    color:#29113f;
+    background:linear-gradient(135deg,var(--gold),var(--gold2));
+}
+
+.btn:hover{
+    filter:brightness(1.08);
+}
+
+.btn-outline{
+    background:transparent;
+    color:var(--gold);
+    border:1px solid var(--gold);
+}
+
+.btn-danger{
+    background:var(--red);
+    color:white;
+}
+
+.btn-green{
+    background:var(--green);
+}
+
+.btn-blue{
+    background:var(--blue);
+}
+
+.actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+}
+
+/* ================= HOME ================= */
+
+.welcome{
+    padding:28px;
+    border-radius:22px;
+    background:
+        linear-gradient(120deg,rgba(91,35,148,.75),rgba(255,211,77,.12)),
+        rgba(255,255,255,.07);
+    border:1px solid rgba(255,211,77,.28);
+    margin-bottom:20px;
+}
+
+.welcome h1{
+    font-size:31px;
+}
+
+.welcome p{
+    margin-top:9px;
+    color:#eee7f8;
+}
+
+/* ================= GOODS / SERVICES ================= */
+
+.type-card{
+    padding:25px;
+    min-height:180px;
+}
+
+.type-card h3{
+    font-size:21px;
+    margin-bottom:8px;
+}
+
+.type-card p{
+    color:var(--muted);
+    line-height:1.5;
+}
+
+.type-icon{
+    font-size:35px;
+    margin-bottom:12px;
+}
+
+.category-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.category{
+    padding:9px 12px;
+    border-radius:20px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,211,77,.16);
+    color:#f5efff;
+    font-size:12px;
+}
+
+/* ================= FORMS ================= */
+
+.form-group{
+    margin-bottom:15px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:7px;
+    color:#f8f3ff;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.form-control{
+    width:100%;
+    padding:12px 13px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.18);
+    background:rgba(0,0,0,.18);
+    color:white;
+    outline:none;
+}
+
+.form-control:focus{
+    border-color:var(--gold);
+}
+
+.form-control option{
+    background:#241039;
+    color:white;
+}
+
+textarea.form-control{
+    min-height:110px;
+    resize:vertical;
+}
+
+/* ================= UPLOAD ================= */
+
+.upload-box{
+    border:1.5px dashed rgba(255,211,77,.45);
+    border-radius:14px;
+    padding:20px;
+    text-align:center;
+    background:rgba(255,211,77,.04);
+}
+
+.upload-box input{
+    width:100%;
+    color:#ddd;
+}
+
+.upload-note{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:8px;
+}
+
+/* ================= TIMELINE ================= */
+
+.post{
+    margin-bottom:18px;
+}
+
+.post-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+}
+
+.post-avatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--gold),#f7e99c);
+    color:#29113f;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+}
+
+.post-name{
+    font-weight:bold;
+}
+
+.verified{
+    color:#55c7ff;
+    font-size:14px;
+}
+
+.pro-badge{
+    color:#2a153d;
+    background:var(--gold);
+    padding:3px 7px;
+    border-radius:10px;
+    font-size:10px;
+    font-weight:bold;
+}
+
+.post-time{
+    font-size:11px;
+    color:#b9abc9;
+}
+
+.post-text{
+    line-height:1.5;
+    color:#f4eefb;
+    margin-bottom:12px;
+}
+
+.post-media{
+    width:100%;
+    max-height:400px;
+    object-fit:cover;
+    border-radius:14px;
+    background:#130722;
+}
+
+.post-actions{
+    display:flex;
+    gap:15px;
+    padding-top:12px;
+    color:#ddd;
+    font-size:13px;
+}
+
+/* ================= LISTINGS ================= */
+
+.listing-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+    gap:16px;
+}
+
+.listing{
+    overflow:hidden;
+    border-radius:16px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,211,77,.18);
+}
+
+.listing-image{
+    width:100%;
+    height:170px;
+    object-fit:cover;
+    background:#261039;
+}
+
+.listing-body{
+    padding:14px;
+}
+
+.listing-type{
+    color:var(--gold);
+    font-size:11px;
+    font-weight:bold;
+}
+
+.listing-title{
+    font-weight:bold;
+    margin-top:6px;
+}
+
+.listing-price{
+    margin-top:8px;
+    color:#fff;
+    font-weight:bold;
+}
+
+.listing-meta{
+    color:#cfc2e7;
+    font-size:11px;
+    margin-top:7px;
+}
+
+.rating{
+    color:var(--gold);
+    margin-top:8px;
+    font-size:13px;
+}
+
+/* ================= RATING ================= */
+
+.stars{
+    display:flex;
+    gap:5px;
+    margin:10px 0;
+}
+
+.star{
+    font-size:30px;
+    color:#62556e;
+    cursor:pointer;
+}
+
+.star.selected{
+    color:var(--gold);
+}
+
+/* ================= CHAT ================= */
+
+.chat-box{
+    height:450px;
+    display:flex;
+    flex-direction:column;
+}
+
+.chat-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:10px;
+    background:rgba(0,0,0,.13);
+    border-radius:14px;
+}
+
+.message{
+    max-width:78%;
+    padding:10px 13px;
+    border-radius:13px;
+    margin:7px 0;
+    line-height:1.4;
+    font-size:13px;
+}
+
+.message.ai{
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,211,77,.12);
+}
+
+.message.me{
+    margin-left:auto;
+    background:linear-gradient(135deg,#6730a0,#4b187c);
+}
+
+.chat-input{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+}
+
+.chat-input input{
+    flex:1;
+}
+
+/* ================= INVOICE ================= */
+
+.invoice{
+    background:white;
+    color:#222;
+    border-radius:15px;
+    padding:25px;
+}
+
+.invoice h2{
+    color:#35105f;
+}
+
+.invoice small{
+    color:#555;
+}
+
+.invoice-head{
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    border-bottom:2px solid #eee;
+    padding-bottom:15px;
+    margin-bottom:20px;
+}
+
+.invoice-table{
+    width:100%;
+    border-collapse:collapse;
+    margin:15px 0;
+}
+
+.invoice-table th,
+.invoice-table td{
+    padding:10px;
+    border-bottom:1px solid #eee;
+    text-align:left;
+}
+
+.invoice-total{
+    text-align:right;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.invoice-footer{
+    margin-top:25px;
+    border-top:1px solid #ddd;
+    padding-top:12px;
+    font-size:11px;
+    color:#666;
+}
+
+/* ================= SETTINGS ================= */
+
+.settings-menu{
+    display:grid;
+    gap:8px;
+}
+
+.setting-item{
+    padding:17px;
+    border-radius:13px;
+    background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.08);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.setting-item span{
+    color:#d8cfea;
+    font-size:13px;
+}
+
+/* ================= SUGGESTION ================= */
+
+.suggestion-box{
+    min-height:180px;
+}
+
+/* ================= FLOAT AI ================= */
+
+.ai-float{
+    position:fixed;
+    right:24px;
+    bottom:24px;
+    z-index:2000;
+    border:0;
+    border-radius:30px;
+    padding:13px 19px;
+    font-weight:bold;
+    color:#28103f;
+    background:linear-gradient(135deg,var(--gold),#fff0a0);
+    box-shadow:0 8px 30px rgba(0,0,0,.35),0 0 20px rgba(255,211,77,.3);
+}
+
+.ai-float span{
+    margin-right:6px;
+}
+
+/* ================= TOAST ================= */
+
+.toast{
+    position:fixed;
+    right:25px;
+    bottom:85px;
+    background:#211039;
+    border:1px solid rgba(255,211,77,.3);
+    padding:13px 17px;
+    border-radius:12px;
+    display:none;
+    z-index:3000;
+    max-width:320px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:72px;
+        padding:12px 7px;
+    }
+
+    .brand{
+        justify-content:center;
+    }
+
+    .brand-text,
+    .brand small,
+    .nav-title{
+        display:none;
+    }
+
+    .brand img{
+        width:45px;
+        height:45px;
+    }
+
+    .nav-btn{
+        justify-content:center;
+        padding:13px 5px;
+    }
+
+    .nav-btn .label{
+        display:none;
+    }
+
+    .main{
+        margin-left:72px;
+    }
+
+    .grid-4{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:650px){
+
+    .topbar{
+        padding:10px 12px;
+    }
+
+    .top-search{
+        width:58%;
+    }
+
+    .user-name,
+    .user-status{
+        display:none;
+    }
+
+    .content{
+        padding:16px;
+    }
+
+    .grid-2,
+    .grid-3{
+        grid-template-columns:1fr;
+    }
+
+    .grid-4{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .welcome h1{
+        font-size:24px;
+    }
+
+    .page-title{
+        font-size:23px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="brand">
+
+        <!-- YOUR ORIGINAL BRAVE LOGO -->
+        <img src="images/brave-lion.png" alt="BRAVE Logo">
+
+        <div class="brand-text">
+            <strong>BRAVE</strong>
+            <small>Business & Marketplace</small>
+        </div>
+
+    </div>
+
+    <div class="nav-title">Main</div>
+
+    <button class="nav-btn active" onclick="showPage('dashboard',this)">
+        <span class="nav-icon">🏠</span>
+        <span class="label">Dashboard</span>
+    </button>
+
+    <button class="nav-btn" onclick="openMarketplace()">
+        <span class="nav-icon">🛒</span>
+        <span class="label">Marketplace</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('timeline',this)">
+        <span class="nav-icon">📰</span>
+        <span class="label">Timeline</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('search',this)">
+        <span class="nav-icon">🔎</span>
+        <span class="label">Search</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('products',this)">
+        <span class="nav-icon">📦</span>
+        <span class="label">Products</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('services',this)">
+        <span class="nav-icon">🛠️</span>
+        <span class="label">Services</span>
+    </button>
+
+    <div class="nav-title">Communication</div>
+
+    <button class="nav-btn" onclick="showPage('messages',this)">
+        <span class="nav-icon">💬</span>
+        <span class="label">Messages</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('ai',this)">
+        <span class="nav-icon">🤖</span>
+        <span class="label">BRAVE AI Advisor</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('reviews',this)">
+        <span class="nav-icon">⭐</span>
+        <span class="label">Ratings & Reviews</span>
+    </button>
+
+    <div class="nav-title">Business</div>
+
+    <button class="nav-btn" onclick="showPage('orders',this)">
+        <span class="nav-icon">🧾</span>
+        <span class="label">Orders & Bookings</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('invoice',this)">
+        <span class="nav-icon">📄</span>
+        <span class="label">Invoices & Receipts</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('customers',this)">
+        <span class="nav-icon">👥</span>
+        <span class="label">Customers</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('analytics',this)">
+        <span class="nav-icon">📊</span>
+        <span class="label">Analytics</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('wallet',this)">
+        <span class="nav-icon">💰</span>
+        <span class="label">Wallet & Earnings</span>
+    </button>
+
+    <div class="nav-title">BRAVE</div>
+
+    <button class="nav-btn" onclick="showPage('notifications',this)">
+        <span class="nav-icon">🔔</span>
+        <span class="label">Notifications</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('suggestions',this)">
+        <span class="nav-icon">💡</span>
+        <span class="label">Suggestion Box</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('review',this)">
+        <span class="nav-icon">🚩</span>
+        <span class="label">Content Review</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('settings',this)">
+        <span class="nav-icon">⚙️</span>
+        <span class="label">Settings</span>
+    </button>
+
+</aside>
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="main">
+
+    <header class="topbar">
+
+        <div class="top-search">
+
+            <input
+                id="globalSearch"
+                type="text"
+                placeholder="Search products, services, sellers..."
+                autocomplete="off"
+                oninput="liveSearch(this.value)"
+                onkeydown="searchEnter(event)"
+            >
+
+            <button class="search-button" onclick="performSearch()">
+                🔎
+            </button>
+
+            <div id="searchSuggestions" class="search-suggestions"></div>
+
+        </div>
+
+
+        <div class="user-chip">
+
+            <div class="avatar" id="userAvatar">B</div>
+
+            <div>
+                <div class="user-name" id="userName">BRAVE User</div>
+                <div class="user-status" id="userEmail">Welcome to BRAVE</div>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <div class="content">
+
+
+        <!-- ================= DASHBOARD ================= -->
+
+        <section id="dashboard" class="page active">
+
+            <div class="welcome">
+
+                <h1 id="welcomeText">Welcome to BRAVE 👋</h1>
+
+                <p>
+                    Your marketplace, business tools, customers,
+                    services and products — all in one place.
+                </p>
+
+            </div>
+
+
+            <div class="grid grid-4">
+
+                <div class="stat">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-number" id="productCount">0</div>
+                    <div class="stat-label">Products</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">🛠️</div>
+                    <div class="stat-number" id="serviceCount">0</div>
+                    <div class="stat-label">Services</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">🧾</div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Orders</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-number">₦0</div>
+                    <div class="stat-label">Earnings</div>
+                </div>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="grid grid-2">
+
+                <div class="card type-card">
+
+                    <div class="type-icon">🛍️</div>
+
+                    <h3>Sell Products</h3>
+
+                    <p>
+                        Sell phones, fashion, food, electronics,
+                        beauty products, home items and other goods.
+                    </p>
+
+                    <br>
+
+                    <button class="btn" onclick="showPage('products')">
+                        Add Product
+                    </button>
+
+                </div>
+
+
+                <div class="card type-card">
+
+                    <div class="type-icon">🧑‍🔧</div>
+
+                    <h3>Offer Services</h3>
+
+                    <p>
+                        Promote your skills and services so customers
+                        can discover and contact you.
+                    </p>
+
+                    <br>
+
+                    <button class="btn" onclick="showPage('services')">
+                        Add Service
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="card">
+
+                <div class="section-title">
+                    Product Categories
+                </div>
+
+                <div class="category-list">
+
+                    <span class="category">📱 Phones & Accessories</span>
+                    <span class="category">👕 Fashion</span>
+                    <span class="category">🍎 Food & Groceries</span>
+                    <span class="category">💄 Beauty Products</span>
+                    <span class="category">💻 Electronics</span>
+                    <span class="category">🏠 Home Items</span>
+                    <span class="category">🚗 Automobiles</span>
+                    <span class="category">📦 Other Goods</span>
+
+                </div>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="card">
+
+                <div class="section-title">
+                    Service Categories
+                </div>
+
+                <div class="category-list">
+
+                    <span class="category">🎨 Graphic Design</span>
+                    <span class="category">📸 Photography</span>
+                    <span class="category">🔧 Repairs</span>
+                    <span class="category">⚡ Electrical Services</span>
+                    <span class="category">💇 Hair & Beauty</span>
+                    <span class="category">🧹 Cleaning</span>
+                    <span class="category">✍️ Writing & Documents</span>
+                    <span class="category">🛠️ Other Services</span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= TIMELINE ================= -->
+
+        <section id="timeline" class="page">
+
+            <h1 class="page-title">Timeline</h1>
+
+            <p class="page-subtitle">
+                Share your products, services, jobs and business updates.
+            </p>
+
+
+            <div class="card">
+
+                <div class="section-title">
+                    Create a Post
+                </div>
+
+                <div class="form-group">
+
+                    <textarea
+                        id="postText"
+                        class="form-control"
+                        placeholder="What would you like to share?"
+                    ></textarea>
+
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="upload-box">
+
+                        <strong>📷 Add Photos</strong>
+
+                        <input
+                            type="file"
+                            id="postImages"
+                            accept="image/*"
+                            multiple
+                        >
+
+                        <div class="upload-note">
+                            Add product, service or business photos.
+                        </div>
+
+                    </div>
+
+
+                    <div class="upload-box">
+
+                        <strong>🎥 Add Video</strong>
+
+                        <input
+                            type="file"
+                            id="postVideo"
+                            accept="video/*"
+                        >
+
+                        <div class="upload-note">
+                            Videos can later go through BRAVE AI moderation.
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <br>
+
+                <button class="btn" onclick="createPost()">
+                    Publish Post
+                </button>
+
+            </div>
+
+
+            <br>
+
+
+            <div id="timelinePosts"></div>
+
+        </section>
+
+
+        <!-- ================= SEARCH ================= -->
+
+        <section id="search" class="page">
+
+            <h1 class="page-title">Search BRAVE</h1>
+
+            <p class="page-subtitle">
+                Find products, services, sellers and service providers.
+            </p>
+
+
+            <div class="card">
+
+                <div class="top-search" style="width:100%;">
+
+                    <input
+                        id="pageSearch"
+                        class="form-control"
+                        placeholder="Start typing to see suggestions..."
+                        oninput="pageLiveSearch(this.value)"
+                    >
+
+                    <div
+                        id="pageSuggestions"
+                        class="search-suggestions"
+                        style="top:55px;display:none;"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <br>
+
+            <div id="searchResults" class="listing-grid"></div>
+
+        </section>
+
+
+        <!-- ================= PRODUCTS ================= -->
+
+        <section id="products" class="page">
+
+            <h1 class="page-title">Products</h1>
+
+            <p class="page-subtitle">
+                Add goods you want customers to discover.
+            </p>
+
+
+            <div class="card">
+
+                <div class="section-title">
+                    Add Product
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="form-group">
+
+                        <label>Product Name</label>
+
+                        <input
+                            id="productName"
+                            class="form-control"
+                            placeholder="Example: Samsung Galaxy Phone"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Category</label>
+
+                        <select id="productCategory" class="form-control">
+
+                            <option value="">Select category</option>
+                            <option>Phones & Accessories</option>
+                            <option>Fashion</option>
+                            <option>Food & Groceries</option>
+                            <option>Beauty Products</option>
+                            <option>Electronics</option>
+                            <option>Home Items</option>
+                            <option>Automobiles</option>
+                            <option>Other Goods</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Price — Optional</label>
+
+                    <input
+                        id="productPrice"
+                        type="number"
+                        class="form-control"
+                        placeholder="Leave blank if you don't want to display a price"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Description</label>
+
+                    <textarea
+                        id="productDescription"
+                        class="form-control"
+                        placeholder="Describe your product..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="upload-box">
+
+                    <strong>📷 Add Product Photos</strong>
+
+                    <br><br>
+
+                    <input
+                        id="productImage"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                    >
+
+                    <div class="upload-note">
+                        Simple photo upload — no image URL required.
+                    </div>
+
+                </div>
+
+
+                <br>
+
+                <button class="btn" onclick="addProduct()">
+                    Publish Product
+                </button>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="card">
+
+                <div class="section-title">
+                    My Products
+                </div>
+
+                <div id="myProducts" class="listing-grid"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= SERVICES ================= -->
+
+        <section id="services" class="page">
+
+            <h1 class="page-title">Services</h1>
+
+            <p class="page-subtitle">
+                Advertise your skills and services.
+            </p>
+
+
+            <div class="card">
+
+                <div class="section-title">
+                    Add Service
+                </div>
+
+
+                <div class="grid grid-2">
+
+                    <div class="form-group">
+
+                        <label>Service Name</label>
+
+                        <input
+                            id="serviceName"
+                            class="form-control"
+                            placeholder="Example: Graphic Design"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Category</label>
+
+                        <select id="serviceCategory" class="form-control">
+
+                            <option value="">Select category</option>
+                            <option>Graphic Design</option>
+                            <option>Photography</option>
+                            <option>Repairs</option>
+                            <option>Electrical Services</option>
+                            <option>Hair & Beauty</option>
+                            <option>Cleaning</option>
+                            <option>Writing & Documents</option>
+                            <option>Other Services</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Price — Optional</label>
+
+                    <input
+                        id="servicePrice"
+                        type="number"
+                        class="form-control"
+                        placeholder="Leave blank if customers should contact you for price"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Service Description</label>
+
+                    <textarea
+                        id="serviceDescription"
+                        class="form-control"
+                        placeholder="Explain what you offer..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="upload-box">
+
+                    <strong>📷 Add Service Photos</strong>
+
+                    <br><br>
+
+                    <input
+                        id="serviceImage"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                    >
+
+                </div>
+
+
+                <br>
+
+                <button class="btn" onclick="addService()">
+                    Publish Service
+                </button>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="card">
+
+                <div class="section-title">
+                    My Services
+                </div>
+
+                <div id="myServices" class="listing-grid"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= MESSAGES ================= -->
+
+        <section id="messages" class="page">
+
+            <h1 class="page-title">Messages</h1>
+
+            <p class="page-subtitle">
+                Communicate with customers and BRAVE AI.
+            </p>
+
+
+            <div class="grid grid-2">
+
+                <div class="card">
+
+                    <h3>🤖 BRAVE AI Advisor</h3>
+
+                    <p style="color:var(--muted);margin:10px 0 15px;">
+                        Ask about products, services, prices and sellers.
+                    </p>
+
+                    <button class="btn" onclick="showPage('ai')">
+                        Open AI
+                    </button>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h3>👤 Customer Conversation</h3>
+
+                    <p style="color:var(--muted);margin:10px 0 15px;">
+                        Customer messaging will connect to real users
+                        when the backend messaging system is connected.
+                    </p>
+
+                    <button class="btn btn-outline">
+                        Open Chat
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= AI ================= -->
+
+        <section id="ai" class="page">
+
+            <h1 class="page-title">BRAVE AI Advisor 🤖</h1>
+
+            <p class="page-subtitle">
+                Find suitable products and services using natural questions.
+            </p>
+
+
+            <div class="card chat-box">
+
+                <div id="aiMessages" class="chat-messages">
+
+                    <div class="message ai">
+
+                        👋 Hi! I'm BRAVE AI.
+
+                        <br><br>
+
+                        Tell me what you're looking for. For example:
+
+                        <br><br>
+
+                        “I need a phone under ₦100,000.”
+
+                    </div>
+
+                </div>
+
+
+                <div class="chat-input">
+
+                    <input
+                        id="aiInput"
+                        class="form-control"
+                        placeholder="Ask BRAVE AI..."
+                        onkeydown="if(event.key==='Enter')sendAI()"
+                    >
+
+                    <button class="btn" onclick="sendAI()">
+                        Send
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= REVIEWS ================= -->
+
+        <section id="reviews" class="page">
+
+            <h1 class="page-title">Ratings & Reviews ⭐</h1>
+
+            <p class="page-subtitle">
+                Buyers and customers decide the ratings of products and services.
+            </p>
+
+
+            <div class="grid grid-2">
+
+                <div class="card">
+
+                    <h3>Product Rating</h3>
+
+                    <div class="rating">
+                        ⭐ 4.6 / 5
+                    </div>
+
+                    <p style="color:var(--muted);margin-top:8px;">
+                        Based on customer ratings.
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h3>Business Rating</h3>
+
+                    <div class="rating">
+                        ⭐ 4.8 / 5
+                    </div>
+
+                    <p style="color:var(--muted);margin-top:8px;">
+                        Business reputation is based on actual customer experience.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="card">
+
+                <h3>Rate a Purchase</h3>
+
+                <p style="color:var(--muted);margin-top:8px;">
+                    After a completed transaction, buyers can rate the product or service.
+                </p>
+
+
+                <div class="stars" id="ratingStars">
+
+                    <span class="star" onclick="rateStar(1)">★</span>
+                    <span class="star" onclick="rateStar(2)">★</span>
+                    <span class="star" onclick="rateStar(3)">★</span>
+                    <span class="star" onclick="rateStar(4)">★</span>
+                    <span class="star" onclick="rateStar(5)">★</span>
+
+                </div>
+
+
+                <textarea
+                    class="form-control"
+                    placeholder="Write your review..."
+                ></textarea>
+
+                <br>
+
+                <button class="btn" onclick="showToast('Review saved for demo.')">
+                    Submit Review
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= ORDERS ================= -->
+
+        <section id="orders" class="page">
+
+            <h1 class="page-title">Orders & Bookings</h1>
+
+            <p class="page-subtitle">
+                Manage product orders and service bookings.
+            </p>
+
+
+            <div class="grid grid-3">
+
+                <div class="stat">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">🚚</div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Processing</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= INVOICE ================= -->
+
+        <section id="invoice" class="page">
+
+            <h1 class="page-title">Invoices & Receipts</h1>
+
+            <p class="page-subtitle">
+                Create professional invoices and receipts using your business name.
+                This feature is currently unlocked.
+            </p>
+
+
+            <div class="grid grid-2">
+
+                <div class="card">
+
+                    <div class="section-title">
+                        Business Information
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Business Name</label>
+
+                        <input
+                            id="invoiceBusiness"
+                            class="form-control"
+                            placeholder="Your business name"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Customer Name</label>
+
+                        <input
+                            id="invoiceCustomer"
+                            class="form-control"
+                            placeholder="Customer name"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Item / Service</label>
+
+                        <input
+                            id="invoiceItem"
+                            class="form-control"
+                            placeholder="Product or service"
+                        >
+
+                    </div>
+
+
+                    <div class="grid grid-2">
+
+                        <div class="form-group">
+
+                            <label>Quantity</label>
+
+                            <input
+                                id="invoiceQty"
+                                type="number"
+                                class="form-control"
+                                value="1"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Amount</label>
+
+                            <input
+                                id="invoiceAmount"
+                                type="number"
+                                class="form-control"
+                                placeholder="0"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="actions">
+
+                        <button class="btn" onclick="generateInvoice('Invoice')">
+                            Generate Invoice
+                        </button>
+
+                        <button
+                            class="btn btn-outline"
+                            onclick="generateInvoice('Receipt')"
+                        >
+                            Generate Receipt
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div id="invoicePreview">
+
+                    <div class="card">
+
+                        <h3>Invoice Preview</h3>
+
+                        <p style="color:var(--muted);margin-top:10px;">
+                            Fill in the details and generate an invoice or receipt.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= CUSTOMERS ================= -->
+
+        <section id="customers" class="page">
+
+            <h1 class="page-title">Customers</h1>
+
+            <p class="page-subtitle">
+                Manage people who interact with your business.
+            </p>
+
+
+            <div class="card">
+
+                <h3>No customers yet</h3>
+
+                <p style="color:var(--muted);margin-top:8px;">
+                    Customers will appear here after real transactions and bookings.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= ANALYTICS ================= -->
+
+        <section id="analytics" class="page">
+
+            <h1 class="page-title">Analytics</h1>
+
+            <p class="page-subtitle">
+                Understand your business performance.
+            </p>
+
+
+            <div class="grid grid-3">
+
+                <div class="stat">
+                    <div class="stat-icon">👀</div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Profile Views</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">❤️</div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Product Interest</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Customer Messages</div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= WALLET ================= -->
+
+        <section id="wallet" class="page">
+
+            <h1 class="page-title">Wallet & Earnings</h1>
+
+            <p class="page-subtitle">
+                Your BRAVE business earnings area.
+            </p>
+
+
+            <div class="card">
+
+                <div class="stat-number">₦0</div>
+
+                <p style="color:var(--muted);margin-top:7px;">
+                    Wallet and real payment processing will be connected
+                    when BRAVE's payment backend is ready.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= NOTIFICATIONS ================= -->
+
+        <section id="notifications" class="page">
+
+            <h1 class="page-title">Notifications</h1>
+
+            <div class="card">
+
+                <h3>🔔 You're all caught up</h3>
+
+                <p style="color:var(--muted);margin-top:8px;">
+                    New orders, messages, reviews and BRAVE updates will appear here.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= SUGGESTIONS ================= -->
+
+        <section id="suggestions" class="page">
+
+            <h1 class="page-title">Help BRAVE Grow 💡</h1>
+
+            <p class="page-subtitle">
+                Your ideas can help shape the future of BRAVE.
+            </p>
+
+
+            <div class="card">
+
+                <div class="form-group">
+
+                    <label>Suggestion Category</label>
+
+                    <select id="suggestionCategory" class="form-control">
+
+                        <option>Feature Request</option>
+                        <option>Marketplace</option>
+                        <option>Payments</option>
+                        <option>BRAVE AI</option>
+                        <option>Seller Tools</option>
+                        <option>Bug / Problem</option>
+                        <option>General Suggestion</option>
+                        <option>Other</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Your Suggestion</label>
+
+                    <textarea
+                        id="suggestionText"
+                        class="form-control suggestion-box"
+                        placeholder="Tell BRAVE what you think we should improve, add or change..."
+                    ></textarea>
+
+                </div>
+
+
+                <button class="btn" onclick="sendSuggestion()">
+                    💡 Send Suggestion
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= CONTENT REVIEW ================= -->
+
+        <section id="review" class="page">
+
+            <h1 class="page-title">Content Review</h1>
+
+            <p class="page-subtitle">
+                Content moderation area reserved for BRAVE administration.
+            </p>
+
+
+            <div class="card">
+
+                <h3>🚩 Review Center</h3>
+
+                <p style="color:var(--muted);margin-top:10px;line-height:1.6;">
+                    Images and videos that BRAVE's moderation system considers
+                    uncertain can eventually be placed here for human review.
+                </p>
+
+                <br>
+
+                <div class="actions">
+
+                    <button class="btn btn-outline">
+                        Pending Review: 0
+                    </button>
+
+                    <button class="btn btn-outline">
+                        Reports: 0
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= SETTINGS ================= -->
+
+        <section id="settings" class="page">
+
+            <h1 class="page-title">Settings</h1>
+
+            <p class="page-subtitle">
+                Manage your BRAVE account and business.
+            </p>
+
+
+            <div class="grid grid-2">
+
+                <div class="card">
+
+                    <div class="section-title">
+                        👤 Account
+                    </div>
+
+
+                    <div class="settings-menu">
+
+                        <div class="setting-item">
+
+                            <div>
+                                <strong>My Profile</strong>
+                                <br>
+                                <span>Personal information and profile</span>
+                            </div>
+
+                            <button class="btn btn-outline">
+                                Open
+                            </button>
+
+                        </div>
+
+
+                        <div class="setting-item">
+
+                            <div>
+                                <strong>Business Profile</strong>
+                                <br>
+                                <span>Business name, description and logo</span>
+                            </div>
+
+                            <button class="btn btn-outline">
+                                Open
+                            </button>
+
+                        </div>
+
+
+                        <div class="setting-item">
+
+                            <div>
+                                <strong>Security & Login</strong>
+                                <br>
+                                <span>Password and account security</span>
+                            </div>
+
+                            <button class="btn btn-outline">
+                                Open
+                            </button>
+
+                        </div>
+
+
+                        <div class="setting-item">
+
+                            <div>
+                                <strong>Notifications</strong>
+                                <br>
+                                <span>Choose what BRAVE alerts you about</span>
+                            </div>
+
+                            <button class="btn btn-outline">
+                                Open
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="section-title">
+                        ⚙️ BRAVE Preferences
+                    </div>
+
+
+                    <div class="settings-menu">
+
+                        <div class="setting-item">
+
+                            <div>
+                                <strong>Language & Location</strong>
+                                <br>
+                                <span>Control regional preferences</span>
+                            </div>
+
+                            <button class="btn btn-outline">
+                                Open
+                            </button>
+
+                        </div>
+
+
+                        <div class="setting-item">
+
+                            <div>
+                                <strong>AI Preferences</strong>
+                                <br>
+                                <span>Control how BRAVE AI assists you</span>
+                            </div>
+
+                            <button class="btn btn-outline">
+                                Open
+                            </button>
+
+                        </div>
+
+
+                        <div class="setting-item">
+
+                            <div>
+                                <strong>Plans & Subscription</strong>
+                                <br>
+                                <span>Manage Free and future Pro plans</span>
+                            </div>
+
+                            <button
+                                class="btn btn-outline"
+                                onclick="showToast('Plans are being prepared.')"
+                            >
+                                Open
+                            </button>
+
+                        </div>
+
+
+                        <div class="setting-item">
+
+                            <div>
+                                <strong>Help & Support</strong>
+                                <br>
+                                <span>Get help with BRAVE</span>
+                            </div>
+
+                            <button class="btn btn-outline">
+                                Open
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="card">
+
+                <div class="section-title">
+                    🚪 Account
+                </div>
+
+                <button class="btn btn-danger" onclick="logout()">
+                    Log Out
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<!-- FLOATING AI -->
+
+<button class="ai-float" onclick="showPage('ai')">
+    <span>🤖</span> Ask BRAVE AI
+</button>
+
+
+<div id="toast" class="toast"></div>
+
+
+<script>
+
+/* =========================================================
+   USER
+========================================================= */
+
+let braveUser = {};
+
+try{
+    braveUser =
+        JSON.parse(localStorage.getItem("braveUser")) || {};
+}catch(e){
+    braveUser = {};
+}
+
+
+const displayName =
+    braveUser.fullname ||
+    braveUser.name ||
+    "BRAVE User";
+
+const displayEmail =
+    braveUser.email ||
+    "Welcome to BRAVE";
+
+
+document.getElementById("userName").textContent =
+    displayName;
+
+document.getElementById("userEmail").textContent =
+    displayEmail;
+
+document.getElementById("welcomeText").textContent =
+    "Welcome, " + displayName + " 👋";
+
+document.getElementById("userAvatar").textContent =
+    displayName.charAt(0).toUpperCase();
+
+
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+
+function showPage(pageId,button){
+
+    document.querySelectorAll(".page").forEach(page=>{
+        page.classList.remove("active");
+    });
+
+    const page =
+        document.getElementById(pageId);
+
+    if(page){
+        page.classList.add("active");
+    }
+
+    document.querySelectorAll(".nav-btn").forEach(btn=>{
+        btn.classList.remove("active");
+    });
+
+    if(button){
+        button.classList.add("active");
+    }
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+    if(pageId==="products"){
+        renderProducts();
+    }
+
+    if(pageId==="services"){
+        renderServices();
+    }
+
+    if(pageId==="timeline"){
+        renderTimeline();
+    }
+}
+
+
+function openMarketplace(){
+
+    window.location.href =
+        "marketplace.html";
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(message){
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.textContent = message;
+
+    toast.style.display = "block";
+
+    setTimeout(()=>{
+        toast.style.display = "none";
+    },3000);
+}
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function getProducts(){
+
+    try{
+        return JSON.parse(
+            localStorage.getItem("braveProducts") || "[]"
+        );
+    }catch(e){
+        return [];
+    }
+
+}
+
+
+function getServices(){
+
+    try{
+        return JSON.parse(
+            localStorage.getItem("braveServices") || "[]"
+        );
+    }catch(e){
+        return [];
+    }
+
+}
+
+
+/* =========================================================
+   PRODUCTS
+========================================================= */
+
+function addProduct(){
+
+    const name =
+        document.getElementById("productName").value.trim();
+
+    const category =
+        document.getElementById("productCategory").value;
+
+    const price =
+        document.getElementById("productPrice").value.trim();
+
+    const description =
+        document.getElementById("productDescription").value.trim();
+
+    if(!name){
+        showToast("Please enter the product name.");
+        return;
+    }
+
+    if(!category){
+        showToast("Please select a category.");
+        return;
+    }
+
+    /*
+       PRICE IS INTENTIONALLY NOT REQUIRED.
+    */
+
+    const products =
+        getProducts();
+
+    products.push({
+
+        id:Date.now(),
+
+        name:name,
+
+        category:category,
+
+        price:price || "",
+
+        description:description,
+
+        seller:displayName,
+
+        verified:false,
+
+        pro:false,
+
+        rating:0,
+
+        ratingsCount:0,
+
+        image:"",
+
+        createdAt:new Date().toISOString()
+
+    });
+
+
+    localStorage.setItem(
+        "braveProducts",
+        JSON.stringify(products)
+    );
+
+
+    document.getElementById("productName").value="";
+    document.getElementById("productCategory").value="";
+    document.getElementById("productPrice").value="";
+    document.getElementById("productDescription").value="";
+    document.getElementById("productImage").value="";
+
+
+    showToast("Product published successfully.");
+
+    renderProducts();
+
+    updateStats();
+
+}
+
+
+function renderProducts(){
+
+    const box =
+        document.getElementById("myProducts");
+
+    if(!box) return;
+
+    const products =
+        getProducts();
+
+    if(products.length===0){
+
+        box.innerHTML = `
+            <div class="card">
+                <h3>No products yet</h3>
+                <p style="color:var(--muted);margin-top:8px;">
+                    Add your first product above.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    box.innerHTML =
+        products.map(product=>{
+
+            const price =
+                product.price
+                ? "₦" + Number(product.price).toLocaleString()
+                : "Price not specified";
+
+            return `
+
+                <div class="listing">
+
+                    <div
+                        class="listing-image"
+                        style="
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            font-size:45px;
+                        "
+                    >
+                        📦
+                    </div>
+
+                    <div class="listing-body">
+
+                        <div class="listing-type">
+                            PRODUCT
+                        </div>
+
+                        <div class="listing-title">
+                            ${escapeHTML(product.name)}
+                        </div>
+
+                        <div class="listing-price">
+                            ${price}
+                        </div>
+
+                        <div class="listing-meta">
+                            ${escapeHTML(product.category)}
+                        </div>
+
+                        <div class="rating">
+                            ⭐ ${product.rating || "No rating yet"}
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   SERVICES
+========================================================= */
+
+function addService(){
+
+    const name =
+        document.getElementById("serviceName").value.trim();
+
+    const category =
+        document.getElementById("serviceCategory").value;
+
+    const price =
+        document.getElementById("servicePrice").value.trim();
+
+    const description =
+        document.getElementById("serviceDescription").value.trim();
+
+
+    if(!name){
+
+        showToast("Please enter the service name.");
+
+        return;
+    }
+
+
+    if(!category){
+
+        showToast("Please select a category.");
+
+        return;
+    }
+
+
+    /*
+       PRICE IS INTENTIONALLY NOT REQUIRED.
+    */
+
+
+    const services =
+        getServices();
+
+
+    services.push({
+
+        id:Date.now(),
+
+        name:name,
+
+        category:category,
+
+        price:price || "",
+
+        description:description,
+
+        provider:displayName,
+
+        verified:false,
+
+        pro:false,
+
+        rating:0,
+
+        ratingsCount:0,
+
+        image:"",
+
+        createdAt:new Date().toISOString()
+
+    });
+
+
+    localStorage.setItem(
+        "braveServices",
+        JSON.stringify(services)
+    );
+
+
+    document.getElementById("serviceName").value="";
+    document.getElementById("serviceCategory").value="";
+    document.getElementById("servicePrice").value="";
+    document.getElementById("serviceDescription").value="";
+    document.getElementById("serviceImage").value="";
+
+
+    showToast("Service published successfully.");
+
+    renderServices();
+
+    updateStats();
+
+}
+
+
+function renderServices(){
+
+    const box =
+        document.getElementById("myServices");
+
+    if(!box) return;
+
+
+    const services =
+        getServices();
+
+
+    if(services.length===0){
+
+        box.innerHTML = `
+            <div class="card">
+                <h3>No services yet</h3>
+                <p style="color:var(--muted);margin-top:8px;">
+                    Add your first service above.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    box.innerHTML =
+        services.map(service=>{
+
+            const price =
+                service.price
+                ? "₦" + Number(service.price).toLocaleString()
+                : "Price not specified";
+
+            return `
+
+                <div class="listing">
+
+                    <div
+                        class="listing-image"
+                        style="
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            font-size:45px;
+                        "
+                    >
+                        🛠️
+                    </div>
+
+                    <div class="listing-body">
+
+                        <div class="listing-type">
+                            SERVICE
+                        </div>
+
+                        <div class="listing-title">
+                            ${escapeHTML(service.name)}
+                        </div>
+
+                        <div class="listing-price">
+                            ${price}
+                        </div>
+
+                        <div class="listing-meta">
+                            ${escapeHTML(service.category)}
+                        </div>
+
+                        <div class="rating">
+                            ⭐ ${service.rating || "No rating yet"}
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function allSearchItems(){
+
+    const products =
+        getProducts().map(item=>({
+
+            type:"Product",
+
+            name:item.name,
+
+            category:item.category,
+
+            seller:item.seller || displayName,
+
+            price:item.price
+
+        }));
+
+
+    const services =
+        getServices().map(item=>({
+
+            type:"Service",
+
+            name:item.name,
+
+            category:item.category,
+
+            seller:item.provider || displayName,
+
+            price:item.price
+
+        }));
+
+
+    return [
+        ...products,
+        ...services
+    ];
+}
+
+
+function liveSearch(value){
+
+    const box =
+        document.getElementById("searchSuggestions");
+
+    const query =
+        value.trim().toLowerCase();
+
+
+    if(!query){
+
+        box.style.display="none";
+        box.innerHTML="";
+
+        return;
+    }
+
+
+    const items =
+        allSearchItems()
+        .filter(item=>
+            item.name.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query) ||
+            item.seller.toLowerCase().includes(query)
+        )
+        .slice(0,7);
+
+
+    if(items.length===0){
+
+        box.innerHTML = `
+            <div class="search-suggestion">
+                🔎 No matching BRAVE listing yet
+            </div>
+        `;
+
+    }else{
+
+        box.innerHTML =
+            items.map(item=>`
+
+                <button
+                    class="search-suggestion"
+                    onclick="selectSuggestion('${escapeAttribute(item.name)}')"
+                >
+                    ${item.type==="Product" ? "📦" : "🛠️"}
+
+                    <span>
+                        <strong>${escapeHTML(item.name)}</strong>
+                        <br>
+                        <small style="color:#bfb1d0;">
+                            ${escapeHTML(item.category)}
+                        </small>
+                    </span>
+                </button>
+
+            `).join("");
+
+    }
+
+
+    box.style.display="block";
+
+}
+
+
+function selectSuggestion(name){
+
+    document.getElementById("globalSearch").value =
+        name;
+
+    document.getElementById("searchSuggestions").style.display =
+        "none";
+
+    performSearch();
+
+}
+
+
+function performSearch(){
+
+    const value =
+        document.getElementById("globalSearch").value.trim();
+
+    if(!value){
+
+        showPage("search");
+
+        return;
+    }
+
+
+    showPage("search");
+
+
+    document.getElementById("pageSearch").value =
+        value;
+
+    renderSearchResults(value);
+
+}
+
+
+function searchEnter(event){
+
+    if(event.key==="Enter"){
+
+        performSearch();
+
+    }
+
+}
+
+
+function pageLiveSearch(value){
+
+    const suggestionBox =
+        document.getElementById("pageSuggestions");
+
+    const query =
+        value.trim().toLowerCase();
+
+
+    if(!query){
+
+        suggestionBox.style.display="none";
+
+        renderSearchResults("");
+
+        return;
+    }
+
+
+    const items =
+        allSearchItems()
+        .filter(item=>
+            item.name.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query) ||
+            item.seller.toLowerCase().includes(query)
+        )
+        .slice(0,7);
+
+
+    suggestionBox.innerHTML =
+        items.map(item=>`
+
+            <button
+                class="search-suggestion"
+                onclick="selectPageSuggestion('${escapeAttribute(item.name)}')"
+            >
+                ${item.type==="Product" ? "📦" : "🛠️"}
+                ${escapeHTML(item.name)}
+            </button>
+
+        `).join("");
+
+
+    suggestionBox.style.display =
+        items.length ? "block" : "none";
+
+
+    renderSearchResults(value);
+
+}
+
+
+function selectPageSuggestion(name){
+
+    document.getElementById("pageSearch").value =
+        name;
+
+    document.getElementById("pageSuggestions").style.display =
+        "none";
+
+    renderSearchResults(name);
+
+}
+
+
+function renderSearchResults(value){
+
+    const box =
+        document.getElementById("searchResults");
+
+    if(!box) return;
+
+
+    const query =
+        value.trim().toLowerCase();
+
+
+    if(!query){
+
+        box.innerHTML = `
+            <div class="card">
+                <h3>Start searching 🔎</h3>
+                <p style="color:var(--muted);margin-top:8px;">
+                    Suggestions will appear as you type.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const items =
+        allSearchItems()
+        .filter(item=>
+            item.name.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query) ||
+            item.seller.toLowerCase().includes(query)
+        );
+
+
+    if(!items.length){
+
+        box.innerHTML = `
+            <div class="card">
+                <h3>No result found</h3>
+                <p style="color:var(--muted);margin-top:8px;">
+                    BRAVE could not find a matching listing yet.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    box.innerHTML =
+        items.map(item=>`
+
+            <div class="listing">
+
+                <div
+                    class="listing-image"
+                    style="
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-size:45px;
+                    "
+                >
+                    ${item.type==="Product" ? "📦" : "🛠️"}
+                </div>
+
+                <div class="listing-body">
+
+                    <div class="listing-type">
+                        ${item.type.toUpperCase()}
+                    </div>
+
+                    <div class="listing-title">
+                        ${escapeHTML(item.name)}
+                    </div>
+
+                    <div class="listing-price">
+                        ${
+                            item.price
+                            ? "₦"+Number(item.price).toLocaleString()
+                            : "Price not specified"
+                        }
+                    </div>
+
+                    <div class="listing-meta">
+                        ${escapeHTML(item.category)}
+                    </div>
+
+                    <div class="listing-meta">
+                        Seller/Provider:
+                        ${escapeHTML(item.seller)}
+                    </div>
+
+                    <br>
+
+                    <button
+                        class="btn"
+                        onclick="showToast('Listing details will connect to the marketplace.')"
+                    >
+                        View
+                    </button>
+
+                </div>
+
+            </div>
+
+        `).join("");
+
+}
+
+
+/* =========================================================
+   TIMELINE
+========================================================= */
+
+function getPosts(){
+
+    try{
+
+        return JSON.parse(
+            localStorage.getItem("braveTimelinePosts") || "[]"
+        );
+
+    }catch(e){
+
+        return [];
+
+    }
+
+}
+
+
+function createPost(){
+
+    const text =
+        document.getElementById("postText").value.trim();
+
+
+    if(!text){
+
+        showToast("Write something before posting.");
+
+        return;
+    }
+
+
+    const posts =
+        getPosts();
+
+
+    posts.unshift({
+
+        id:Date.now(),
+
+        name:displayName,
+
+        text:text,
+
+        verified:false,
+
+        pro:false,
+
+        createdAt:new Date().toISOString(),
+
+        likes:0
+
+    });
+
+
+    localStorage.setItem(
+        "braveTimelinePosts",
+        JSON.stringify(posts)
+    );
+
+
+    document.getElementById("postText").value="";
+
+
+    showToast(
+        "Post created. Image/video moderation will connect to the backend later."
+    );
+
+
+    renderTimeline();
+
+}
+
+
+function renderTimeline(){
+
+    const box =
+        document.getElementById("timelinePosts");
+
+    if(!box) return;
+
+
+    const posts =
+        getPosts();
+
+
+    if(!posts.length){
+
+        box.innerHTML = `
+            <div class="card">
+                <h3>No posts yet</h3>
+                <p style="color:var(--muted);margin-top:8px;">
+                    Your timeline posts will appear here.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    box.innerHTML =
+        posts.map(post=>`
+
+            <div class="card post">
+
+                <div class="post-head">
+
+                    <div class="post-avatar">
+                        ${escapeHTML(post.name.charAt(0).toUpperCase())}
+                    </div>
+
+                    <div>
+
+                        <div class="post-name">
+
+                            ${escapeHTML(post.name)}
+
+                            ${
+                                post.verified
+                                ? '<span class="verified"> ✓</span>'
+                                : ''
+                            }
+
+                            ${
+                                post.pro
+                                ? '<span class="pro-badge">PRO</span>'
+                                : ''
+                            }
+
+                        </div>
+
+                        <div class="post-time">
+                            BRAVE Timeline
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="post-text">
+                    ${escapeHTML(post.text)}
+                </div>
+
+
+                <div class="post-actions">
+
+                    ❤️ ${post.likes || 0}
+
+                    💬 Comment
+
+                    ↗ Share
+
+                </div>
+
+            </div>
+
+        `).join("");
+
+}
+
+
+/* =========================================================
+   AI
+========================================================= */
+
+function sendAI(){
+
+    const input =
+        document.getElementById("aiInput");
+
+    const text =
+        input.value.trim();
+
+
+    if(!text) return;
+
+
+    addAIMessage(text,"me");
+
+    input.value="";
+
+
+    setTimeout(()=>{
+
+        const answer =
+            generateAIReply(text);
+
+        addAIMessage(answer,"ai");
+
+    },500);
+
+}
+
+
+function addAIMessage(text,type){
+
+    const box =
+        document.getElementById("aiMessages");
+
+
+    const message =
+        document.createElement("div");
+
+    message.className =
+        "message " + type;
+
+    message.textContent =
+        text;
+
+
+    box.appendChild(message);
+
+    box.scrollTop =
+        box.scrollHeight;
+
+}
+
+
+function generateAIReply(question){
+
+    const q =
+        question.toLowerCase();
+
+
+    const products =
+        getProducts();
+
+
+    const services =
+        getServices();
+
+
+    if(
+        q.includes("phone") ||
+        q.includes("iphone") ||
+        q.includes("samsung") ||
+        q.includes("laptop")
+    ){
+
+        const matches =
+            products.filter(item=>
+                (
+                    item.name +
+                    " " +
+                    item.category +
+                    " " +
+                    item.description
+                )
+                .toLowerCase()
+                .includes(
+                    q.includes("phone")
+                    ? "phone"
+                    : q.split(" ")[0]
+                )
+            );
+
+
+        if(matches.length){
+
+            return (
+                "I found " +
+                matches.length +
+                " possible listing(s) on BRAVE. " +
+                matches
+                .slice(0,3)
+                .map(item=>
+                    item.name +
+                    (
+                        item.price
+                        ? " — ₦"+Number(item.price).toLocaleString()
+                        : " — price not specified"
+                    )
+                )
+                .join("; ")
+                +
+                "."
+            );
+
+        }
+
+    }
+
+
+    if(
+        q.includes("design") ||
+        q.includes("repair") ||
+        q.includes("photograph") ||
+        q.includes("clean")
+    ){
+
+        const matches =
+            services.filter(item=>
+                (
+                    item.name +
+                    " " +
+                    item.category +
+                    " " +
+                    item.description
+                )
+                .toLowerCase()
+                .includes(
+                    q.includes("design")
+                    ? "design"
+                    : q.split(" ")[0]
+                )
+            );
+
+
+        if(matches.length){
+
+            return (
+                "I found suitable BRAVE service providers: " +
+                matches
+                .slice(0,3)
+                .map(item=>
+                    item.name +
+                    (
+                        item.price
+                        ? " — ₦"+Number(item.price).toLocaleString()
+                        : " — contact provider for price"
+                    )
+                )
+                .join("; ")
+                +
+                "."
+            );
+
+        }
+
+    }
+
+
+    return (
+        "I can help you search BRAVE for products, services, "
+        +
+        "prices and suitable sellers. Try asking something like "
+        +
+        "\"Find me a phone under ₦100,000\"."
+    );
+
+}
+
+
+/* =========================================================
+   INVOICE / RECEIPT
+========================================================= */
+
+function generateInvoice(type){
+
+    const business =
+        document.getElementById("invoiceBusiness")
+        .value.trim()
+        ||
+        displayName;
+
+
+    const customer =
+        document.getElementById("invoiceCustomer")
+        .value.trim()
+        ||
+        "Customer";
+
+
+    const item =
+        document.getElementById("invoiceItem")
+        .value.trim()
+        ||
+        "Product / Service";
+
+
+    const qty =
+        Number(
+            document.getElementById("invoiceQty").value
+        ) || 1;
+
+
+    const amount =
+        Number(
+            document.getElementById("invoiceAmount").value
+        ) || 0;
+
+
+    const total =
+        qty * amount;
+
+
+    const number =
+        "BRV-" +
+        Date.now()
+        .toString()
+        .slice(-8);
+
+
+    document.getElementById("invoicePreview").innerHTML = `
+
+        <div class="invoice">
+
+            <div class="invoice-head">
+
+                <div>
+
+                    <h2>
+                        ${escapeHTML(business)}
+                    </h2>
+
+                    <small>
+                        ${type}
+                    </small>
+
+                </div>
+
+
+                <div style="text-align:right;">
+
+                    <strong>
+                        ${type} #${number}
+                    </strong>
+
+                    <br>
+
+                    <small>
+                        ${new Date().toLocaleDateString()}
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <p>
+                <strong>Customer:</strong>
+                ${escapeHTML(customer)}
+            </p>
+
+
+            <table class="invoice-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Item / Service
+                        </th>
+
+                        <th>
+                            Qty
+                        </th>
+
+                        <th>
+                            Amount
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <tr>
+
+                        <td>
+                            ${escapeHTML(item)}
+                        </td>
+
+                        <td>
+                            ${qty}
+                        </td>
+
+                        <td>
+                            ₦${total.toLocaleString()}
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+
+            <div class="invoice-total">
+
+                Total:
+                ₦${total.toLocaleString()}
+
+            </div>
+
+
+            <div class="invoice-footer">
+
+                Thank you for doing business with
+                ${escapeHTML(business)}.
+
+                <br><br>
+
+                Generated with BRAVE.
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    showToast(
+        type + " generated successfully."
+    );
+
+}
+
+
+/* =========================================================
+   RATINGS
+========================================================= */
+
+function rateStar(number){
+
+    document
+        .querySelectorAll(".star")
+        .forEach((star,index)=>{
+
+            star.classList.toggle(
+                "selected",
+                index < number
+            );
+
+        });
+
+}
+
+
+/* =========================================================
+   SUGGESTION BOX
+========================================================= */
+
+function sendSuggestion(){
+
+    const category =
+        document.getElementById("suggestionCategory").value;
+
+
+    const text =
+        document.getElementById("suggestionText").value.trim();
+
+
+    if(!text){
+
+        showToast(
+            "Please enter your suggestion."
+        );
+
+        return;
+    }
+
+
+    const suggestions =
+        JSON.parse(
+            localStorage.getItem("braveSuggestions") || "[]"
+        );
+
+
+    suggestions.push({
+
+        category:category,
+
+        text:text,
+
+        user:displayName,
+
+        date:new Date().toISOString()
+
+    });
+
+
+    localStorage.setItem(
+        "braveSuggestions",
+        JSON.stringify(suggestions)
+    );
+
+
+    document.getElementById("suggestionText").value="";
+
+
+    showToast(
+        "Thank you! Your suggestion has been saved for BRAVE."
+    );
+
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+function updateStats(){
+
+    document.getElementById("productCount").textContent =
+        getProducts().length;
+
+
+    document.getElementById("serviceCount").textContent =
+        getServices().length;
+
+}
+
+
+updateStats();
+
+renderProducts();
+
+renderServices();
+
+renderTimeline();
+
+
+/* =========================================================
+   SECURITY / HTML ESCAPING
+========================================================= */
+
+function escapeHTML(value){
+
+    return String(value || "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+function escapeAttribute(value){
+
+    return String(value || "")
+        .replace(/\\/g,"\\\\")
+        .replace(/'/g,"\\'")
+        .replace(/"/g,"&quot;");
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function logout(){
+
+    localStorage.removeItem("braveUser");
+
+    window.location.href =
+        "login.html";
+
+}
+
+</script>
+
+</body>
+</html>

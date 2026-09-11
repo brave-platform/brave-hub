@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BRAVE Marketplace</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f3fa;
+    color: #222;
+}
+
+button,
+a {
+    cursor: pointer;
+}
+
+/* HEADER */
+.header {
+    background: #4b0082;
+    color: white;
+    padding: 14px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.brand span {
+    color: #ffd700;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+}
+
+.nav a:hover {
+    background: #6515a0;
+}
+
+/* PROFILE */
+.profile-area {
+    position: relative;
+}
+
+.profile-btn {
+    color: white;
+    background: transparent;
+    border: 1px solid #ffd700;
+    padding: 7px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-btn:hover {
+    background: #6515a0;
+}
+
+.profile-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 50%;
+    background: #ffd700;
+    color: #4b0082;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 48px;
+    width: 260px;
+    background: white;
+    color: #222;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.2);
+    padding: 18px;
+}
+
+.profile-menu.show {
+    display: block;
+}
+
+.profile-menu h3 {
+    color: #4b0082;
+    margin-bottom: 7px;
+}
+
+.profile-menu p {
+    font-size: 13px;
+    margin: 6px 0;
+    color: #555;
+}
+
+.profile-menu button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px;
+    border: 0;
+    border-radius: 8px;
+    background: #4b0082;
+    color: white;
+}
+
+.profile-menu button:hover {
+    background: #35105c;
+}
+
+/* HERO */
+.hero {
+    background: linear-gradient(135deg, #4b0082, #6d20a5);
+    color: white;
+    text-align: center;
+    padding: 55px 20px;
+}
+
+.hero h1 {
+    font-size: 38px;
+    margin-bottom: 12px;
+}
+
+.hero p {
+    font-size: 17px;
+    margin-bottom: 25px;
+}
+
+/* SEARCH */
+.search-box {
+    max-width: 680px;
+    margin: auto;
+    display: flex;
+    background: white;
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.search-box input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+.search-box button {
+    background: #ffd700;
+    color: #4b0082;
+    border: 0;
+    padding: 0 20px;
+    border-radius: 9px;
+    font-weight: bold;
+}
+
+/* MAIN */
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 30px 20px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.section-title h2 {
+    color: #4b0082;
+}
+
+/* PRODUCT / SERVICE */
+.type-buttons {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 35px;
+}
+
+.type-card {
+    flex: 1;
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+}
+
+.type-card h3 {
+    color: #4b0082;
+    margin-bottom: 9px;
+}
+
+.type-card p {
+    line-height: 1.5;
+    color: #555;
+}
+
+.type-card button {
+    margin-top: 15px;
+    background: #4b0082;
+    color: white;
+    border: 0;
+    padding: 11px 18px;
+    border-radius: 8px;
+}
+
+.type-card button:hover {
+    background: #35105c;
+}
+
+.type-card.product {
+    border-top: 5px solid #4b0082;
+}
+
+.type-card.service {
+    border-top: 5px solid #ffd700;
+}
+
+/* CATEGORIES */
+.category-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 35px;
+}
+
+.category-buttons button {
+    padding: 10px 15px;
+    border: 1px solid #4b0082;
+    background: white;
+    color: #4b0082;
+    border-radius: 20px;
+}
+
+.category-buttons button:hover {
+    background: #4b0082;
+    color: white;
+}
+
+/* LISTINGS */
+.listings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.listing {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(0,0,0,.09);
+}
+
+.listing-image {
+    height: 170px;
+    background: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 55px;
+    color: #4b0082;
+}
+
+.listing-content {
+    padding: 18px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 9px;
+}
+
+.product-badge {
+    background: #eee0ff;
+    color: #4b0082;
+}
+
+.service-badge {
+    background: #fff1a8;
+    color: #705d00;
+}
+
+.listing h3 {
+    margin-bottom: 8px;
+    color: #222;
+}
+
+.description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.price {
+    color: #4b0082;
+    font-size: 19px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* SELLER */
+.seller {
+    background: #f5f3fa;
+    padding: 11px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.seller strong {
+    color: #4b0082;
+}
+
+/* DETAILS */
+.details-btn {
+    width: 100%;
+    background: #4b0082;
+    color: white;
+    border: 0;
+    padding: 11px;
+    border-radius: 8px;
+}
+
+.details-btn:hover {
+    background: #35105c;
+}
+
+/* EMPTY */
+.empty {
+    background: white;
+    padding: 35px;
+    text-align: center;
+    border-radius: 12px;
+    color: #666;
+    grid-column: 1 / -1;
+}
+
+/* FOOTER */
+footer {
+    margin-top: 40px;
+    background: #25003f;
+    color: white;
+    text-align: center;
+    padding: 30px 20px;
+}
+
+footer span {
+    color: #ffd700;
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+
+    .header {
+        padding: 12px 15px;
+    }
+
+    .brand {
+        font-size: 20px;
+    }
+
+    .nav a {
+        display: none;
+    }
+
+    .hero h1 {
+        font-size: 29px;
+    }
+
+    .type-buttons {
+        flex-direction: column;
+    }
+
+    .profile-menu {
+        right: -5px;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="header">
+
+    <div class="brand">
+        🦁 BRAVE <span>Marketplace</span>
+    </div>
+
+    <nav class="nav">
+
+        <a href="dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="marketplace.html">
+            Marketplace
+        </a>
+
+        <div class="profile-area">
+
+            <button
+                class="profile-btn"
+                onclick="toggleProfile()"
+            >
+
+                <div
+                    class="profile-icon"
+                    id="profileInitial"
+                >
+                    U
+                </div>
+
+                <span id="profileName">
+                    User
+                </span>
+
+            </button>
+
+
+            <div
+                class="profile-menu"
+                id="profileMenu"
+            >
+
+                <h3 id="menuName">
+                    User
+                </h3>
+
+                <p id="menuEmail">
+                    Not logged in
+                </p>
+
+                <p id="menuCountry">
+                    Country: -
+                </p>
+
+                <button onclick="goDashboard()">
+                    My Dashboard
+                </button>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+</header>
+
+
+<!-- ================= HERO ================= -->
+
+<section class="hero">
+
+    <h1>
+        Find What You Need on BRAVE
+    </h1>
+
+    <p>
+        Buy products, discover services and connect with sellers and service providers.
+    </p>
+
+
+    <div class="search-box">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search products or services..."
+            oninput="searchListings()"
+        >
+
+        <button onclick="searchListings()">
+            Search
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="container">
+
+
+    <!-- TYPE SELECTION -->
+
+    <div class="section-title">
+
+        <h2>
+            What are you looking for?
+        </h2>
+
+    </div>
+
+
+    <div class="type-buttons">
+
+
+        <!-- PRODUCTS -->
+
+        <div class="type-card product">
+
+            <h3>
+                🛍️ Buy Products
+            </h3>
+
+            <p>
+                Find phones, fashion, food, electronics,
+                home items and other goods from sellers.
+            </p>
+
+            <button onclick="showProducts()">
+                Browse Products
+            </button>
+
+        </div>
+
+
+        <!-- SERVICES -->
+
+        <div class="type-card service">
+
+            <h3>
+                🛠️ Find Services
+            </h3>
+
+            <p>
+                Connect with people offering useful
+                services and professional skills.
+            </p>
+
+            <button onclick="showServices()">
+                Find Service Providers
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= CATEGORIES ================= -->
+
+    <div class="section-title">
+
+        <h2>
+            Popular Categories
+        </h2>
+
+    </div>
+
+
+    <div class="category-buttons">
+
+        <button onclick="filterCategory('Phones & Accessories')">
+            Phones
+        </button>
+
+        <button onclick="filterCategory('Fashion')">
+            Fashion
+        </button>
+
+        <button onclick="filterCategory('Food & Groceries')">
+            Food
+        </button>
+
+        <button onclick="filterCategory('Electronics')">
+            Electronics
+        </button>
+
+        <button onclick="filterCategory('Beauty Products')">
+            Beauty
+        </button>
+
+        <button onclick="filterCategory('Graphic Design')">
+            Graphic Design
+        </button>
+
+        <button onclick="filterCategory('Repairs')">
+            Repairs
+        </button>
+
+        <button onclick="filterCategory('Writing & Documents')">
+            Documents
+        </button>
+
+    </div>
+
+
+    <!-- ================= LISTINGS ================= -->
+
+    <div class="section-title">
+
+        <h2 id="listingTitle">
+            Available on BRAVE
+        </h2>
+
+    </div>
+
+
+    <div
+        class="listings"
+        id="listings"
+    >
+    </div>
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+    <p>
+        © 2026 <span>BRAVE</span> Marketplace
+    </p>
+
+    <p style="margin-top:8px;font-size:13px;">
+        Connecting customers with sellers and service providers.
+    </p>
+
+</footer>
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+/* =========================================
+   GLOBAL LISTINGS
+========================================= */
+
+let allListings = [];
+
+
+/* =========================================
+   USER PROFILE
+========================================= */
+
+function loadProfile() {
+
+    const user = JSON.parse(
+        localStorage.getItem("braveUser")
+    );
+
+
+    if (!user) {
+
+        document.getElementById("profileName")
+            .textContent = "Guest";
+
+        document.getElementById("profileInitial")
+            .textContent = "G";
+
+        document.getElementById("menuName")
+            .textContent = "Guest";
+
+        document.getElementById("menuEmail")
+            .textContent = "Not logged in";
+
+        document.getElementById("menuCountry")
+            .textContent = "Country: -";
+
+        return;
+    }
+
+
+    const fullname =
+        user.fullname || "User";
+
+    const email =
+        user.email || "No email";
+
+    const country =
+        user.country || "-";
+
+
+    document.getElementById("profileName")
+        .textContent = fullname;
+
+
+    document.getElementById("profileInitial")
+        .textContent =
+        fullname.charAt(0).toUpperCase();
+
+
+    document.getElementById("menuName")
+        .textContent = fullname;
+
+
+    document.getElementById("menuEmail")
+        .textContent = email;
+
+
+    document.getElementById("menuCountry")
+        .textContent =
+        "Country: " + country;
+}
+
+
+/* =========================================
+   PROFILE MENU
+========================================= */
+
+function toggleProfile() {
+
+    document
+        .getElementById("profileMenu")
+        .classList.toggle("show");
+}
+
+
+/* =========================================
+   DASHBOARD
+========================================= */
+
+function goDashboard() {
+
+    window.location.href =
+        "dashboard.html";
+}
+
+
+/* =========================================
+   LOAD PRODUCTS + SERVICES
+========================================= */
+
+function loadListings() {
+
+
+    const products =
+        JSON.parse(
+            localStorage.getItem("braveProducts") || "[]"
+        );
+
+
+    const services =
+        JSON.parse(
+            localStorage.getItem("braveServices") || "[]"
+        );
+
+
+    /* PRODUCTS */
+
+    const productListings =
+        products.map(item => ({
+
+            ...item,
+
+            type: "product",
+
+            title:
+                item.name ||
+                item.title ||
+                "Product",
+
+            description:
+                item.description ||
+                "Product available on BRAVE.",
+
+            price:
+                item.price ||
+                "",
+
+            category:
+                item.category ||
+                "Other Goods",
+
+            seller:
+                item.seller ||
+                item.sellerName ||
+                "BRAVE Seller"
+
+        }));
+
+
+    /* SERVICES */
+
+    const serviceListings =
+        services.map(item => ({
+
+            ...item,
+
+            type: "service",
+
+            title:
+                item.name ||
+                item.title ||
+                "Service",
+
+            description:
+                item.description ||
+                "Service available on BRAVE.",
+
+            price:
+                item.price ||
+                "",
+
+            category:
+                item.category ||
+                "Other Services",
+
+            seller:
+                item.provider ||
+                item.providerName ||
+                item.seller ||
+                item.sellerName ||
+                "BRAVE Service Provider"
+
+        }));
+
+
+    allListings = [
+        ...productListings,
+        ...serviceListings
+    ];
+
+
+    displayListings(allListings);
+}
+
+
+/* =========================================
+   DISPLAY LISTINGS
+========================================= */
+
+function displayListings(items) {
+
+
+    const container =
+        document.getElementById("listings");
+
+
+    container.innerHTML = "";
+
+
+    if (items.length === 0) {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                <h3>
+                    No listings available yet.
+                </h3>
+
+                <p style="margin-top:8px;">
+                    Products and services published
+                    on BRAVE will appear here.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    items.forEach((item) => {
+
+
+        const isProduct =
+            item.type === "product";
+
+
+        const badgeClass =
+            isProduct
+            ? "product-badge"
+            : "service-badge";
+
+
+        const badgeText =
+            isProduct
+            ? "PRODUCT"
+            : "SERVICE";
+
+
+        const icon =
+            isProduct
+            ? "🛍️"
+            : "🛠️";
+
+
+        const priceText =
+            item.price
+            ? "₦" + item.price
+            : "Contact seller";
+
+
+        const card =
+            document.createElement("div");
+
+
+        card.className =
+            "listing";
+
+
+        card.innerHTML = `
+
+            <div class="listing-image">
+                ${icon}
+            </div>
+
+
+            <div class="listing-content">
+
+
+                <span class="badge ${badgeClass}">
+                    ${badgeText}
+                </span>
+
+
+                <h3>
+                    ${escapeHTML(item.title)}
+                </h3>
+
+
+                <div class="description">
+                    ${escapeHTML(item.description)}
+                </div>
+
+
+                <div class="price">
+                    ${escapeHTML(String(priceText))}
+                </div>
+
+
+                <div class="seller">
+
+                    ${
+                        isProduct
+                        ? "🏪 Seller"
+                        : "👤 Service Provider"
+                    }:
+
+                    <strong>
+                        ${escapeHTML(item.seller)}
+                    </strong>
+
+                    <br>
+
+                    <span>
+                        Category:
+                        ${escapeHTML(item.category)}
+                    </span>
+
+                </div>
+
+
+                <button
+                    class="details-btn"
+                    onclick='viewDetails(${JSON.stringify(item).replace(/'/g, "&#39;")})'
+                >
+                    View Details
+                </button>
+
+            </div>
+
+        `;
+
+
+        container.appendChild(card);
+
+    });
+}
+
+
+/* =========================================
+   VIEW DETAILS
+========================================= */
+
+function viewDetails(item) {
+
+
+    if (!item) {
+        return;
+    }
+
+
+    const type =
+        item.type === "product"
+        ? "PRODUCT"
+        : "SERVICE";
+
+
+    const message =
+
+        type +
+
+        "\n\nName: " +
+        item.title +
+
+        "\n\nCategory: " +
+        item.category +
+
+        "\n\nSeller/Provider: " +
+        item.seller +
+
+        "\n\nPrice: " +
+        (
+            item.price
+            ? "₦" + item.price
+            : "Contact seller"
+        ) +
+
+        "\n\nDescription:\n" +
+        item.description;
+
+
+    alert(message);
+}
+
+
+/* =========================================
+   SHOW PRODUCTS
+========================================= */
+
+function showProducts() {
+
+
+    const products =
+        allListings.filter(
+            item =>
+                item.type === "product"
+        );
+
+
+    document.getElementById("listingTitle")
+        .textContent =
+        "Products on BRAVE";
+
+
+    displayListings(products);
+}
+
+
+/* =========================================
+   SHOW SERVICES
+========================================= */
+
+function showServices() {
+
+
+    const services =
+        allListings.filter(
+            item =>
+                item.type === "service"
+        );
+
+
+    document.getElementById("listingTitle")
+        .textContent =
+        "Service Providers on BRAVE";
+
+
+    displayListings(services);
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
+
+function searchListings() {
+
+
+    const query =
+        document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    if (!query) {
+
+        document.getElementById("listingTitle")
+            .textContent =
+            "Available on BRAVE";
+
+
+        displayListings(allListings);
+
+        return;
+    }
+
+
+    const results =
+        allListings.filter(item => {
+
+
+            return (
+
+                String(item.title)
+                    .toLowerCase()
+                    .includes(query)
+
+                ||
+
+                String(item.description)
+                    .toLowerCase()
+                    .includes(query)
+
+                ||
+
+                String(item.category)
+                    .toLowerCase()
+                    .includes(query)
+
+                ||
+
+                String(item.seller)
+                    .toLowerCase()
+                    .includes(query)
+
+            );
+
+        });
+
+
+    document.getElementById("listingTitle")
+        .textContent =
+        "Search Results";
+
+
+    displayListings(results);
+}
+
+
+/* =========================================
+   CATEGORY FILTER
+========================================= */
+
+function filterCategory(category) {
+
+
+    const results =
+        allListings.filter(item => {
+
+
+            return String(item.category)
+                .toLowerCase()
+                .includes(
+                    category.toLowerCase()
+                );
+
+        });
+
+
+    document.getElementById("listingTitle")
+        .textContent =
+        category;
+
+
+    displayListings(results);
+}
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+
+        .replace(/&/g, "&amp;")
+
+        .replace(/</g, "&lt;")
+
+        .replace(/>/g, "&gt;")
+
+        .replace(/"/g, "&quot;")
+
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================
+   START MARKETPLACE
+========================================= */
+
+loadProfile();
+
+loadListings();
+
+</script>
+
+
+</body>
+
+</html>
