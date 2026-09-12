@@ -1297,6 +1297,12 @@ app.post(
                             .toLowerCase()
                 );
 
+console.log(
+    "PASSWORD RESET REQUEST:",
+    email,
+    "ACCOUNT FOUND:",
+    !!user
+);
 
             if (!user) {
 
