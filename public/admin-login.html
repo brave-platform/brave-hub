@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>BRAVE Admin Login</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+
+            background:
+                radial-gradient(
+                    circle at top,
+                    #70429a,
+                    #24103f 55%,
+                    #12091f
+                );
+
+            color: white;
+        }
+
+        .box {
+            width: 100%;
+            max-width: 420px;
+
+            background: #321653;
+
+            border: 1px solid #70429a;
+
+            border-radius: 22px;
+
+            padding: 35px 28px;
+
+            box-shadow:
+                0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            text-align: center;
+        }
+
+        .logo img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
+
+        h1 {
+            text-align: center;
+
+            color: #d4af37;
+
+            letter-spacing: 2px;
+
+            margin: 8px 0;
+        }
+
+        .subtitle {
+            text-align: center;
+
+            color: #ddd;
+
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+
+            margin: 15px 0 7px;
+
+            font-weight: bold;
+
+            color: #f4e7c1;
+        }
+
+        input {
+            width: 100%;
+
+            padding: 14px;
+
+            border-radius: 11px;
+
+            border: 1px solid #76519b;
+
+            background: #241337;
+
+            color: white;
+
+            outline: none;
+
+            font-size: 15px;
+        }
+
+        input:focus {
+            border-color: #d4af37;
+
+            box-shadow:
+                0 0 8px rgba(212,175,55,0.25);
+        }
+
+        .password-box {
+            position: relative;
+        }
+
+        .password-box input {
+            padding-right: 70px;
+        }
+
+        .show {
+            position: absolute;
+
+            right: 7px;
+
+            top: 7px;
+
+            border: none;
+
+            padding: 8px 10px;
+
+            border-radius: 8px;
+
+            background: #70429a;
+
+            color: white;
+
+            cursor: pointer;
+        }
+
+        .login-btn {
+            width: 100%;
+
+            margin-top: 25px;
+
+            padding: 15px;
+
+            border: none;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #d4af37,
+                    #f1d36b
+                );
+
+            color: #24103f;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+
+            cursor: not-allowed;
+        }
+
+        .message {
+            display: none;
+
+            margin-top: 15px;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            text-align: center;
+
+            font-size: 14px;
+        }
+
+        .error {
+            display: block;
+
+            background: rgba(220,60,60,0.18);
+
+            border: 1px solid #e74c3c;
+
+            color: #ffaaa3;
+        }
+
+        .back {
+            display: block;
+
+            text-align: center;
+
+            margin-top: 22px;
+
+            color: #ccc;
+
+            text-decoration: none;
+        }
+
+        .back:hover {
+            color: #d4af37;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="box">
+
+    <div class="logo">
+
+        <img
+            src="images/brave-lion.png"
+            alt="BRAVE Lion"
+        >
+
+    </div>
+
+
+    <h1>BRAVE ADMIN</h1>
+
+    <div class="subtitle">
+        Secure Administration Portal
+    </div>
+
+
+    <form id="adminLoginForm">
+
+
+        <label for="email">
+            Admin Email
+        </label>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter admin email"
+            required
+        >
+
+
+        <label for="password">
+            Admin Password
+        </label>
+
+
+        <div class="password-box">
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter admin password"
+                required
+            >
+
+            <button
+                type="button"
+                class="show"
+                onclick="togglePassword()"
+            >
+                Show
+            </button>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="login-btn"
+            id="loginBtn"
+        >
+            🔐 Admin Login
+        </button>
+
+
+    </form>
+
+
+    <div
+        id="message"
+        class="message">
+    </div>
+
+
+    <a
+        href="home.html"
+        class="back"
+    >
+        ← Back to BRAVE Home
+    </a>
+
+</div>
+
+
+<script>
+
+function togglePassword() {
+
+    const input =
+        document.getElementById("password");
+
+    const button =
+        document.querySelector(".show");
+
+    if (input.type === "password") {
+
+        input.type = "text";
+
+        button.textContent = "Hide";
+
+    } else {
+
+        input.type = "password";
+
+        button.textContent = "Show";
+
+    }
+
+}
+
+
+document
+    .getElementById("adminLoginForm")
+    .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+
+        const email =
+            document
+                .getElementById("email")
+                .value
+                .trim();
+
+        const password =
+            document
+                .getElementById("password")
+                .value;
+
+
+        const message =
+            document.getElementById("message");
+
+        const button =
+            document.getElementById("loginBtn");
+
+
+        message.className = "message";
+
+        message.textContent = "";
+
+        button.disabled = true;
+
+        button.textContent =
+            "Checking...";
+
+
+        try {
+
+            const response =
+                await fetch("/admin-login", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+
+                });
+
+
+            const data =
+                await response.json();
+
+
+            if (response.ok) {
+
+                localStorage.setItem(
+                    "braveAdmin",
+                    "true"
+                );
+
+                window.location.href =
+                    "admin.html";
+
+            } else {
+
+                message.className =
+                    "message error";
+
+                message.textContent =
+                    "❌ " +
+                    (
+                        data.message ||
+                        "Invalid admin login."
+                    );
+
+            }
+
+        } catch (error) {
+
+            message.className =
+                "message error";
+
+            message.textContent =
+                "❌ Unable to connect to server.";
+
+        }
+
+
+        button.disabled = false;
+
+        button.textContent =
+            "🔐 Admin Login";
+
+    });
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAVE - Forgot Email</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #24103f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            background: #321653;
+            padding: 35px;
+            border-radius: 18px;
+            border: 1px solid #5b3180;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #cdbddd;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            margin-top: 17px;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #69428a;
+            border-radius: 9px;
+            background: #211039;
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #9b6bc0;
+        }
+
+        input::placeholder {
+            color: #9d8cab;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px;
+            border: none;
+            border-radius: 9px;
+            background: #70429a;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #8555b0;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        .back {
+            text-align: center;
+            margin-top: 22px;
+        }
+
+        .back a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .back a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>BRAVE</h1>
+
+    <p class="subtitle">
+        Recover your BRAVE account email
+    </p>
+
+    <form id="forgotEmailForm">
+
+        <label>Full Name</label>
+
+        <input
+            type="text"
+            name="fullName"
+            placeholder="Enter your registered full name"
+            required
+        >
+
+        <label>Country</label>
+
+        <input
+            type="text"
+            name="country"
+            placeholder="Enter your registered country"
+            required
+        >
+
+        <button type="submit">
+            Recover Email
+        </button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <div class="back">
+        <a href="login.html">← Back to Login</a>
+    </div>
+
+</div>
+
+<script>
+
+document
+    .getElementById("forgotEmailForm")
+    .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+
+        const message = document.getElementById("message");
+
+        message.textContent = "Checking your account...";
+
+        try {
+
+            const response = await fetch("/forgot-email", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
+
+            });
+
+            const result = await response.json();
+
+            message.textContent = result.message;
+
+        } catch (error) {
+
+            message.textContent =
+                "Unable to connect to the server.";
+
+            console.error(error);
+        }
+
+    });
+
+</script>
+
+</body>
+</html>

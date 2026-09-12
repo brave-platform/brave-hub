@@ -107,11 +107,23 @@
 
             background: #211039;
 
-            color: whitish;
+            color: white;
 
             font-size: 15px;
 
             outline: none;
+
+        }
+
+
+        /* Make password characters/dots white */
+
+        input[type="password"],
+        input[type="text"] {
+
+            color: white;
+
+            -webkit-text-fill-color: white;
 
         }
 
@@ -130,7 +142,108 @@
         }
 
 
-        button {
+        /* PASSWORD AREA */
+
+        .password-box {
+
+            position: relative;
+
+            width: 100%;
+
+        }
+
+
+        .password-box input {
+
+            padding-right: 70px;
+
+        }
+
+
+        /* SHOW / HIDE BUTTON */
+
+        .show-password {
+
+            position: absolute;
+
+            right: 8px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            width: auto;
+
+            margin: 0;
+
+            padding: 6px 9px;
+
+            border: none;
+
+            background: transparent;
+
+            color: #d7b9ff;
+
+            font-size: 13px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        .show-password:hover {
+
+            background: transparent;
+
+            color: white;
+
+        }
+
+
+        /* RECOVERY LINKS */
+
+        .recovery-links {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin-top: 13px;
+
+        }
+
+
+        .recovery-links a {
+
+            color: #d7b9ff;
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+        }
+
+
+        .recovery-links a:hover {
+
+            color: white;
+
+            text-decoration: underline;
+
+        }
+
+
+        /* LOGIN BUTTON */
+
+        .login-button {
 
             width: 100%;
 
@@ -155,7 +268,7 @@
         }
 
 
-        button:hover {
+        .login-button:hover {
 
             background: #8555b0;
 
@@ -218,7 +331,9 @@
 
 
         <p class="subtitle">
+
             Welcome back
+
         </p>
 
 
@@ -226,33 +341,94 @@
 
 
             <label>
+
                 Email
+
             </label>
 
 
             <input
+
                 type="email"
+
                 name="email"
+
                 placeholder="Enter your email"
+
                 required
+
             >
 
 
             <label>
+
                 Password
+
             </label>
 
 
-            <input
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-                required
-            >
+            <div class="password-box">
 
 
-            <button type="submit">
+                <input
+
+                    type="password"
+
+                    id="password"
+
+                    name="password"
+
+                    placeholder="Enter your password"
+
+                    required
+
+                >
+
+
+                <button
+
+                    type="button"
+
+                    id="togglePassword"
+
+                    class="show-password">
+
+                    Show
+
+                </button>
+
+
+            </div>
+
+
+            <div class="recovery-links">
+
+
+                <a href="forgot-password.html">
+
+                    🔑 Reset Password
+
+                </a>
+
+
+                <a href="forgot-email.html">
+
+                    Forgot Email?
+
+                </a>
+
+
+            </div>
+
+
+            <button
+
+                type="submit"
+
+                class="login-button">
+
                 Login
+
             </button>
 
 
@@ -264,11 +440,16 @@
 
         <p class="register-link">
 
+
             Don't have an account?
 
+
             <a href="index.html">
+
                 Create Account
+
             </a>
+
 
         </p>
 
@@ -278,99 +459,180 @@
 
     <script>
 
+
+        /* =========================
+           LOGIN
+        ========================= */
+
+
         document
+
             .getElementById("loginForm")
-            .addEventListener("submit", async function(event) {
+
+            .addEventListener(
+                "submit",
+                async function(event) {
+
+                    event.preventDefault();
 
 
-                event.preventDefault();
+                    const formData =
+                        new FormData(event.target);
 
 
-                const formData =
-                    new FormData(event.target);
-
-
-                const data =
-                    Object.fromEntries(
-                        formData.entries()
-                    );
-
-
-                const message =
-                    document.getElementById("message");
-
-
-                try {
-
-
-                    const response =
-                        await fetch("/login", {
-
-                            method: "POST",
-
-                            headers: {
-
-                                "Content-Type":
-                                    "application/json"
-
-                            },
-
-                            body:
-                                JSON.stringify(data)
-
-                        });
-
-
-                    const result =
-                        await response.json();
-
-
-                    if (response.ok) {
-
-
-                        /* Save complete user information */
-
-                        localStorage.setItem(
-                            "braveUser",
-                            JSON.stringify(result.user)
+                    const data =
+                        Object.fromEntries(
+                            formData.entries()
                         );
 
 
+                    const message =
+                        document.getElementById(
+                            "message"
+                        );
+
+
+                    try {
+
+
+                        const response =
+                            await fetch(
+                                "/login",
+                                {
+
+                                    method: "POST",
+
+                                    headers: {
+
+                                        "Content-Type":
+                                            "application/json"
+
+                                    },
+
+                                    body:
+                                        JSON.stringify(data)
+
+                                }
+                            );
+
+
+                        const result =
+                            await response.json();
+
+
+                        if (response.ok) {
+
+
+                            /* Save user information */
+
+                            localStorage.setItem(
+
+                                "braveUser",
+
+                                JSON.stringify(
+                                    result.user
+                                )
+
+                            );
+
+
+                            message.textContent =
+                                "Login successful!";
+
+
+                            setTimeout(
+                                function() {
+
+                                    window.location.href =
+                                        "dashboard.html";
+
+                                },
+                                500
+                            );
+
+
+                        }
+
+                        else {
+
+
+                            message.textContent =
+                                result.message;
+
+
+                        }
+
+
+                    }
+
+                    catch (error) {
+
+
                         message.textContent =
-                            "Login successful!";
+                            "Unable to connect to the server.";
 
 
-                        setTimeout(function() {
+                        console.error(error);
 
-                            window.location.href =
-                                "dashboard.html";
 
-                        }, 500);
+                    }
+
+                }
+            );
+
+
+        /* =========================
+           SHOW / HIDE PASSWORD
+        ========================= */
+
+
+        document
+
+            .getElementById("togglePassword")
+
+            .addEventListener(
+                "click",
+                function() {
+
+
+                    const password =
+                        document.getElementById(
+                            "password"
+                        );
+
+
+                    if (
+                        password.type ===
+                        "password"
+                    ) {
+
+
+                        password.type =
+                            "text";
+
+
+                        this.textContent =
+                            "Hide";
 
 
                     }
 
                     else {
 
-                        message.textContent =
-                            result.message;
+
+                        password.type =
+                            "password";
+
+
+                        this.textContent =
+                            "Show";
+
 
                     }
 
-
                 }
+            );
 
-                catch (error) {
-
-                    message.textContent =
-                        "Unable to connect to the server.";
-
-                    console.error(error);
-
-                }
-
-
-            });
 
     </script>
 

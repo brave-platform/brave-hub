@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BRAVE Admin</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #160b2e, #3b176d, #6b3fa0);
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 25px;
+            background: rgba(15, 7, 30, 0.9);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .brand h1 {
+            color: #ffd700;
+            font-size: 24px;
+        }
+
+        .admin-badge {
+            background: #ffd700;
+            color: #21102f;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .logout {
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 25px 18px 50px;
+        }
+
+        .profile {
+            background: rgba(20, 10, 40, 0.85);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .avatar {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #b8860b);
+            color: #24102f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            font-weight: bold;
+        }
+
+        .profile h2 {
+            color: #ffd700;
+            margin-bottom: 7px;
+        }
+
+        .profile p {
+            color: #ddd;
+            margin: 4px 0;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: rgba(20, 10, 40, 0.85);
+            border: 1px solid rgba(255, 215, 0, 0.25);
+            border-radius: 18px;
+            padding: 20px;
+        }
+
+        .card span {
+            font-size: 30px;
+        }
+
+        .card h3 {
+            color: #ffd700;
+            font-size: 28px;
+            margin-top: 10px;
+        }
+
+        .card p {
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        .section {
+            background: rgba(20, 10, 40, 0.85);
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 22px;
+            border: 1px solid rgba(255, 215, 0, 0.25);
+        }
+
+        .section h2 {
+            color: #ffd700;
+            margin-bottom: 18px;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .action {
+            padding: 17px;
+            border-radius: 13px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: rgba(83, 40, 120, 0.55);
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .action:hover {
+            transform: translateY(-2px);
+            border-color: #ffd700;
+        }
+
+        .search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .search input {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .search button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            background: #ffd700;
+            color: #24102f;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .message {
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            color: #bbb;
+            padding: 20px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 850px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 550px) {
+            header {
+                padding: 12px 15px;
+            }
+
+            .brand h1 {
+                font-size: 20px;
+            }
+
+            .profile {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .cards {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .search {
+                flex-direction: column;
+            }
+
+            .search button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="brand">
+        <img src="images/brave-lion.png" alt="BRAVE">
+        <h1>BRAVE</h1>
+        <span class="admin-badge">ADMIN</span>
+    </div>
+
+    <button class="logout" onclick="logout()">🚪 Logout</button>
+</header>
+
+
+<div class="container">
+
+    <div class="profile">
+        <div class="avatar">👑</div>
+
+        <div>
+            <h2>BRAVE Administrator</h2>
+            <p>Platform Administrator</p>
+            <p>Manage users, products, services and BRAVE activities.</p>
+        </div>
+    </div>
+
+
+    <div class="cards">
+
+        <div class="card">
+            <span>👥</span>
+            <h3 id="usersCount">0</h3>
+            <p>Registered Users</p>
+        </div>
+
+        <div class="card">
+            <span>🛍️</span>
+            <h3 id="productsCount">0</h3>
+            <p>Products</p>
+        </div>
+
+        <div class="card">
+            <span>🛠️</span>
+            <h3 id="servicesCount">0</h3>
+            <p>Services</p>
+        </div>
+
+        <div class="card">
+            <span>🏢</span>
+            <h3 id="businessesCount">0</h3>
+            <p>Businesses</p>
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>⚡ Admin Controls</h2>
+
+        <div class="actions">
+
+            <button class="action" onclick="showMessage('User Management')">
+                👥 <strong>User Management</strong><br>
+                <small>View and manage registered users.</small>
+            </button>
+
+            <button class="action" onclick="showMessage('Verification')">
+                ✅ <strong>Verification</strong><br>
+                <small>Review users and seller verification.</small>
+            </button>
+
+            <button class="action" onclick="showMessage('Products')">
+                🛍️ <strong>Products</strong><br>
+                <small>Monitor products listed on BRAVE.</small>
+            </button>
+
+            <button class="action" onclick="showMessage('Services')">
+                🛠️ <strong>Services</strong><br>
+                <small>Monitor services and providers.</small>
+            </button>
+
+            <button class="action" onclick="showMessage('Reports')">
+                🚨 <strong>Reports</strong><br>
+                <small>Review reported content.</small>
+            </button>
+
+            <button class="action" onclick="showMessage('Suggestions')">
+                💡 <strong>Suggestions</strong><br>
+                <small>Read suggestions from BRAVE users.</small>
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>🔎 Find a User</h2>
+
+        <div class="search">
+            <input
+                type="text"
+                id="userSearch"
+                placeholder="Search by name, email or phone..."
+            >
+
+            <button onclick="searchUser()">Search</button>
+        </div>
+
+        <div id="searchResult" class="message">
+            Enter a user's information to search.
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>🛡️ Administrator Responsibilities</h2>
+
+        <p class="message">
+            The BRAVE administrator oversees the platform, helps maintain
+            trust between users, reviews verification requests, monitors
+            listings and handles platform suggestions and reports.
+        </p>
+
+    </div>
+
+</div>
+
+
+<footer>
+    © 2026 BRAVE — Administrator Panel
+</footer>
+
+
+<script>
+
+async function loadStats() {
+
+    try {
+
+        const response = await fetch("/api/dashboard");
+
+        if (!response.ok) {
+            throw new Error("Dashboard request failed");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("usersCount").textContent =
+            data.users ?? data.totalUsers ?? 0;
+
+        document.getElementById("productsCount").textContent =
+            data.products ?? data.totalProducts ?? 0;
+
+        document.getElementById("servicesCount").textContent =
+            data.services ?? data.totalServices ?? 0;
+
+        document.getElementById("businessesCount").textContent =
+            data.businesses ?? data.totalBusinesses ?? 0;
+
+    } catch (error) {
+
+        console.log("Stats unavailable:", error);
+
+    }
+
+}
+
+
+function searchUser() {
+
+    const search =
+        document.getElementById("userSearch").value.trim();
+
+    const result =
+        document.getElementById("searchResult");
+
+    if (!search) {
+
+        result.textContent =
+            "Please enter a name, email or phone number.";
+
+        return;
+    }
+
+    result.innerHTML =
+        "🔍 Searching for <strong>" +
+        escapeHTML(search) +
+        "</strong>...<br><br>" +
+        "User search will be connected to the secure admin backend next.";
+
+}
+
+
+function showMessage(section) {
+
+    alert(
+        section +
+        " section is ready to be connected to the BRAVE admin backend."
+    );
+
+}
+
+
+function logout() {
+
+    localStorage.removeItem("braveUser");
+
+    window.location.href = "login.html";
+
+}
+
+
+function escapeHTML(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}
+
+
+loadStats();
+
+</script>
+
+</body>
+</html>

@@ -1,1086 +1,527 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>Unique BRAVE</title>
-
-<style>
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background:
-        radial-gradient(circle at top left, #3b176d, transparent 40%),
-        radial-gradient(circle at bottom right, #8b6500, transparent 35%),
-        #090611;
-    color: white;
-    min-height: 100vh;
-}
-
-
-/* Prevent unwanted text highlighting
-   on interface elements */
-
-button,
-a,
-.logo,
-.nav-link,
-.card,
-.feature {
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-
-/* =========================================================
-   NAVBAR
-========================================================= */
-
-.navbar {
-
-    width: 100%;
-
-    padding: 18px 7%;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    border-bottom:
-        1px solid rgba(255,255,255,0.08);
-
-    background:
-        rgba(9,6,17,0.85);
-
-    backdrop-filter: blur(15px);
-
-    position: sticky;
-
-    top: 0;
-
-    z-index: 100;
-
-}
-
-
-.logo {
-
-    font-size: 25px;
-
-    font-weight: 900;
-
-    letter-spacing: 1px;
-
-    color: #f4c542;
-
-}
-
-
-.logo span {
-
-    color: #b978ff;
-
-}
-
-
-.nav-buttons {
-
-    display: flex;
-
-    gap: 10px;
-
-}
-
-
-.nav-btn {
-
-    border: 1px solid
-        rgba(244,197,66,0.45);
-
-    background:
-        transparent;
-
-    color: white;
-
-    padding: 10px 18px;
-
-    border-radius: 25px;
-
-    cursor: pointer;
-
-    font-weight: bold;
-
-}
-
-
-.nav-btn:hover {
-
-    background:
-        rgba(244,197,66,0.15);
-
-}
-
-
-/* =========================================================
-   HERO
-========================================================= */
-
-.hero {
-
-    min-height: 78vh;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    text-align: center;
-
-    padding: 70px 20px;
-
-}
-
-
-.hero-content {
-
-    max-width: 850px;
-
-}
-
-
-.badge {
-
-    display: inline-block;
-
-    padding: 8px 16px;
-
-    border-radius: 30px;
-
-    background:
-        rgba(185,120,255,0.12);
-
-    border:
-        1px solid rgba(185,120,255,0.35);
-
-    color: #d7b4ff;
-
-    margin-bottom: 22px;
-
-    font-size: 14px;
-
-}
-
-
-.hero h1 {
-
-    font-size:
-        clamp(45px, 8vw, 82px);
-
-    line-height: 0.95;
-
-    margin-bottom: 25px;
-
-}
-
-
-.hero h1 span {
-
-    color: #f4c542;
-
-}
-
-
-.hero p {
-
-    max-width: 680px;
-
-    margin: auto;
-
-    color: #d2cedb;
-
-    font-size: 18px;
-
-    line-height: 1.7;
-
-}
-
-
-.hero-buttons {
-
-    margin-top: 35px;
-
-    display: flex;
-
-    justify-content: center;
-
-    gap: 15px;
-
-    flex-wrap: wrap;
-
-}
-
-
-.primary-btn {
-
-    border: none;
-
-    background:
-        linear-gradient(135deg, #f4c542, #c88b08);
-
-    color: #120d18;
-
-    padding: 15px 28px;
-
-    border-radius: 30px;
-
-    font-weight: 900;
-
-    cursor: pointer;
-
-    font-size: 16px;
-
-}
-
-
-.primary-btn:hover {
-
-    transform: translateY(-2px);
-
-}
-
-
-.secondary-btn {
-
-    border:
-        1px solid #b978ff;
-
-    background:
-        rgba(185,120,255,0.08);
-
-    color: white;
-
-    padding: 14px 28px;
-
-    border-radius: 30px;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-    font-size: 16px;
-
-}
-
-
-.secondary-btn:hover {
-
-    background:
-        rgba(185,120,255,0.18);
-
-}
-
-
-/* =========================================================
-   FEATURES
-========================================================= */
-
-.features {
-
-    padding: 60px 7% 100px;
-
-    max-width: 1200px;
-
-    margin: auto;
-
-}
-
-
-.features-title {
-
-    text-align: center;
-
-    margin-bottom: 35px;
-
-}
-
-
-.features-title h2 {
-
-    font-size: 34px;
-
-    margin-bottom: 10px;
-
-}
-
-
-.features-title p {
-
-    color: #aaa4b7;
-
-}
-
-
-.feature-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(auto-fit, minmax(210px, 1fr));
-
-    gap: 18px;
-
-}
-
-
-.feature {
-
-    padding: 25px;
-
-    border-radius: 20px;
-
-    background:
-        rgba(255,255,255,0.045);
-
-    border:
-        1px solid rgba(255,255,255,0.09);
-
-}
-
-
-.feature-icon {
-
-    font-size: 30px;
-
-    margin-bottom: 15px;
-
-}
-
-
-.feature h3 {
-
-    color: #f4c542;
-
-    margin-bottom: 8px;
-
-}
-
-
-.feature p {
-
-    color: #bdb7c8;
-
-    line-height: 1.6;
-
-    font-size: 14px;
-
-}
-
-
-/* =========================================================
-   REGISTER SECTION
-========================================================= */
-
-.register-section {
-
-    display: none;
-
-    padding: 60px 20px;
-
-}
-
-
-.register-box {
-
-    width: 100%;
-
-    max-width: 470px;
-
-    margin: auto;
-
-    padding: 35px;
-
-    border-radius: 25px;
-
-    background:
-        rgba(18,12,30,0.95);
-
-    border:
-        1px solid rgba(244,197,66,0.25);
-
-    box-shadow:
-        0 20px 70px rgba(0,0,0,0.5);
-
-}
-
-
-.register-box h2 {
-
-    text-align: center;
-
-    margin-bottom: 8px;
-
-}
-
-
-.register-subtitle {
-
-    text-align: center;
-
-    color: #aaa4b7;
-
-    margin-bottom: 25px;
-
-}
-
-
-label {
-
-    display: block;
-
-    margin:
-        15px 0 7px;
-
-    font-weight: bold;
-
-}
-
-
-input,
-select {
-
-    width: 100%;
-
-    padding: 13px;
-
-    border-radius: 10px;
-
-    border:
-        1px solid #3c3549;
-
-    background:
-        #100c19;
-
-    color: white;
-
-    font-size: 15px;
-
-}
-
-
-input:focus,
-select:focus {
-
-    outline: none;
-
-    border-color: #f4c542;
-
-}
-
-
-.register-submit {
-
-    width: 100%;
-
-    margin-top: 25px;
-
-    padding: 14px;
-
-    border: none;
-
-    border-radius: 12px;
-
-    background:
-        linear-gradient(135deg, #f4c542, #b978ff);
-
-    color: #120d18;
-
-    font-weight: 900;
-
-    cursor: pointer;
-
-}
-
-
-#message {
-
-    text-align: center;
-
-    margin-top: 15px;
-
-    font-weight: bold;
-
-    color: #f4c542;
-
-}
-
-
-.back-home {
-
-    display: block;
-
-    text-align: center;
-
-    margin-top: 18px;
-
-    color: #b978ff;
-
-    cursor: pointer;
-
-}
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-footer {
-
-    border-top:
-        1px solid rgba(255,255,255,0.08);
-
-    text-align: center;
-
-    padding: 30px 20px;
-
-    color: #777181;
-
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 600px) {
-
-    .navbar {
-
-        padding:
-            16px 5%;
-
-    }
-
-    .nav-btn {
-
-        padding:
-            8px 12px;
-
-        font-size:
-            13px;
-
-    }
-
-    .hero {
-
-        min-height:
-            70vh;
-
-    }
-
-    .hero p {
-
-        font-size:
-            16px;
-
-    }
-
-    .register-box {
-
-        padding:
-            25px 20px;
-
-    }
-
-}
-
-</style>
-
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>BRAVE — Create Account</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top, #6d3fa0 0%, #24103f 45%, #12091f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            color: white;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: rgba(50, 22, 83, 0.97);
+            border: 1px solid #70429a;
+            border-radius: 24px;
+            padding: 32px 28px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.45);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo img {
+            width: 105px;
+            height: 105px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .brand {
+            text-align: center;
+            font-size: 34px;
+            font-weight: bold;
+            color: #d4af37;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #ddd;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 7px;
+            font-weight: bold;
+            color: #f4e7c1;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #76519b;
+            border-radius: 12px;
+            outline: none;
+            background: #241337;
+            color: white;
+            font-size: 15px;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 8px rgba(212,175,55,0.25);
+        }
+
+        select option {
+            background: #241337;
+            color: white;
+        }
+
+        .password-box {
+            position: relative;
+        }
+
+        .password-box input {
+            padding-right: 75px;
+        }
+
+        .show-btn {
+            position: absolute;
+            right: 8px;
+            top: 7px;
+            border: none;
+            background: #70429a;
+            color: white;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .show-btn:hover {
+            background: #8a59b5;
+        }
+
+        .register-btn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #d4af37, #f1d36b);
+            color: #24103f;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 7px 20px rgba(212,175,55,0.25);
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            font-size: 14px;
+        }
+
+        .success {
+            display: block;
+            background: rgba(42, 180, 110, 0.18);
+            border: 1px solid #2ecc71;
+            color: #8ff0b5;
+        }
+
+        .error {
+            display: block;
+            background: rgba(220, 60, 60, 0.18);
+            border: 1px solid #e74c3c;
+            color: #ff9d94;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 22px;
+            line-height: 2;
+        }
+
+        .links a {
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            margin: 15px 0;
+            border-top: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .back-home {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-home:hover {
+            color: #d4af37;
+        }
+
+        @media (max-width: 480px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 25px 20px;
+            }
+
+            .brand {
+                font-size: 29px;
+            }
+
+        }
+
+    </style>
 </head>
-
 
 <body>
 
-
-<!-- =====================================================
-     NAVIGATION
-===================================================== -->
-
-<nav class="navbar">
+<div class="container">
 
     <div class="logo">
-        UNIQUE <span>BRAVE</span>
+        <img src="images/brave-lion.png"
+             alt="BRAVE Lion"
+             onerror="this.style.display='none'">
     </div>
 
-    <div class="nav-buttons">
-
-        <button
-            class="nav-btn"
-            onclick="showRegister()">
-            Create Account
-        </button>
-
-        <button
-            class="nav-btn"
-            onclick="goLogin()">
-            Login
-        </button>
-
+    <div class="brand">
+        BRAVE
     </div>
 
-</nav>
-
-
-<!-- =====================================================
-     HERO
-===================================================== -->
-
-<section class="hero" id="home">
-
-    <div class="hero-content">
-
-        <div class="badge">
-            Discover • Connect • Buy • Sell • Grow
-        </div>
-
-        <h1>
-            Welcome to
-            <span>Unique BRAVE</span>
-        </h1>
-
-        <p>
-            A platform where people, sellers, service providers
-            and businesses can connect, discover products,
-            offer services and grow together.
-        </p>
-
-        <div class="hero-buttons">
-
-            <button
-                class="primary-btn"
-                onclick="showRegister()">
-                Get Started
-            </button>
-
-            <button
-                class="secondary-btn"
-                onclick="goLogin()">
-                Login
-            </button>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     FEATURES
-===================================================== -->
-
-<section class="features">
-
-    <div class="features-title">
-
-        <h2>
-            Everything in one place
-        </h2>
-
-        <p>
-            Built to make buying, selling and discovering easier.
-        </p>
-
+    <div class="subtitle">
+        Create your BRAVE account
     </div>
 
 
-    <div class="feature-grid">
+    <form id="registerForm">
 
-        <div class="feature">
+        <label for="fullname">
+            Full Name
+        </label>
 
-            <div class="feature-icon">
-                🛍️
-            </div>
-
-            <h3>
-                Products
-            </h3>
-
-            <p>
-                Discover products from sellers
-                and businesses on the platform.
-            </p>
-
-        </div>
+        <input
+            type="text"
+            id="fullname"
+            name="fullname"
+            placeholder="Enter your full name"
+            required
+        >
 
 
-        <div class="feature">
+        <label for="email">
+            Email Address
+        </label>
 
-            <div class="feature-icon">
-                🧑‍💻
-            </div>
-
-            <h3>
-                Services
-            </h3>
-
-            <p>
-                Find people offering useful
-                services and professional skills.
-            </p>
-
-        </div>
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email"
+            required
+        >
 
 
-        <div class="feature">
+        <label for="country">
+            Country
+        </label>
 
-            <div class="feature-icon">
-                🏢
-            </div>
+        <select
+            id="country"
+            name="country"
+            required
+        >
 
-            <h3>
-                Businesses
-            </h3>
+            <option value="">
+                Select your country
+            </option>
 
-            <p>
-                Discover businesses and connect
-                with their owners.
-            </p>
+            <option value="Nigeria">
+                Nigeria
+            </option>
 
-        </div>
+            <option value="Ghana">
+                Ghana
+            </option>
 
+            <option value="Kenya">
+                Kenya
+            </option>
 
-        <div class="feature">
+            <option value="South Africa">
+                South Africa
+            </option>
 
-            <div class="feature-icon">
-                🔎
-            </div>
+            <option value="United Kingdom">
+                United Kingdom
+            </option>
 
-            <h3>
-                Search
-            </h3>
+            <option value="United States">
+                United States
+            </option>
 
-            <p>
-                Search for products, services
-                and businesses quickly.
-            </p>
+            <option value="Canada">
+                Canada
+            </option>
 
-        </div>
+            <option value="Other">
+                Other
+            </option>
 
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     REGISTRATION
-===================================================== -->
-
-<section
-    class="register-section"
-    id="registerSection">
-
-    <div class="register-box">
-
-        <h2>
-            Create Your Unique BRAVE Account
-        </h2>
-
-        <p class="register-subtitle">
-            Join the platform and get started.
-        </p>
+        </select>
 
 
-        <form id="registrationForm">
+        <label for="password">
+            Password
+        </label>
 
-            <label>
-                Full Name
-            </label>
-
-            <input
-                type="text"
-                name="fullname"
-                placeholder="Enter your full name"
-                required>
-
-
-            <label>
-                Email
-            </label>
-
-            <input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-                required>
-
-
-            <label>
-                Password
-            </label>
+        <div class="password-box">
 
             <input
                 type="password"
+                id="password"
                 name="password"
                 placeholder="Create a password"
-                required>
-
-
-            <label>
-                Country
-            </label>
-
-            <select
-                name="country"
-                required>
-
-                <option value="">
-                    Select country
-                </option>
-
-                <option>
-                    Nigeria
-                </option>
-
-                <option>
-                    Ghana
-                </option>
-
-                <option>
-                    Kenya
-                </option>
-
-                <option>
-                    South Africa
-                </option>
-
-                <option>
-                    United Kingdom
-                </option>
-
-                <option>
-                    India
-                </option>
-
-                <option>
-                    Tanzania
-                </option>
-
-                <option>
-                    Other
-                </option>
-
-            </select>
-
+                minlength="6"
+                required
+            >
 
             <button
-                type="submit"
-                class="register-submit">
-
-                Create Account
-
+                type="button"
+                class="show-btn"
+                onclick="togglePassword()"
+            >
+                Show
             </button>
 
-        </form>
+        </div>
 
 
-        <p id="message"></p>
+        <button
+            type="submit"
+            class="register-btn"
+            id="registerBtn"
+        >
+            Create BRAVE Account
+        </button>
+
+    </form>
 
 
-        <span
-            class="back-home"
-            onclick="hideRegister()">
+    <div id="message"
+         class="message">
+    </div>
 
-            ← Back to Unique BRAVE
 
-        </span>
+    <div class="links">
+
+        <div>
+            Already have an account?
+            <a href="login.html">
+                Login
+            </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <div>
+            🔑
+            <a href="forgot-password.html">
+                Reset Password
+            </a>
+        </div>
+
+        <div>
+            📧
+            <a href="forgot-email.html">
+                Forgot Email?
+            </a>
+        </div>
 
     </div>
 
-</section>
 
+    <a href="home.html"
+       class="back-home">
+        ← Back to BRAVE Home
+    </a>
 
-<!-- =====================================================
-     FOOTER
-===================================================== -->
-
-<footer>
-
-    © 2026 Unique BRAVE.
-    Built to connect people, products,
-    services and businesses.
-
-</footer>
+</div>
 
 
 <script>
 
-/* =========================================================
-   SHOW REGISTRATION
-========================================================= */
+    function togglePassword() {
 
-function showRegister() {
+        const password =
+            document.getElementById("password");
 
-    document.getElementById(
-        "registerSection"
-    ).style.display = "block";
+        const button =
+            document.querySelector(".show-btn");
 
-    document.getElementById(
-        "registerSection"
-    ).scrollIntoView({
-        behavior: "smooth"
-    });
+        if (password.type === "password") {
 
-}
+            password.type = "text";
+            button.textContent = "Hide";
 
+        } else {
 
-/* =========================================================
-   HIDE REGISTRATION
-========================================================= */
+            password.type = "password";
+            button.textContent = "Show";
 
-function hideRegister() {
+        }
 
-    document.getElementById(
-        "registerSection"
-    ).style.display = "none";
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-
-}
+    }
 
 
-/* =========================================================
-   LOGIN
-========================================================= */
+    const form =
+        document.getElementById("registerForm");
 
-function goLogin() {
+    const message =
+        document.getElementById("message");
 
-    window.location.href =
-        "login.html";
-
-}
+    const registerBtn =
+        document.getElementById("registerBtn");
 
 
-/* =========================================================
-   REGISTRATION
-========================================================= */
+    form.addEventListener("submit", async function(event) {
 
-document
-    .getElementById("registrationForm")
-    .addEventListener(
-        "submit",
-        async function(event) {
+        event.preventDefault();
 
-            event.preventDefault();
+        message.className = "message";
+        message.textContent = "";
+        message.style.display = "none";
 
-            const form =
-                event.target;
+        registerBtn.disabled = true;
+        registerBtn.textContent = "Creating Account...";
 
-            const formData =
-                new FormData(form);
+
+        const fullname =
+            document.getElementById("fullname").value.trim();
+
+        const email =
+            document.getElementById("email").value.trim();
+
+        const country =
+            document.getElementById("country").value;
+
+        const password =
+            document.getElementById("password").value;
+
+
+        try {
+
+            const response =
+                await fetch("/register", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        fullname,
+                        email,
+                        country,
+                        password
+
+                    })
+
+                });
+
 
             const data =
-                Object.fromEntries(
-                    formData.entries()
-                );
+                await response.json();
 
 
-            const message =
-                document.getElementById(
-                    "message"
-                );
+            if (response.ok) {
 
-
-            message.textContent =
-                "Creating your account...";
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/register",
-                        {
-
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify(data)
-
-                        }
-                    );
-
-
-                const result =
-                    await response.json();
-
-
-                if (response.ok) {
-
-                    message.textContent =
-                        result.message;
-
-
-                    form.reset();
-
-
-                    setTimeout(
-                        function() {
-
-                            window.location.href =
-                                "login.html";
-
-                        },
-                        1000
-                    );
-
-
-                } else {
-
-                    message.textContent =
-                        result.message;
-
-                }
-
-
-            } catch (error) {
-
-                console.error(error);
+                message.className =
+                    "message success";
 
                 message.textContent =
-                    "Unable to connect to BRAVE.";
+                    "✅ Account created successfully! Redirecting to login...";
+
+                form.reset();
+
+                setTimeout(function() {
+
+                    window.location.href =
+                        "login.html";
+
+                }, 1500);
+
+            } else {
+
+                message.className =
+                    "message error";
+
+                message.textContent =
+                    "❌ " +
+                    (data.message ||
+                     "Unable to create account.");
 
             }
 
+        } catch (error) {
+
+            message.className =
+                "message error";
+
+            message.textContent =
+                "❌ Unable to connect to server. Please make sure BRAVE backend is running.";
+
         }
-    );
+
+
+        registerBtn.disabled = false;
+        registerBtn.textContent =
+            "Create BRAVE Account";
+
+    });
 
 </script>
-
 
 </body>
 </html>
