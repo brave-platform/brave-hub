@@ -1,487 +1,4593 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>BRAVE Admin</title>
+<meta charset="UTF-8">
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-        body {
-            background: linear-gradient(135deg, #160b2e, #3b176d, #6b3fa0);
-            color: white;
-            min-height: 100vh;
-        }
+<title>BRAVE Administrator</title>
 
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 25px;
-            background: rgba(15, 7, 30, 0.9);
-            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
+<style>
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
 
-        .brand img {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-            border-radius: 50%;
-        }
+:root {
+    --purple: #32105f;
+    --purple2: #5b20a8;
+    --purple3: #7b3fc6;
+    --gold: #ffd83d;
+    --gold2: #d4af37;
+    --dark: #160925;
+    --panel: rgba(28, 12, 53, .92);
+    --text: #ffffff;
+    --muted: #cfc7dc;
+}
 
-        .brand h1 {
-            color: #ffd700;
-            font-size: 24px;
-        }
+body {
+    min-height: 100vh;
 
-        .admin-badge {
-            background: #ffd700;
-            color: #21102f;
-            padding: 7px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+    background:
+        radial-gradient(
+            circle at top right,
+            #713bb0 0%,
+            #32105f 35%,
+            #160925 80%
+        );
 
-        .logout {
-            border: none;
-            background: transparent;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-        }
+    color: var(--text);
+}
 
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 25px 18px 50px;
-        }
 
-        .profile {
-            background: rgba(20, 10, 40, 0.85);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            border-radius: 20px;
-            padding: 25px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
+/* ================= HEADER ================= */
 
-        .avatar {
-            width: 85px;
-            height: 85px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ffd700, #b8860b);
-            color: #24102f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 38px;
-            font-weight: bold;
-        }
+header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
 
-        .profile h2 {
-            color: #ffd700;
-            margin-bottom: 7px;
-        }
+    height: 72px;
 
-        .profile p {
-            color: #ddd;
-            margin: 4px 0;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+    padding: 0 22px;
 
-        .card {
-            background: rgba(20, 10, 40, 0.85);
-            border: 1px solid rgba(255, 215, 0, 0.25);
-            border-radius: 18px;
-            padding: 20px;
-        }
+    background: rgba(19, 7, 37, .96);
 
-        .card span {
-            font-size: 30px;
-        }
+    border-bottom:
+        1px solid
+        rgba(255,216,61,.25);
 
-        .card h3 {
-            color: #ffd700;
-            font-size: 28px;
-            margin-top: 10px;
-        }
+    backdrop-filter: blur(10px);
+}
 
-        .card p {
-            color: #ccc;
-            margin-top: 5px;
-        }
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
 
-        .section {
-            background: rgba(20, 10, 40, 0.85);
-            border-radius: 20px;
-            padding: 22px;
-            margin-bottom: 22px;
-            border: 1px solid rgba(255, 215, 0, 0.25);
-        }
+.brand img {
+    width: 48px;
+    height: 48px;
 
-        .section h2 {
-            color: #ffd700;
-            margin-bottom: 18px;
-        }
+    object-fit: contain;
+}
 
-        .actions {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
+.brand h1 {
+    color: var(--gold);
 
-        .action {
-            padding: 17px;
-            border-radius: 13px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            background: rgba(83, 40, 120, 0.55);
-            color: white;
-            cursor: pointer;
-            text-align: left;
-            font-size: 15px;
-            transition: 0.2s;
-        }
+    font-size: 23px;
 
-        .action:hover {
-            transform: translateY(-2px);
-            border-color: #ffd700;
-        }
+    letter-spacing: 1px;
+}
 
-        .search {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
+.admin-badge {
+    background: var(--gold);
 
-        .search input {
-            flex: 1;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            outline: none;
-            font-size: 15px;
-        }
+    color: #241033;
 
-        .search button {
-            padding: 14px 20px;
-            border: none;
-            border-radius: 12px;
-            background: #ffd700;
-            color: #24102f;
-            font-weight: bold;
-            cursor: pointer;
-        }
+    padding: 6px 10px;
 
-        .message {
-            color: #ccc;
-            line-height: 1.6;
-        }
+    border-radius: 20px;
 
-        footer {
-            text-align: center;
-            color: #bbb;
-            padding: 20px;
-            font-size: 13px;
-        }
+    font-size: 11px;
 
-        @media (max-width: 850px) {
-            .cards {
-                grid-template-columns: repeat(2, 1fr);
-            }
+    font-weight: bold;
+}
 
-            .actions {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
-        @media (max-width: 550px) {
-            header {
-                padding: 12px 15px;
-            }
+.status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
 
-            .brand h1 {
-                font-size: 20px;
-            }
+    color: #bff5ce;
 
-            .profile {
-                flex-direction: column;
-                text-align: center;
-            }
+    font-size: 12px;
+}
 
-            .cards {
-                grid-template-columns: 1fr 1fr;
-            }
+.status-dot {
+    width: 9px;
+    height: 9px;
 
-            .actions {
-                grid-template-columns: 1fr;
-            }
+    background: #35d878;
 
-            .search {
-                flex-direction: column;
-            }
+    border-radius: 50%;
+}
 
-            .search button {
-                width: 100%;
-            }
-        }
-    </style>
+.logout {
+    border: 1px solid #76519b;
+
+    background: #241337;
+
+    color: white;
+
+    padding: 9px 14px;
+
+    border-radius: 9px;
+
+    cursor: pointer;
+}
+
+.logout:hover {
+    border-color: var(--gold);
+}
+
+
+/* ================= LAYOUT ================= */
+
+.layout {
+    display: flex;
+
+    min-height: calc(100vh - 72px);
+}
+
+
+/* ================= SIDEBAR ================= */
+
+.sidebar {
+    width: 245px;
+
+    flex-shrink: 0;
+
+    background:
+        rgba(20, 8, 38, .94);
+
+    border-right:
+        1px solid
+        rgba(255,216,61,.15);
+
+    padding: 18px 12px;
+
+    position: sticky;
+
+    top: 72px;
+
+    height: calc(100vh - 72px);
+
+    overflow-y: auto;
+}
+
+.sidebar-title {
+    color: #9f8bb8;
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.5px;
+
+    padding: 10px 12px;
+
+    margin-bottom: 6px;
+}
+
+.nav-btn {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px;
+
+    margin-bottom: 5px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: #ddd;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    font-size: 14px;
+}
+
+.nav-btn:hover {
+    background: rgba(123,63,198,.25);
+
+    color: white;
+}
+
+.nav-btn.active {
+    background:
+        linear-gradient(
+            135deg,
+            #5b20a8,
+            #713bb0
+        );
+
+    color: white;
+
+    border-left:
+        3px solid
+        var(--gold);
+}
+
+.nav-icon {
+    width: 23px;
+
+    text-align: center;
+
+    font-size: 17px;
+}
+
+.nav-count {
+    margin-left: auto;
+
+    min-width: 22px;
+
+    text-align: center;
+
+    padding: 3px 6px;
+
+    border-radius: 10px;
+
+    background: #8c243c;
+
+    color: white;
+
+    font-size: 10px;
+}
+
+
+/* ================= MAIN ================= */
+
+main {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 25px;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+.page-title {
+    margin-bottom: 5px;
+
+    color: var(--gold);
+
+    font-size: 27px;
+}
+
+.page-description {
+    color: var(--muted);
+
+    margin-bottom: 22px;
+
+    line-height: 1.5;
+}
+
+
+/* ================= PROFILE ================= */
+
+.admin-profile {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
+    background: var(--panel);
+
+    border:
+        1px solid
+        rgba(255,216,61,.18);
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    margin-bottom: 22px;
+}
+
+.avatar {
+    width: 70px;
+    height: 70px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--gold),
+            #a77b00
+        );
+
+    color: #271035;
+
+    font-size: 31px;
+
+    font-weight: bold;
+}
+
+.admin-profile h2 {
+    color: white;
+
+    margin-bottom: 5px;
+}
+
+.admin-profile p {
+    color: var(--muted);
+
+    font-size: 13px;
+
+    margin: 3px 0;
+}
+
+
+/* ================= STATS ================= */
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 14px;
+
+    margin-bottom: 23px;
+}
+
+.stat {
+    background: var(--panel);
+
+    border:
+        1px solid
+        rgba(255,216,61,.18);
+
+    border-radius: 16px;
+
+    padding: 18px;
+
+    transition: .2s;
+}
+
+.stat:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        rgba(255,216,61,.5);
+}
+
+.stat-icon {
+    font-size: 24px;
+}
+
+.stat-number {
+    color: var(--gold);
+
+    font-size: 27px;
+
+    font-weight: bold;
+
+    margin-top: 8px;
+}
+
+.stat-label {
+    color: var(--muted);
+
+    margin-top: 4px;
+
+    font-size: 13px;
+}
+
+
+/* ================= PANELS ================= */
+
+.panel {
+    background: var(--panel);
+
+    border:
+        1px solid
+        rgba(255,216,61,.16);
+
+    border-radius: 17px;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 16px;
+}
+
+.panel-title h2 {
+    color: var(--gold);
+
+    font-size: 18px;
+}
+
+.panel-title small {
+    color: #aaa;
+}
+
+
+/* ================= SEARCH ================= */
+
+.search-box {
+    display: flex;
+
+    gap: 9px;
+
+    margin-bottom: 16px;
+}
+
+.search-box input {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 13px 15px;
+
+    border:
+        1px solid
+        #76519b;
+
+    border-radius: 10px;
+
+    background: #21102f;
+
+    color: white;
+
+    outline: none;
+}
+
+.search-box input:focus {
+    border-color: var(--gold);
+}
+
+.search-btn {
+    padding: 13px 18px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: var(--gold);
+
+    color: #241033;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+/* ================= TABLE ================= */
+
+.table-wrap {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 650px;
+}
+
+th {
+    color: var(--gold);
+
+    text-align: left;
+
+    font-size: 12px;
+
+    padding: 12px;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.1);
+}
+
+td {
+    padding: 12px;
+
+    color: #ddd;
+
+    font-size: 13px;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.06);
+}
+
+tr:hover td {
+    background:
+        rgba(123,63,198,.08);
+}
+
+
+/* ================= BADGES ================= */
+
+.badge {
+    display: inline-block;
+
+    padding: 5px 8px;
+
+    border-radius: 8px;
+
+    font-size: 10px;
+
+    font-weight: bold;
+}
+
+.verified {
+    background: rgba(50,190,110,.18);
+
+    color: #82e7a7;
+}
+
+.pending {
+    background: rgba(255,216,61,.16);
+
+    color: var(--gold);
+}
+
+.warning {
+    background: rgba(255,130,50,.16);
+
+    color: #ffb176;
+}
+
+.danger {
+    background: rgba(220,60,70,.18);
+
+    color: #ff9da4;
+}
+
+.neutral {
+    background: rgba(180,180,180,.12);
+
+    color: #ccc;
+}
+
+
+/* ================= BUTTONS ================= */
+
+.btn {
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 8px 11px;
+
+    cursor: pointer;
+
+    font-size: 12px;
+
+    margin: 2px;
+}
+
+.btn-primary {
+    background: var(--gold);
+
+    color: #251035;
+}
+
+.btn-purple {
+    background: #6731a1;
+
+    color: white;
+}
+
+.btn-danger {
+    background: #8c243c;
+
+    color: white;
+}
+
+.btn-success {
+    background: #28794b;
+
+    color: white;
+}
+
+.btn:hover {
+    filter: brightness(1.12);
+}
+
+
+/* ================= MANAGEMENT GRID ================= */
+
+.management-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 14px;
+}
+
+.management-card {
+    padding: 18px;
+
+    background:
+        rgba(75,35,115,.45);
+
+    border:
+        1px solid
+        rgba(255,216,61,.14);
+
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.management-card:hover {
+    transform: translateY(-2px);
+
+    border-color: var(--gold);
+}
+
+.management-card .big-icon {
+    font-size: 28px;
+
+    margin-bottom: 9px;
+}
+
+.management-card h3 {
+    color: white;
+
+    font-size: 15px;
+
+    margin-bottom: 5px;
+}
+
+.management-card p {
+    color: #bbb;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* ================= TWO COLUMNS ================= */
+
+.two-columns {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 18px;
+}
+
+
+/* ================= ACTIVITY ================= */
+
+.activity {
+    display: flex;
+
+    gap: 12px;
+
+    padding: 12px 0;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.07);
+}
+
+.activity:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background:
+        rgba(123,63,198,.3);
+}
+
+.activity-text {
+    flex: 1;
+}
+
+.activity-text strong {
+    color: #eee;
+
+    font-size: 13px;
+}
+
+.activity-text p {
+    color: #aaa;
+
+    font-size: 12px;
+
+    margin-top: 3px;
+}
+
+
+/* ================= EMPTY ================= */
+
+.empty {
+    text-align: center;
+
+    padding: 30px;
+
+    color: #999;
+}
+
+.empty-icon {
+    font-size: 35px;
+
+    margin-bottom: 8px;
+}
+
+
+/* ================= NOTICE ================= */
+
+.notice {
+    padding: 13px 15px;
+
+    background:
+        rgba(255,216,61,.08);
+
+    border:
+        1px solid
+        rgba(255,216,61,.18);
+
+    border-radius: 10px;
+
+    color: #ddd;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+    margin-bottom: 15px;
+}
+
+
+/* ================= MODAL ================= */
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 500;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0,0,0,.72);
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-box {
+    width: 100%;
+
+    max-width: 650px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: #28123f;
+
+    border:
+        1px solid
+        rgba(255,216,61,.3);
+
+    border-radius: 18px;
+
+    padding: 22px;
+}
+
+.modal-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+}
+
+.modal-header h2 {
+    color: var(--gold);
+}
+
+.close {
+    background: transparent;
+
+    border: none;
+
+    color: white;
+
+    font-size: 24px;
+
+    cursor: pointer;
+}
+
+.detail-row {
+    padding: 11px 0;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.08);
+}
+
+.detail-row strong {
+    color: var(--gold);
+
+    display: block;
+
+    font-size: 12px;
+
+    margin-bottom: 4px;
+}
+
+.detail-row span {
+    color: #ddd;
+
+    font-size: 13px;
+}
+
+
+/* ================= TOAST ================= */
+
+.toast {
+    position: fixed;
+
+    right: 20px;
+
+    bottom: 20px;
+
+    z-index: 1000;
+
+    max-width: 350px;
+
+    padding: 13px 17px;
+
+    border-radius: 10px;
+
+    background: #241337;
+
+    border:
+        1px solid
+        var(--gold);
+
+    color: white;
+
+    display: none;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0,0,0,.4);
+}
+
+.toast.show {
+    display: block;
+}
+
+
+/* ================= MOBILE ================= */
+
+.mobile-menu {
+    display: none;
+
+    border: none;
+
+    background: transparent;
+
+    color: white;
+
+    font-size: 24px;
+
+    cursor: pointer;
+}
+
+@media(max-width: 1000px) {
+
+    .stats {
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .management-grid {
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+}
+
+@media(max-width: 760px) {
+
+    header {
+        padding: 0 13px;
+    }
+
+    .mobile-menu {
+        display: block;
+    }
+
+    .header-right .status {
+        display: none;
+    }
+
+    .sidebar {
+        position: fixed;
+
+        left: -260px;
+
+        top: 72px;
+
+        z-index: 200;
+
+        transition: .25s;
+
+        box-shadow:
+            10px 0 30px
+            rgba(0,0,0,.4);
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
+    main {
+        padding: 18px 13px;
+    }
+
+    .two-columns {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media(max-width: 520px) {
+
+    .brand h1 {
+        font-size: 19px;
+    }
+
+    .admin-badge {
+        display: none;
+    }
+
+    .stats {
+        grid-template-columns:
+            1fr 1fr;
+
+        gap: 9px;
+    }
+
+    .stat {
+        padding: 14px;
+    }
+
+    .stat-number {
+        font-size: 22px;
+    }
+
+    .management-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-profile {
+        align-items: flex-start;
+    }
+
+    .avatar {
+        width: 55px;
+        height: 55px;
+
+        font-size: 24px;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
 </head>
+
 
 <body>
 
+
+<!-- ================= HEADER ================= -->
+
 <header>
+
     <div class="brand">
-        <img src="images/brave-lion.png" alt="BRAVE">
+
+        <button
+            class="mobile-menu"
+            onclick="toggleSidebar()"
+        >
+            ☰
+        </button>
+
+        <img
+            src="images/brave-lion.png"
+            alt="BRAVE"
+        >
+
         <h1>BRAVE</h1>
-        <span class="admin-badge">ADMIN</span>
+
+        <span class="admin-badge">
+            ADMIN
+        </span>
+
     </div>
 
-    <button class="logout" onclick="logout()">🚪 Logout</button>
+
+    <div class="header-right">
+
+        <div class="status">
+
+            <span class="status-dot"></span>
+
+            Admin System Online
+
+        </div>
+
+
+        <button
+            class="logout"
+            onclick="logout()"
+        >
+            🚪 Logout
+        </button>
+
+    </div>
+
 </header>
 
 
-<div class="container">
 
-    <div class="profile">
-        <div class="avatar">👑</div>
+<div class="layout">
+
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside
+    class="sidebar"
+    id="sidebar"
+>
+
+    <div class="sidebar-title">
+        Administration
+    </div>
+
+
+    <button
+        class="nav-btn active"
+        onclick="showPage('overview', this)"
+    >
+        <span class="nav-icon">📊</span>
+        Overview
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('users', this)"
+    >
+        <span class="nav-icon">👥</span>
+        Users
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('timelines', this)"
+    >
+        <span class="nav-icon">📰</span>
+        User Timelines
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('products', this)"
+    >
+        <span class="nav-icon">🛍️</span>
+        Products
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('services', this)"
+    >
+        <span class="nav-icon">🛠️</span>
+        Services
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('verification', this)"
+    >
+        <span class="nav-icon">✅</span>
+        Verification
+        <span
+            class="nav-count"
+            id="verificationCount"
+        >
+            0
+        </span>
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('reports', this)"
+    >
+        <span class="nav-icon">🚨</span>
+        Reports
+        <span
+            class="nav-count"
+            id="reportsCount"
+        >
+            0
+        </span>
+    </button>
+
+
+    <div class="sidebar-title">
+        Communication
+    </div>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('messages', this)"
+    >
+        <span class="nav-icon">💬</span>
+        Messages
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('ai', this)"
+    >
+        <span class="nav-icon">🤖</span>
+        BRAVE AI
+    </button>
+
+
+    <div class="sidebar-title">
+        Security
+    </div>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('security', this)"
+    >
+        <span class="nav-icon">🛡️</span>
+        Safety Center
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('activity', this)"
+    >
+        <span class="nav-icon">📋</span>
+        Admin Activity
+    </button>
+
+</aside>
+
+
+
+<!-- ================= MAIN ================= -->
+
+<main>
+
+
+<!-- ================= OVERVIEW ================= -->
+
+<section
+    id="page-overview"
+    class="page active"
+>
+
+    <h1 class="page-title">
+        Administrator Dashboard
+    </h1>
+
+    <p class="page-description">
+        Monitor BRAVE, protect users, review activity and manage
+        products, services and platform safety.
+    </p>
+
+
+    <div class="admin-profile">
+
+        <div class="avatar">
+            👑
+        </div>
 
         <div>
-            <h2>BRAVE Administrator</h2>
-            <p>Platform Administrator</p>
-            <p>Manage users, products, services and BRAVE activities.</p>
-        </div>
-    </div>
 
+            <h2>
+                BRAVE Administrator
+            </h2>
 
-    <div class="cards">
+            <p>
+                Platform Administrator
+            </p>
 
-        <div class="card">
-            <span>👥</span>
-            <h3 id="usersCount">0</h3>
-            <p>Registered Users</p>
-        </div>
-
-        <div class="card">
-            <span>🛍️</span>
-            <h3 id="productsCount">0</h3>
-            <p>Products</p>
-        </div>
-
-        <div class="card">
-            <span>🛠️</span>
-            <h3 id="servicesCount">0</h3>
-            <p>Services</p>
-        </div>
-
-        <div class="card">
-            <span>🏢</span>
-            <h3 id="businessesCount">0</h3>
-            <p>Businesses</p>
-        </div>
-
-    </div>
-
-
-    <div class="section">
-
-        <h2>⚡ Admin Controls</h2>
-
-        <div class="actions">
-
-            <button class="action" onclick="showMessage('User Management')">
-                👥 <strong>User Management</strong><br>
-                <small>View and manage registered users.</small>
-            </button>
-
-            <button class="action" onclick="showMessage('Verification')">
-                ✅ <strong>Verification</strong><br>
-                <small>Review users and seller verification.</small>
-            </button>
-
-            <button class="action" onclick="showMessage('Products')">
-                🛍️ <strong>Products</strong><br>
-                <small>Monitor products listed on BRAVE.</small>
-            </button>
-
-            <button class="action" onclick="showMessage('Services')">
-                🛠️ <strong>Services</strong><br>
-                <small>Monitor services and providers.</small>
-            </button>
-
-            <button class="action" onclick="showMessage('Reports')">
-                🚨 <strong>Reports</strong><br>
-                <small>Review reported content.</small>
-            </button>
-
-            <button class="action" onclick="showMessage('Suggestions')">
-                💡 <strong>Suggestions</strong><br>
-                <small>Read suggestions from BRAVE users.</small>
-            </button>
+            <p>
+                Responsible for platform management,
+                trust, safety and technical oversight.
+            </p>
 
         </div>
 
     </div>
 
 
-    <div class="section">
+    <div class="stats">
 
-        <h2>🔎 Find a User</h2>
+        <div class="stat">
+            <div class="stat-icon">👥</div>
 
-        <div class="search">
+            <div
+                class="stat-number"
+                id="usersCount"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                Registered Users
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-icon">🛍️</div>
+
+            <div
+                class="stat-number"
+                id="productsCount"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                Products
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-icon">🛠️</div>
+
+            <div
+                class="stat-number"
+                id="servicesCount"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                Services
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-icon">🏢</div>
+
+            <div
+                class="stat-number"
+                id="businessesCount"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                Businesses
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <div class="panel">
+
+        <div class="panel-title">
+
+            <h2>
+                ⚡ Management Center
+            </h2>
+
+        </div>
+
+
+        <div class="management-grid">
+
+
+            <div
+                class="management-card"
+                onclick="openPage('users')"
+            >
+
+                <div class="big-icon">
+                    👥
+                </div>
+
+                <h3>
+                    User Management
+                </h3>
+
+                <p>
+                    Search users, inspect profiles,
+                    review account status and manage
+                    platform access.
+                </p>
+
+            </div>
+
+
+            <div
+                class="management-card"
+                onclick="openPage('timelines')"
+            >
+
+                <div class="big-icon">
+                    📰
+                </div>
+
+                <h3>
+                    User Timelines
+                </h3>
+
+                <p>
+                    Review public posts, products,
+                    jobs and media posted by users.
+                </p>
+
+            </div>
+
+
+            <div
+                class="management-card"
+                onclick="openPage('products')"
+            >
+
+                <div class="big-icon">
+                    🛍️
+                </div>
+
+                <h3>
+                    Product Review
+                </h3>
+
+                <p>
+                    Monitor newly submitted products
+                    and review suspicious listings.
+                </p>
+
+            </div>
+
+
+            <div
+                class="management-card"
+                onclick="openPage('services')"
+            >
+
+                <div class="big-icon">
+                    🛠️
+                </div>
+
+                <h3>
+                    Service Providers
+                </h3>
+
+                <p>
+                    Review service providers and
+                    their professional listings.
+                </p>
+
+            </div>
+
+
+            <div
+                class="management-card"
+                onclick="openPage('reports')"
+            >
+
+                <div class="big-icon">
+                    🚨
+                </div>
+
+                <h3>
+                    Reports & Safety
+                </h3>
+
+                <p>
+                    Investigate reports involving
+                    users, listings and interactions.
+                </p>
+
+            </div>
+
+
+            <div
+                class="management-card"
+                onclick="openPage('ai')"
+            >
+
+                <div class="big-icon">
+                    🤖
+                </div>
+
+                <h3>
+                    BRAVE AI Oversight
+                </h3>
+
+                <p>
+                    Review flagged AI conversations
+                    and marketplace assistance activity.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="two-columns">
+
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                <h2>
+                    🛡️ Safety Priorities
+                </h2>
+
+            </div>
+
+            <div class="activity">
+
+                <div class="activity-icon">
+                    🔍
+                </div>
+
+                <div class="activity-text">
+
+                    <strong>
+                        Monitor suspicious listings
+                    </strong>
+
+                    <p>
+                        Review products and services
+                        that may require attention.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="activity">
+
+                <div class="activity-icon">
+                    👤
+                </div>
+
+                <div class="activity-text">
+
+                    <strong>
+                        Protect users
+                    </strong>
+
+                    <p>
+                        Investigate reports and
+                        account abuse.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="activity">
+
+                <div class="activity-icon">
+                    💬
+                </div>
+
+                <div class="activity-text">
+
+                    <strong>
+                        Handle disputes
+                    </strong>
+
+                    <p>
+                        Review relevant conversations
+                        when a report requires it.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                <h2>
+                    📋 Recent Platform Activity
+                </h2>
+
+            </div>
+
+            <div id="recentActivity">
+
+                <div class="empty">
+                    Loading activity...
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= USERS ================= -->
+
+<section
+    id="page-users"
+    class="page"
+>
+
+    <h1 class="page-title">
+        👥 User Management
+    </h1>
+
+    <p class="page-description">
+        Search and review BRAVE users and their account activity.
+    </p>
+
+
+    <div class="panel">
+
+        <div class="search-box">
+
             <input
-                type="text"
                 id="userSearch"
+                type="text"
                 placeholder="Search by name, email or phone..."
             >
 
-            <button onclick="searchUser()">Search</button>
+            <button
+                class="search-btn"
+                onclick="searchUsers()"
+            >
+                🔎 Search
+            </button>
+
         </div>
 
-        <div id="searchResult" class="message">
-            Enter a user's information to search.
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            User
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Joined
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="usersTable">
+
+                    <tr>
+                        <td colspan="5">
+                            Loading users...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
         </div>
 
     </div>
 
+</section>
 
-    <div class="section">
 
-        <h2>🛡️ Administrator Responsibilities</h2>
 
-        <p class="message">
-            The BRAVE administrator oversees the platform, helps maintain
-            trust between users, reviews verification requests, monitors
-            listings and handles platform suggestions and reports.
-        </p>
+<!-- ================= TIMELINES ================= -->
+
+<section
+    id="page-timelines"
+    class="page"
+>
+
+    <h1 class="page-title">
+        📰 User Timelines
+    </h1>
+
+    <p class="page-description">
+        Review public user activity, product posts, service posts
+        and jobs published on BRAVE.
+    </p>
+
+
+    <div class="notice">
+
+        🛡️ Admins should primarily review public content.
+        Private conversations should only be accessed when
+        necessary for a legitimate report, safety issue or dispute.
+
+    </div>
+
+
+    <div class="panel">
+
+        <div class="search-box">
+
+            <input
+                id="timelineSearch"
+                type="text"
+                placeholder="Enter user name or user ID..."
+            >
+
+            <button
+                class="search-btn"
+                onclick="searchTimeline()"
+            >
+                View Timeline
+            </button>
+
+        </div>
+
+
+        <div id="timelineResult">
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    📰
+                </div>
+
+                Search for a user to inspect their public timeline.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= PRODUCTS ================= -->
+
+<section
+    id="page-products"
+    class="page"
+>
+
+    <h1 class="page-title">
+        🛍️ Product Management
+    </h1>
+
+    <p class="page-description">
+        Monitor products submitted by sellers and review
+        listings that may need moderation.
+    </p>
+
+
+    <div class="panel">
+
+        <div class="search-box">
+
+            <input
+                id="productSearch"
+                type="text"
+                placeholder="Search products..."
+            >
+
+            <button
+                class="search-btn"
+                onclick="loadProducts()"
+            >
+                🔎 Search
+            </button>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Product
+                        </th>
+
+                        <th>
+                            Seller
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="productsTable">
+
+                    <tr>
+                        <td colspan="5">
+                            Loading products...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= SERVICES ================= -->
+
+<section
+    id="page-services"
+    class="page"
+>
+
+    <h1 class="page-title">
+        🛠️ Service Providers
+    </h1>
+
+    <p class="page-description">
+        Review service providers and their professional
+        listings on BRAVE.
+    </p>
+
+
+    <div class="panel">
+
+        <div class="search-box">
+
+            <input
+                id="serviceSearch"
+                type="text"
+                placeholder="Search services..."
+            >
+
+            <button
+                class="search-btn"
+                onclick="loadServices()"
+            >
+                🔎 Search
+            </button>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Service
+                        </th>
+
+                        <th>
+                            Provider
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="servicesTable">
+
+                    <tr>
+                        <td colspan="5">
+                            Loading services...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= VERIFICATION ================= -->
+
+<section
+    id="page-verification"
+    class="page"
+>
+
+    <h1 class="page-title">
+        ✅ Verification Center
+    </h1>
+
+    <p class="page-description">
+        Review verification requests and identify trusted
+        sellers and service providers.
+    </p>
+
+
+    <div class="panel">
+
+        <div id="verificationList">
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    ✅
+                </div>
+
+                Loading verification requests...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= REPORTS ================= -->
+
+<section
+    id="page-reports"
+    class="page"
+>
+
+    <h1 class="page-title">
+        🚨 Reports & Safety
+    </h1>
+
+    <p class="page-description">
+        Investigate reports involving users, products,
+        services or interactions.
+    </p>
+
+
+    <div class="panel">
+
+        <div class="notice">
+
+            BRAVE should protect both sides of the marketplace:
+            buyers/consumers and sellers/service providers.
+            Do not automatically punish an account without reviewing
+            the available evidence.
+
+        </div>
+
+
+        <div id="reportsList">
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    🛡️
+                </div>
+
+                Loading reports...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= MESSAGES ================= -->
+
+<section
+    id="page-messages"
+    class="page"
+>
+
+    <h1 class="page-title">
+        💬 Messages
+    </h1>
+
+    <p class="page-description">
+        Review message-related reports and marketplace
+        communication requiring administrative attention.
+    </p>
+
+
+    <div class="notice">
+
+        🔐 Privacy protection: administrators should not casually
+        browse private conversations. Message access should be
+        connected to a legitimate report, safety investigation
+        or dispute workflow.
+
+    </div>
+
+
+    <div class="panel">
+
+        <div id="messagesList">
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    💬
+                </div>
+
+                No message investigations loaded.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= AI ================= -->
+
+<section
+    id="page-ai"
+    class="page"
+>
+
+    <h1 class="page-title">
+        🤖 BRAVE AI Oversight
+    </h1>
+
+    <p class="page-description">
+        Monitor AI marketplace assistance and review
+        conversations that have been flagged.
+    </p>
+
+
+    <div class="panel">
+
+        <div class="notice">
+
+            BRAVE AI helps buyers find suitable products,
+            sellers and services. Administrative review should
+            focus on flagged conversations, safety issues and
+            system quality — not unnecessary private monitoring.
+
+        </div>
+
+
+        <div id="aiList">
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    🤖
+                </div>
+
+                Loading AI activity...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= SECURITY ================= -->
+
+<section
+    id="page-security"
+    class="page"
+>
+
+    <h1 class="page-title">
+        🛡️ Safety Center
+    </h1>
+
+    <p class="page-description">
+        Tools for protecting BRAVE users and maintaining
+        marketplace trust.
+    </p>
+
+
+    <div class="management-grid">
+
+
+        <div class="management-card">
+
+            <div class="big-icon">
+                🚨
+            </div>
+
+            <h3>
+                Scam Reports
+            </h3>
+
+            <p>
+                Investigate suspicious behavior and
+                user-submitted reports.
+            </p>
+
+        </div>
+
+
+        <div class="management-card">
+
+            <div class="big-icon">
+                🔒
+            </div>
+
+            <h3>
+                Account Protection
+            </h3>
+
+            <p>
+                Restrict or suspend accounts when there
+                is sufficient reason.
+            </p>
+
+        </div>
+
+
+        <div class="management-card">
+
+            <div class="big-icon">
+                🧾
+            </div>
+
+            <h3>
+                Listing Review
+            </h3>
+
+            <p>
+                Review products and services that may
+                violate BRAVE rules.
+            </p>
+
+        </div>
+
+
+        <div class="management-card">
+
+            <div class="big-icon">
+                ⚖️
+            </div>
+
+            <h3>
+                Dispute Review
+            </h3>
+
+            <p>
+                Review evidence from both sides before
+                making administrative decisions.
+            </p>
+
+        </div>
+
+
+        <div class="management-card">
+
+            <div class="big-icon">
+                🤖
+            </div>
+
+            <h3>
+                AI Safety
+            </h3>
+
+            <p>
+                Monitor AI-generated recommendations and
+                investigate flagged conversations.
+            </p>
+
+        </div>
+
+
+        <div class="management-card">
+
+            <div class="big-icon">
+                📋
+            </div>
+
+            <h3>
+                Audit Trail
+            </h3>
+
+            <p>
+                Keep a record of important administrator
+                actions.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= ACTIVITY ================= -->
+
+<section
+    id="page-activity"
+    class="page"
+>
+
+    <h1 class="page-title">
+        📋 Administrator Activity
+    </h1>
+
+    <p class="page-description">
+        Review important actions performed by BRAVE administrators.
+    </p>
+
+
+    <div class="panel">
+
+        <div id="adminActivity">
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    📋
+                </div>
+
+                Loading administrator activity...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+</main>
+
+</div>
+
+
+
+<!-- ================= MODAL ================= -->
+
+<div
+    class="modal"
+    id="userModal"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h2>
+                User Profile
+            </h2>
+
+            <button
+                class="close"
+                onclick="closeModal()"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div id="userDetails">
+            Loading...
+        </div>
 
     </div>
 
 </div>
 
 
-<footer>
-    © 2026 BRAVE — Administrator Panel
-</footer>
+
+<!-- ================= TOAST ================= -->
+
+<div
+    class="toast"
+    id="toast"
+>
+</div>
+
 
 
 <script>
 
-async function loadStats() {
 
-    try {
+/* =====================================================
+   BASIC HELPERS
+===================================================== */
 
-        const response = await fetch("/api/dashboard");
+function escapeHTML(value) {
 
-        if (!response.ok) {
-            throw new Error("Dashboard request failed");
-        }
+    const div = document.createElement("div");
 
-        const data = await response.json();
+    div.textContent =
+        value === null ||
+        value === undefined
+            ? ""
+            : String(value);
 
-        document.getElementById("usersCount").textContent =
-            data.users ?? data.totalUsers ?? 0;
-
-        document.getElementById("productsCount").textContent =
-            data.products ?? data.totalProducts ?? 0;
-
-        document.getElementById("servicesCount").textContent =
-            data.services ?? data.totalServices ?? 0;
-
-        document.getElementById("businessesCount").textContent =
-            data.businesses ?? data.totalBusinesses ?? 0;
-
-    } catch (error) {
-
-        console.log("Stats unavailable:", error);
-
-    }
-
+    return div.innerHTML;
 }
 
 
-function searchUser() {
+function getAdminToken() {
 
-    const search =
-        document.getElementById("userSearch").value.trim();
-
-    const result =
-        document.getElementById("searchResult");
-
-    if (!search) {
-
-        result.textContent =
-            "Please enter a name, email or phone number.";
-
-        return;
-    }
-
-    result.innerHTML =
-        "🔍 Searching for <strong>" +
-        escapeHTML(search) +
-        "</strong>...<br><br>" +
-        "User search will be connected to the secure admin backend next.";
-
-}
-
-
-function showMessage(section) {
-
-    alert(
-        section +
-        " section is ready to be connected to the BRAVE admin backend."
+    return (
+        localStorage.getItem("braveAdminToken") ||
+        sessionStorage.getItem("braveAdminToken") ||
+        ""
     );
 
 }
 
 
+async function apiFetch(url, options = {}) {
+
+    const headers = {
+        ...(options.headers || {})
+    };
+
+    if (options.body && !headers["Content-Type"]) {
+
+        headers["Content-Type"] =
+            "application/json";
+
+    }
+
+
+    const token = getAdminToken();
+
+    if (token) {
+
+        headers["X-Admin-Token"] =
+            token;
+
+    }
+
+
+    const response =
+        await fetch(url, {
+            ...options,
+            headers
+        });
+
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch {
+        data = {};
+    }
+
+
+    if (
+        response.status === 401 ||
+        response.status === 403
+    ) {
+
+        showToast(
+            "Admin authorization is required."
+        );
+
+    }
+
+
+    return {
+        response,
+        data
+    };
+
+}
+
+
+function showToast(message) {
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.textContent = message;
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+
+        toast.classList.remove("show");
+
+    }, 3500);
+
+}
+
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+function showPage(page, button) {
+
+    document
+        .querySelectorAll(".page")
+        .forEach(item => {
+
+            item.classList.remove("active");
+
+        });
+
+
+    const selected =
+        document.getElementById(
+            "page-" + page
+        );
+
+
+    if (selected) {
+
+        selected.classList.add("active");
+
+    }
+
+
+    document
+        .querySelectorAll(".nav-btn")
+        .forEach(item => {
+
+            item.classList.remove("active");
+
+        });
+
+
+    if (button) {
+
+        button.classList.add("active");
+
+    }
+
+
+    document
+        .getElementById("sidebar")
+        .classList.remove("open");
+
+
+    if (page === "users") {
+        loadUsers();
+    }
+
+    if (page === "products") {
+        loadProducts();
+    }
+
+    if (page === "services") {
+        loadServices();
+    }
+
+    if (page === "verification") {
+        loadVerification();
+    }
+
+    if (page === "reports") {
+        loadReports();
+    }
+
+    if (page === "messages") {
+        loadMessages();
+    }
+
+    if (page === "ai") {
+        loadAI();
+    }
+
+    if (page === "activity") {
+        loadAdminActivity();
+    }
+
+}
+
+
+function openPage(page) {
+
+    const button =
+        document.querySelector(
+            `.nav-btn[onclick*="'${page}'"]`
+        );
+
+    showPage(page, button);
+
+}
+
+
+function toggleSidebar() {
+
+    document
+        .getElementById("sidebar")
+        .classList.toggle("open");
+
+}
+
+
+
+/* =====================================================
+   OVERVIEW
+===================================================== */
+
+async function loadStats() {
+
+    try {
+
+        let result =
+            await apiFetch(
+                "/api/admin/overview"
+            );
+
+
+        if (!result.response.ok) {
+
+            result =
+                await apiFetch(
+                    "/api/dashboard"
+                );
+
+        }
+
+
+        const data =
+            result.data || {};
+
+
+        document.getElementById(
+            "usersCount"
+        ).textContent =
+            data.users ??
+            data.totalUsers ??
+            0;
+
+
+        document.getElementById(
+            "productsCount"
+        ).textContent =
+            data.products ??
+            data.totalProducts ??
+            0;
+
+
+        document.getElementById(
+            "servicesCount"
+        ).textContent =
+            data.services ??
+            data.totalServices ??
+            0;
+
+
+        document.getElementById(
+            "businessesCount"
+        ).textContent =
+            data.businesses ??
+            data.totalBusinesses ??
+            0;
+
+
+        renderRecentActivity(
+            data.recentUsers ||
+            data.recentActivity ||
+            []
+        );
+
+    } catch (error) {
+
+        console.log(
+            "Stats unavailable:",
+            error
+        );
+
+    }
+
+}
+
+
+function renderRecentActivity(items) {
+
+    const container =
+        document.getElementById(
+            "recentActivity"
+        );
+
+
+    if (!Array.isArray(items) ||
+        items.length === 0) {
+
+        container.innerHTML = `
+
+            <div class="empty">
+                No recent activity available.
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        items.slice(0, 8).map(item => `
+
+            <div class="activity">
+
+                <div class="activity-icon">
+                    👤
+                </div>
+
+                <div class="activity-text">
+
+                    <strong>
+                        ${escapeHTML(
+                            item.fullname ||
+                            item.name ||
+                            "User activity"
+                        )}
+                    </strong>
+
+                    <p>
+                        ${escapeHTML(
+                            item.email ||
+                            "New platform activity"
+                        )}
+                    </p>
+
+                </div>
+
+            </div>
+
+        `).join("");
+
+}
+
+
+
+/* =====================================================
+   USERS
+===================================================== */
+
+async function loadUsers(query = "") {
+
+    const table =
+        document.getElementById(
+            "usersTable"
+        );
+
+
+    table.innerHTML = `
+
+        <tr>
+            <td colspan="5">
+                Loading users...
+            </td>
+        </tr>
+
+    `;
+
+
+    try {
+
+        const url =
+            "/api/admin/users" +
+            (
+                query
+                    ? "?q=" +
+                      encodeURIComponent(query)
+                    : ""
+            );
+
+
+        let result =
+            await apiFetch(url);
+
+
+        if (!result.response.ok) {
+
+            const fallback =
+                await apiFetch(
+                    "/api/dashboard"
+                );
+
+
+            if (fallback.response.ok &&
+                Array.isArray(
+                    fallback.data.recentUsers
+                )) {
+
+                renderUsers(
+                    fallback.data.recentUsers
+                );
+
+                return;
+
+            }
+
+        }
+
+
+        if (!result.response.ok) {
+
+            throw new Error(
+                "User endpoint unavailable"
+            );
+
+        }
+
+
+        const users =
+            Array.isArray(result.data)
+                ? result.data
+                : (
+                    result.data.users ||
+                    result.data.results ||
+                    []
+                );
+
+
+        renderUsers(users);
+
+    } catch (error) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    <div class="empty">
+
+                        User management backend
+                        is not connected yet.
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+}
+
+
+function renderUsers(users) {
+
+    const table =
+        document.getElementById(
+            "usersTable"
+        );
+
+
+    if (!users.length) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    <div class="empty">
+                        No users found.
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+    }
+
+
+    table.innerHTML =
+        users.map(user => `
+
+            <tr>
+
+                <td>
+                    <strong>
+                        ${escapeHTML(
+                            user.fullname ||
+                            user.name ||
+                            "Unknown"
+                        )}
+                    </strong>
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        user.email ||
+                        "—"
+                    )}
+                </td>
+
+                <td>
+
+                    <span class="badge verified">
+                        ${escapeHTML(
+                            user.status ||
+                            "Active"
+                        )}
+                    </span>
+
+                </td>
+
+                <td>
+                    ${formatDate(
+                        user.createdAt
+                    )}
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="viewUser('${escapeHTML(
+                            user.id || ""
+                        )}')"
+                    >
+                        View
+                    </button>
+
+                    <button
+                        class="btn btn-purple"
+                        onclick="viewTimeline('${escapeHTML(
+                            user.id || ""
+                        )}')"
+                    >
+                        Timeline
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `).join("");
+
+}
+
+
+function searchUsers() {
+
+    const query =
+        document
+            .getElementById(
+                "userSearch"
+            )
+            .value
+            .trim();
+
+
+    loadUsers(query);
+
+}
+
+
+document
+    .getElementById("userSearch")
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                searchUsers();
+
+            }
+
+        }
+    );
+
+
+
+/* =====================================================
+   USER PROFILE
+===================================================== */
+
+async function viewUser(id) {
+
+    const modal =
+        document.getElementById(
+            "userModal"
+        );
+
+    const details =
+        document.getElementById(
+            "userDetails"
+        );
+
+
+    modal.classList.add("show");
+
+
+    details.innerHTML =
+        "Loading user profile...";
+
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/users/" +
+                encodeURIComponent(id)
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error(
+                "User profile unavailable"
+            );
+
+        }
+
+
+        const user =
+            result.data.user ||
+            result.data;
+
+
+        details.innerHTML = `
+
+            <div class="detail-row">
+                <strong>Name</strong>
+                <span>
+                    ${escapeHTML(
+                        user.fullname ||
+                        user.name ||
+                        "Unknown"
+                    )}
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <strong>Email</strong>
+                <span>
+                    ${escapeHTML(
+                        user.email ||
+                        "Not available"
+                    )}
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <strong>Country</strong>
+                <span>
+                    ${escapeHTML(
+                        user.country ||
+                        "Not available"
+                    )}
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <strong>Account Status</strong>
+                <span>
+                    ${escapeHTML(
+                        user.status ||
+                        "Active"
+                    )}
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <strong>Joined</strong>
+                <span>
+                    ${formatDate(
+                        user.createdAt
+                    )}
+                </span>
+            </div>
+
+            <div style="margin-top:18px">
+
+                <button
+                    class="btn btn-success"
+                    onclick="userAction('${escapeHTML(
+                        id
+                    )}','verify')"
+                >
+                    Verify
+                </button>
+
+                <button
+                    class="btn btn-purple"
+                    onclick="viewTimeline('${escapeHTML(
+                        id
+                    )}')"
+                >
+                    View Timeline
+                </button>
+
+                <button
+                    class="btn btn-danger"
+                    onclick="userAction('${escapeHTML(
+                        id
+                    )}','restrict')"
+                >
+                    Restrict
+                </button>
+
+            </div>
+
+        `;
+
+    } catch (error) {
+
+        details.innerHTML = `
+
+            <div class="empty">
+
+                User profile endpoint is not
+                connected to the backend yet.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+function closeModal() {
+
+    document
+        .getElementById("userModal")
+        .classList.remove("show");
+
+}
+
+
+
+/* =====================================================
+   USER ACTIONS
+===================================================== */
+
+async function userAction(id, action) {
+
+    const allowed =
+        [
+            "verify",
+            "restrict",
+            "suspend",
+            "restore"
+        ];
+
+
+    if (!allowed.includes(action)) {
+        return;
+    }
+
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/users/" +
+                encodeURIComponent(id) +
+                "/action",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        action
+                    })
+                }
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error(
+                result.data.message ||
+                "Action failed"
+            );
+
+        }
+
+
+        showToast(
+            "User action completed."
+        );
+
+
+        closeModal();
+
+        loadUsers();
+
+    } catch (error) {
+
+        showToast(
+            error.message ||
+            "Admin action could not be completed."
+        );
+
+    }
+
+}
+
+
+
+/* =====================================================
+   TIMELINE
+===================================================== */
+
+async function searchTimeline() {
+
+    const query =
+        document
+            .getElementById(
+                "timelineSearch"
+            )
+            .value
+            .trim();
+
+
+    if (!query) {
+
+        showToast(
+            "Enter a user name or ID."
+        );
+
+        return;
+
+    }
+
+
+    viewTimeline(query);
+
+}
+
+
+async function viewTimeline(id) {
+
+    const container =
+        document.getElementById(
+            "timelineResult"
+        );
+
+
+    showPage(
+        "timelines",
+        document.querySelector(
+            `.nav-btn[onclick*="'timelines'"]`
+        )
+    );
+
+
+    container.innerHTML = `
+
+        <div class="empty">
+            Loading timeline...
+        </div>
+
+    `;
+
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/users/" +
+                encodeURIComponent(id) +
+                "/timeline"
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error(
+                "Timeline unavailable"
+            );
+
+        }
+
+
+        const posts =
+            result.data.posts ||
+            result.data.timeline ||
+            (
+                Array.isArray(result.data)
+                    ? result.data
+                    : []
+            );
+
+
+        if (!posts.length) {
+
+            container.innerHTML = `
+
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        📰
+                    </div>
+
+                    No timeline posts found.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            posts.map(post => `
+
+                <div class="activity">
+
+                    <div class="activity-icon">
+                        ${
+                            post.type === "service"
+                                ? "🛠️"
+                                : "🛍️"
+                        }
+                    </div>
+
+                    <div class="activity-text">
+
+                        <strong>
+                            ${escapeHTML(
+                                post.title ||
+                                post.name ||
+                                "Post"
+                            )}
+                        </strong>
+
+                        <p>
+                            ${escapeHTML(
+                                post.description ||
+                                "No description"
+                            )}
+                        </p>
+
+                        <div style="margin-top:7px">
+
+                            <button
+                                class="btn btn-danger"
+                                onclick="moderatePost('${escapeHTML(
+                                    post.id || ""
+                                )}','hide')"
+                            >
+                                Hide
+                            </button>
+
+                            <button
+                                class="btn btn-purple"
+                                onclick="moderatePost('${escapeHTML(
+                                    post.id || ""
+                                )}','flag')"
+                            >
+                                Flag
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+    } catch (error) {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Timeline management backend
+                is not connected yet.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+
+/* =====================================================
+   PRODUCTS
+===================================================== */
+
+async function loadProducts() {
+
+    const table =
+        document.getElementById(
+            "productsTable"
+        );
+
+
+    table.innerHTML = `
+
+        <tr>
+            <td colspan="5">
+                Loading products...
+            </td>
+        </tr>
+
+    `;
+
+
+    const query =
+        document
+            .getElementById(
+                "productSearch"
+            )
+            .value
+            .trim();
+
+
+    try {
+
+        let url =
+            "/api/admin/products";
+
+
+        if (query) {
+
+            url +=
+                "?q=" +
+                encodeURIComponent(query);
+
+        }
+
+
+        let result =
+            await apiFetch(url);
+
+
+        if (!result.response.ok) {
+
+            result =
+                await apiFetch(
+                    "/products"
+                );
+
+        }
+
+
+        if (!result.response.ok) {
+
+            throw new Error(
+                "Products unavailable"
+            );
+
+        }
+
+
+        const products =
+            Array.isArray(result.data)
+                ? result.data
+                : (
+                    result.data.products ||
+                    result.data.results ||
+                    []
+                );
+
+
+        renderProducts(products);
+
+    } catch (error) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    <div class="empty">
+
+                        Product management backend
+                        is not connected yet.
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+}
+
+
+function renderProducts(products) {
+
+    const table =
+        document.getElementById(
+            "productsTable"
+        );
+
+
+    if (!products.length) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    <div class="empty">
+                        No products found.
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    table.innerHTML =
+        products.map(product => `
+
+            <tr>
+
+                <td>
+                    <strong>
+                        ${escapeHTML(
+                            product.name ||
+                            product.title ||
+                            "Product"
+                        )}
+                    </strong>
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        product.sellerName ||
+                        product.seller ||
+                        "Unknown"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        product.category ||
+                        "Goods"
+                    )}
+                </td>
+
+                <td>
+                    <span class="badge pending">
+                        ${escapeHTML(
+                            product.status ||
+                            "Pending Review"
+                        )}
+                    </span>
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn btn-success"
+                        onclick="moderatePost('${escapeHTML(
+                            product.id || ""
+                        )}','approve')"
+                    >
+                        Approve
+                    </button>
+
+                    <button
+                        class="btn btn-danger"
+                        onclick="moderatePost('${escapeHTML(
+                            product.id || ""
+                        )}','hide')"
+                    >
+                        Hide
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `).join("");
+
+}
+
+
+
+/* =====================================================
+   SERVICES
+===================================================== */
+
+async function loadServices() {
+
+    const table =
+        document.getElementById(
+            "servicesTable"
+        );
+
+
+    table.innerHTML = `
+
+        <tr>
+            <td colspan="5">
+                Loading services...
+            </td>
+        </tr>
+
+    `;
+
+
+    const query =
+        document
+            .getElementById(
+                "serviceSearch"
+            )
+            .value
+            .trim();
+
+
+    try {
+
+        let url =
+            "/api/admin/services";
+
+
+        if (query) {
+
+            url +=
+                "?q=" +
+                encodeURIComponent(query);
+
+        }
+
+
+        let result =
+            await apiFetch(url);
+
+
+        if (!result.response.ok) {
+
+            result =
+                await apiFetch(
+                    "/services"
+                );
+
+        }
+
+
+        if (!result.response.ok) {
+
+            throw new Error(
+                "Services unavailable"
+            );
+
+        }
+
+
+        const services =
+            Array.isArray(result.data)
+                ? result.data
+                : (
+                    result.data.services ||
+                    result.data.results ||
+                    []
+                );
+
+
+        renderServices(services);
+
+    } catch (error) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    <div class="empty">
+
+                        Service management backend
+                        is not connected yet.
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+}
+
+
+function renderServices(services) {
+
+    const table =
+        document.getElementById(
+            "servicesTable"
+        );
+
+
+    if (!services.length) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    <div class="empty">
+                        No services found.
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    table.innerHTML =
+        services.map(service => `
+
+            <tr>
+
+                <td>
+                    <strong>
+                        ${escapeHTML(
+                            service.name ||
+                            service.title ||
+                            "Service"
+                        )}
+                    </strong>
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        service.providerName ||
+                        service.provider ||
+                        "Unknown"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        service.category ||
+                        "Service"
+                    )}
+                </td>
+
+                <td>
+
+                    <span class="badge pending">
+                        ${escapeHTML(
+                            service.status ||
+                            "Pending Review"
+                        )}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn btn-success"
+                        onclick="moderatePost('${escapeHTML(
+                            service.id || ""
+                        )}','approve')"
+                    >
+                        Approve
+                    </button>
+
+                    <button
+                        class="btn btn-danger"
+                        onclick="moderatePost('${escapeHTML(
+                            service.id || ""
+                        )}','hide')"
+                    >
+                        Hide
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `).join("");
+
+}
+
+
+
+/* =====================================================
+   POST MODERATION
+===================================================== */
+
+async function moderatePost(id, action) {
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/content/" +
+                encodeURIComponent(id) +
+                "/action",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        action
+                    })
+                }
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error(
+                result.data.message ||
+                "Content action failed"
+            );
+
+        }
+
+
+        showToast(
+            "Content moderation action completed."
+        );
+
+
+        loadProducts();
+        loadServices();
+
+    } catch (error) {
+
+        showToast(
+            "Content moderation backend is not connected yet."
+        );
+
+    }
+
+}
+
+
+
+/* =====================================================
+   VERIFICATION
+===================================================== */
+
+async function loadVerification() {
+
+    const container =
+        document.getElementById(
+            "verificationList"
+        );
+
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/verifications"
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error(
+                "Verification unavailable"
+            );
+
+        }
+
+
+        const items =
+            result.data.verifications ||
+            (
+                Array.isArray(result.data)
+                    ? result.data
+                    : []
+            );
+
+
+        document.getElementById(
+            "verificationCount"
+        ).textContent =
+            items.length;
+
+
+        if (!items.length) {
+
+            container.innerHTML = `
+
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        ✅
+                    </div>
+
+                    No pending verification requests.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            items.map(item => `
+
+                <div class="activity">
+
+                    <div class="activity-icon">
+                        🪪
+                    </div>
+
+                    <div class="activity-text">
+
+                        <strong>
+                            ${escapeHTML(
+                                item.name ||
+                                item.fullname ||
+                                "User"
+                            )}
+                        </strong>
+
+                        <p>
+                            ${escapeHTML(
+                                item.type ||
+                                "Verification request"
+                            )}
+                        </p>
+
+                        <div style="margin-top:7px">
+
+                            <button
+                                class="btn btn-success"
+                                onclick="verificationAction('${escapeHTML(
+                                    item.id || ""
+                                )}','approve')"
+                            >
+                                Approve
+                            </button>
+
+                            <button
+                                class="btn btn-danger"
+                                onclick="verificationAction('${escapeHTML(
+                                    item.id || ""
+                                )}','reject')"
+                            >
+                                Reject
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+    } catch (error) {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Verification backend is not connected yet.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+async function verificationAction(id, action) {
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/verifications/" +
+                encodeURIComponent(id) +
+                "/action",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        action
+                    })
+                }
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error();
+
+        }
+
+
+        showToast(
+            "Verification action completed."
+        );
+
+
+        loadVerification();
+
+    } catch {
+
+        showToast(
+            "Verification backend is not connected yet."
+        );
+
+    }
+
+}
+
+
+
+/* =====================================================
+   REPORTS
+===================================================== */
+
+async function loadReports() {
+
+    const container =
+        document.getElementById(
+            "reportsList"
+        );
+
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/reports"
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error();
+
+        }
+
+
+        const reports =
+            result.data.reports ||
+            (
+                Array.isArray(result.data)
+                    ? result.data
+                    : []
+            );
+
+
+        document.getElementById(
+            "reportsCount"
+        ).textContent =
+            reports.length;
+
+
+        if (!reports.length) {
+
+            container.innerHTML = `
+
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        🛡️
+                    </div>
+
+                    No unresolved reports.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            reports.map(report => `
+
+                <div class="activity">
+
+                    <div class="activity-icon">
+                        🚨
+                    </div>
+
+                    <div class="activity-text">
+
+                        <strong>
+                            ${escapeHTML(
+                                report.title ||
+                                "User report"
+                            )}
+                        </strong>
+
+                        <p>
+                            ${escapeHTML(
+                                report.reason ||
+                                report.description ||
+                                "No description"
+                            )}
+                        </p>
+
+                        <div style="margin-top:7px">
+
+                            <button
+                                class="btn btn-purple"
+                                onclick="resolveReport('${escapeHTML(
+                                    report.id || ""
+                                )}','review')"
+                            >
+                                Review
+                            </button>
+
+                            <button
+                                class="btn btn-success"
+                                onclick="resolveReport('${escapeHTML(
+                                    report.id || ""
+                                )}','resolve')"
+                            >
+                                Resolve
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+    } catch {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Reports backend is not connected yet.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+async function resolveReport(id, action) {
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/reports/" +
+                encodeURIComponent(id) +
+                "/action",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        action
+                    })
+                }
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error();
+
+        }
+
+
+        showToast(
+            "Report action completed."
+        );
+
+
+        loadReports();
+
+    } catch {
+
+        showToast(
+            "Reports backend is not connected yet."
+        );
+
+    }
+
+}
+
+
+
+/* =====================================================
+   MESSAGES
+===================================================== */
+
+async function loadMessages() {
+
+    const container =
+        document.getElementById(
+            "messagesList"
+        );
+
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/messages"
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error();
+
+        }
+
+
+        const messages =
+            result.data.messages ||
+            (
+                Array.isArray(result.data)
+                    ? result.data
+                    : []
+            );
+
+
+        if (!messages.length) {
+
+            container.innerHTML = `
+
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        💬
+                    </div>
+
+                    No message investigations.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            messages.map(message => `
+
+                <div class="activity">
+
+                    <div class="activity-icon">
+                        💬
+                    </div>
+
+                    <div class="activity-text">
+
+                        <strong>
+                            ${escapeHTML(
+                                message.subject ||
+                                "Message report"
+                            )}
+                        </strong>
+
+                        <p>
+                            ${escapeHTML(
+                                message.reason ||
+                                "Requires administrative review."
+                            )}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+    } catch {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Message investigation backend
+                is not connected yet.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+
+/* =====================================================
+   AI
+===================================================== */
+
+async function loadAI() {
+
+    const container =
+        document.getElementById(
+            "aiList"
+        );
+
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/ai-conversations"
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error();
+
+        }
+
+
+        const conversations =
+            result.data.conversations ||
+            (
+                Array.isArray(result.data)
+                    ? result.data
+                    : []
+            );
+
+
+        if (!conversations.length) {
+
+            container.innerHTML = `
+
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        🤖
+                    </div>
+
+                    No flagged AI conversations.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            conversations.map(chat => `
+
+                <div class="activity">
+
+                    <div class="activity-icon">
+                        🤖
+                    </div>
+
+                    <div class="activity-text">
+
+                        <strong>
+                            ${escapeHTML(
+                                chat.userName ||
+                                "BRAVE User"
+                            )}
+                        </strong>
+
+                        <p>
+                            ${escapeHTML(
+                                chat.summary ||
+                                "Flagged AI conversation"
+                            )}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+    } catch {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                BRAVE AI oversight backend
+                is not connected yet.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+
+/* =====================================================
+   ADMIN ACTIVITY
+===================================================== */
+
+async function loadAdminActivity() {
+
+    const container =
+        document.getElementById(
+            "adminActivity"
+        );
+
+
+    try {
+
+        const result =
+            await apiFetch(
+                "/api/admin/activity"
+            );
+
+
+        if (!result.response.ok) {
+
+            throw new Error();
+
+        }
+
+
+        const items =
+            result.data.activity ||
+            (
+                Array.isArray(result.data)
+                    ? result.data
+                    : []
+            );
+
+
+        if (!items.length) {
+
+            container.innerHTML = `
+
+                <div class="empty">
+
+                    No administrator activity recorded.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            items.map(item => `
+
+                <div class="activity">
+
+                    <div class="activity-icon">
+                        📋
+                    </div>
+
+                    <div class="activity-text">
+
+                        <strong>
+                            ${escapeHTML(
+                                item.action ||
+                                "Admin action"
+                            )}
+                        </strong>
+
+                        <p>
+                            ${escapeHTML(
+                                item.description ||
+                                ""
+                            )}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+    } catch {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Administrator audit backend
+                is not connected yet.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+
+/* =====================================================
+   UTILITIES
+===================================================== */
+
+function formatDate(date) {
+
+    if (!date) {
+        return "—";
+    }
+
+
+    try {
+
+        return new Date(date)
+            .toLocaleDateString();
+
+    } catch {
+
+        return "—";
+
+    }
+
+}
+
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
 function logout() {
 
-    localStorage.removeItem("braveUser");
+    localStorage.removeItem(
+        "braveAdmin"
+    );
 
-    window.location.href = "login.html";
+    localStorage.removeItem(
+        "braveAdminToken"
+    );
+
+    sessionStorage.removeItem(
+        "braveAdminToken"
+    );
+
+
+    window.location.href =
+        "admin-login.html";
 
 }
 
 
-function escapeHTML(text) {
 
-    const div = document.createElement("div");
-
-    div.textContent = text;
-
-    return div.innerHTML;
-
-}
-
+/* =====================================================
+   START
+===================================================== */
 
 loadStats();
 
 </script>
 
+
 </body>
+
 </html>
