@@ -375,6 +375,16 @@
         </div>
 
 
+        <label style="display:flex;align-items:flex-start;gap:10px;margin-top:18px;font-weight:normal;color:#eee;">
+            <input id="termsAgree" type="checkbox" required style="width:18px;height:18px;margin-top:2px;">
+            <span>I agree to BRAVE's Terms & Conditions.</span>
+        </label>
+
+        <label style="display:flex;align-items:center;gap:10px;margin-top:12px;font-weight:normal;color:#eee;">
+            <input id="resetPasswordCheck" type="checkbox" style="width:18px;height:18px;">
+            <span>I need to reset my password.</span>
+        </label>
+
         <button
             type="submit"
             class="login-btn"
@@ -495,6 +505,11 @@ const message =
     document.getElementById("message");
 
 
+document.getElementById("resetPasswordCheck").addEventListener("change", function(){
+    if (this.checked) window.location.href = "forgot-password.html";
+});
+
+
 loginForm.addEventListener(
     "submit",
     async function(event) {
@@ -544,7 +559,8 @@ loginForm.addEventListener(
                         body:
                             JSON.stringify({
                                 email,
-                                password
+                                password,
+                                acceptedTerms: document.getElementById("termsAgree").checked
                             })
 
                     }

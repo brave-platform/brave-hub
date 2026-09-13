@@ -846,6 +846,12 @@ footer {
                 Country
             </label>
 
+            <label class="check-row" style="display:flex;gap:10px;align-items:flex-start;margin-top:18px;font-weight:normal;">
+                <input id="termsAgree" type="checkbox" required style="width:18px;height:18px;margin-top:2px;">
+                <span>I agree to BRAVE's <a href="#termsSection" onclick="showTerms()" style="color:#f4c542;text-decoration:underline;">Terms & Conditions</a>.</span>
+            </label>
+
+
             <select
                 name="country"
                 required>
@@ -917,6 +923,17 @@ footer {
 
 
 <!-- =====================================================
+     TERMS SUMMARY
+===================================================== -->
+<section id="termsSection" style="padding:30px 20px;display:none;">
+  <div style="max-width:850px;margin:auto;background:rgba(18,12,30,.95);border:1px solid rgba(244,197,66,.25);border-radius:20px;padding:25px;line-height:1.7;color:#ddd;">
+    <h2 style="color:#f4c542;margin-bottom:10px;">BRAVE Terms & Conditions</h2>
+    <p>Use BRAVE honestly and lawfully. Do not post fraudulent listings, fake payment evidence, harmful content, or impersonate another person. Buyers and sellers are responsible for accurate transaction information. BRAVE may review listings, accounts, reports, receipts and refunds to protect the marketplace.</p>
+    <button class="nav-btn" onclick="document.getElementById('termsSection').style.display='none'">Close</button>
+  </div>
+</section>
+
+<!-- =====================================================
      FOOTER
 ===================================================== -->
 
@@ -947,6 +964,12 @@ function showRegister() {
         behavior: "smooth"
     });
 
+}
+
+
+function showTerms() {
+    document.getElementById("termsSection").style.display = "block";
+    document.getElementById("termsSection").scrollIntoView({behavior:"smooth"});
 }
 
 
@@ -1003,6 +1026,12 @@ document
                     formData.entries()
                 );
 
+            data.acceptedTerms = document.getElementById("termsAgree").checked;
+
+            if (!document.getElementById("termsAgree").checked) {
+                document.getElementById("message").textContent = "Please accept the Terms & Conditions to create your account.";
+                return;
+            }
 
             const message =
                 document.getElementById(

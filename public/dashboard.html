@@ -86,8 +86,8 @@ select{
 }
 
 .brand img{
-    width:50px;
-    height:50px;
+    width:64px;
+    height:64px;
     object-fit:contain;
     border-radius:50%;
 }
@@ -877,6 +877,24 @@ textarea.form-control{
         font-size:23px;
     }
 }
+
+.mobile-menu-btn{display:none;border:1px solid rgba(255,211,77,.35);background:rgba(255,211,77,.08);color:var(--gold);border-radius:10px;padding:10px 12px;font-size:20px;cursor:pointer;}
+.sidebar-backdrop{display:none;}
+.records-list{display:grid;gap:10px;margin-top:15px;}
+.record-row{padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.04);}
+.record-row strong{color:var(--gold);}
+.workshop-card{cursor:pointer;transition:.2s;}
+.workshop-card:hover{transform:translateY(-2px);border-color:rgba(255,211,77,.4);}
+@media(max-width:650px){
+ .mobile-menu-btn{display:block;}
+ .sidebar{width:270px!important;transform:translateX(-105%);transition:transform .22s ease;z-index:2000;box-shadow:15px 0 40px rgba(0,0,0,.35);}
+ .sidebar.open{transform:translateX(0);}
+ .sidebar .brand-text,.sidebar small,.sidebar .nav-title,.sidebar .nav-btn .label{display:block;}
+ .sidebar .brand{justify-content:flex-start;}
+ .sidebar .nav-btn{justify-content:flex-start;padding:12px 13px;}
+ .sidebar-backdrop.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1500;}
+ .main{margin-left:0!important;}
+}
 </style>
 </head>
 
@@ -937,6 +955,11 @@ textarea.form-control{
         <span class="label">Messages</span>
     </button>
 
+    <button class="nav-btn" onclick="showPage('workshop',this)">
+        <span class="nav-icon">🛠️</span>
+        <span class="label">BRAVE Workshop</span>
+    </button>
+
     <button class="nav-btn" onclick="showPage('ai',this)">
         <span class="nav-icon">🤖</span>
         <span class="label">BRAVE AI Advisor</span>
@@ -967,6 +990,11 @@ textarea.form-control{
     <button class="nav-btn" onclick="showPage('analytics',this)">
         <span class="nav-icon">📊</span>
         <span class="label">Analytics</span>
+    </button>
+
+    <button class="nav-btn" onclick="showPage('records',this)">
+        <span class="nav-icon">📒</span>
+        <span class="label">Records & Money Diary</span>
     </button>
 
     <button class="nav-btn" onclick="showPage('wallet',this)">
@@ -1004,6 +1032,8 @@ textarea.form-control{
 <main class="main">
 
     <header class="topbar">
+
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open BRAVE menu">☰</button>
 
         <div class="top-search">
 
@@ -1599,7 +1629,7 @@ textarea.form-control{
                         when the backend messaging system is connected.
                     </p>
 
-                    <button class="btn btn-outline">
+                    <button class="btn btn-outline" onclick="showPage('messages',this)">
                         Open Chat
                     </button>
 
@@ -1971,6 +2001,34 @@ textarea.form-control{
         </section>
 
 
+        <!-- ================= WORKSHOP ================= -->
+        <section id="workshop" class="page">
+            <h1 class="page-title">BRAVE Workshop</h1>
+            <p class="page-subtitle">Useful online tools and learning workflows for creators and business users.</p>
+            <div class="grid grid-3">
+                <div class="card workshop-card"><div class="stat-icon">🎨</div><h3>Design Workflow</h3><p style="color:var(--muted);margin-top:8px;">Plan graphics, prepare images, organize brand assets and improve visual content.</p></div>
+                <div class="card workshop-card"><div class="stat-icon">🎬</div><h3>Photo & Video</h3><p style="color:var(--muted);margin-top:8px;">Learn practical workflows for editing photos, short videos and promotional content.</p></div>
+                <div class="card workshop-card"><div class="stat-icon">📄</div><h3>Documents</h3><p style="color:var(--muted);margin-top:8px;">Typing, PDF/Word workflows, presentations, forms and document organization.</p></div>
+            </div>
+        </section>
+
+        <!-- ================= RECORDS & MONEY DIARY ================= -->
+        <section id="records" class="page">
+            <h1 class="page-title">Records & Money Diary</h1>
+            <p class="page-subtitle">Keep a personal record of your sales, purchases, expenses, payments and notes.</p>
+            <div class="card">
+                <div class="grid grid-2">
+                    <div><label>Record type</label><select id="recordType" class="form-control"><option>Income</option><option>Expense</option><option>Sale</option><option>Purchase</option><option>Payment</option><option>Refund</option><option>Note</option></select></div>
+                    <div><label>Date</label><input id="recordDate" class="form-control" type="date"></div>
+                </div>
+                <div class="form-group"><label>Title</label><input id="recordTitle" class="form-control" placeholder="e.g. Customer payment or business expense"></div>
+                <div class="form-group"><label>Amount (optional)</label><input id="recordAmount" class="form-control" inputmode="decimal" placeholder="Enter amount if you want to keep it in your diary"></div>
+                <div class="form-group"><label>Note</label><textarea id="recordNote" class="form-control" placeholder="Add details"></textarea></div>
+                <button class="btn" onclick="saveDiaryRecord()">➕ Save Record</button>
+            </div>
+            <div class="card" style="margin-top:16px;"><h3>📚 My Records</h3><div id="recordsList" class="records-list"><p style="color:var(--muted)">No records yet.</p></div></div>
+        </section>
+
         <!-- ================= WALLET ================= -->
 
         <section id="wallet" class="page">
@@ -1984,12 +2042,11 @@ textarea.form-control{
 
             <div class="card">
 
-                <div class="stat-number">₦0</div>
-
-                <p style="color:var(--muted);margin-top:7px;">
-                    Wallet and real payment processing will be connected
-                    when BRAVE's payment backend is ready.
+                <div class="section-title">💰 Money & Transaction Status</div>
+                <p style="color:var(--muted);margin-top:7px;line-height:1.6;">
+                    Your verified payments, sales, refunds and transaction records will appear here when BRAVE's payment system confirms them.
                 </p>
+                <button class="btn btn-outline" onclick="showPage('records',null)">📒 Open Money Diary</button>
 
             </div>
 
@@ -2094,11 +2151,11 @@ textarea.form-control{
 
                 <div class="actions">
 
-                    <button class="btn btn-outline">
+                    <button class="btn btn-outline" onclick="showPage('review',this)">
                         Pending Review: 0
                     </button>
 
-                    <button class="btn btn-outline">
+                    <button class="btn btn-outline" onclick="showPage('review',this)">
                         Reports: 0
                     </button>
 
@@ -2348,6 +2405,13 @@ document.getElementById("userAvatar").textContent =
    PAGE NAVIGATION
 ========================================================= */
 
+function toggleMobileMenu(){
+    const sidebar=document.getElementById("sidebar");
+    const backdrop=document.getElementById("sidebarBackdrop");
+    if(sidebar) sidebar.classList.toggle("open");
+    if(backdrop) backdrop.classList.toggle("open");
+}
+
 function showPage(pageId,button){
 
     document.querySelectorAll(".page").forEach(page=>{
@@ -2385,6 +2449,10 @@ function showPage(pageId,button){
     if(pageId==="timeline"){
         renderTimeline();
     }
+    const sidebar=document.getElementById("sidebar");
+    const backdrop=document.getElementById("sidebarBackdrop");
+    if(sidebar) sidebar.classList.remove("open");
+    if(backdrop) backdrop.classList.remove("open");
 }
 
 
@@ -2718,6 +2786,8 @@ function renderServices(){
     const services =
         getServices();
 
+    const faqAnswer = findBRAVEFAQ(question);
+    if(faqAnswer) return faqAnswer;
 
     if(services.length===0){
 
@@ -3350,6 +3420,32 @@ function addAIMessage(text,type){
 }
 
 
+
+const BRAVE_GENERAL_FAQ = [
+ ["what is brave","Unique BRAVE is a marketplace for products, services and businesses, with tools for buyers, sellers and professionals."],
+ ["how do i buy","Search Marketplace, open a listing, review the details, then follow the available order or contact steps."],
+ ["how to buy","Search Marketplace, open a listing, review the details, then follow the available order or contact steps."],
+ ["how do i sell","Create an account, complete your profile, then use the product or seller tools in your dashboard."],
+ ["become a seller","Create an account, complete your profile, then use the product or seller tools in your dashboard."],
+ ["find a service","Open Services and search for the professional or service you need."],
+ ["refund","Open the relevant order or transaction and use the refund option when available. BRAVE may review the request and evidence."],
+ ["receipt","A BRAVE receipt should come from a BRAVE transaction record. A bank screenshot alone is not proof that BRAVE has verified payment."],
+ ["reset password","Use Reset Password on the login page and follow the email instructions."],
+ ["workshop","BRAVE Workshop provides practical online workflows for design, photo/video editing, documents and similar creator tasks."],
+ ["terms and conditions","The Terms & Conditions explain rules for accounts, listings, transactions and responsible use of BRAVE."],
+ ["support","Use BRAVE's support or message tools. Account-specific questions should be answered from your authenticated BRAVE records."]
+];
+
+function findBRAVEFAQ(question){
+    const q=question.toLowerCase().replace(/[?!.]/g,"").trim();
+    let best=null,bestScore=0;
+    for(const [key,answer] of BRAVE_GENERAL_FAQ){
+        const score=key.split(/\s+/).filter(w=>w.length>2 && q.includes(w)).length;
+        if(score>bestScore){bestScore=score;best=answer;}
+    }
+    return bestScore ? best : null;
+}
+
 function generateAIReply(question){
 
     const q =
@@ -3739,7 +3835,25 @@ function updateStats(){
 }
 
 
+
+function wireSettingsButtons(){
+    document.querySelectorAll(".settings-menu .setting-item").forEach(item=>{
+        const btn=item.querySelector("button");
+        const title=(item.querySelector("strong")?.textContent||"").toLowerCase();
+        if(!btn || btn.dataset.wired) return;
+        btn.dataset.wired="1";
+        btn.onclick=()=>{
+            if(title.includes("notification")) showPage("notifications");
+            else if(title.includes("ai")) showPage("ai");
+            else if(title.includes("help") || title.includes("support")) showPage("messages");
+            else if(title.includes("security")) window.location.href="forgot-password.html";
+            else showToast(title ? title.charAt(0).toUpperCase()+title.slice(1)+" settings are ready to configure." : "Settings opened.");
+        };
+    });
+}
 updateStats();
+loadDiaryRecords();
+wireSettingsButtons();
 
 renderProducts();
 
@@ -3773,6 +3887,52 @@ function escapeAttribute(value){
 
 }
 
+
+
+/* =========================================================
+   RECORDS & MONEY DIARY
+========================================================= */
+function currentUserId(){
+    try{
+        const u=JSON.parse(localStorage.getItem("braveUser")||"{}");
+        return u.id || u.userId || u.email || "local-user";
+    }catch(e){return "local-user";}
+}
+
+function loadDiaryRecords(){
+    const list=document.getElementById("recordsList");
+    if(!list) return;
+    const records=JSON.parse(localStorage.getItem("braveRecords")||"[]")
+      .filter(r=>String(r.userId)===String(currentUserId()))
+      .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    list.innerHTML=records.length ? records.map(r=>`
+      <div class="record-row">
+        <strong>${escapeHTML(r.type)} — ${escapeHTML(r.title)}</strong>
+        <div style="margin-top:5px;color:var(--muted);">${escapeHTML(r.date)} ${r.amount ? " • "+escapeHTML(r.amount) : ""}</div>
+        ${r.note ? `<div style="margin-top:7px;">${escapeHTML(r.note)}</div>` : ""}
+      </div>`).join("") : '<p style="color:var(--muted)">No records yet.</p>';
+}
+
+async function saveDiaryRecord(){
+    const title=document.getElementById("recordTitle").value.trim();
+    if(!title){showToast("Please enter a record title.");return;}
+    const record={
+      userId:currentUserId(),
+      type:document.getElementById("recordType").value,
+      title,
+      amount:document.getElementById("recordAmount").value.trim(),
+      note:document.getElementById("recordNote").value.trim(),
+      date:document.getElementById("recordDate").value || new Date().toISOString().slice(0,10),
+      createdAt:new Date().toISOString()
+    };
+    const records=JSON.parse(localStorage.getItem("braveRecords")||"[]");
+    records.push(record); localStorage.setItem("braveRecords",JSON.stringify(records));
+    try{ await fetch("/api/records",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(record)}); }catch(e){}
+    document.getElementById("recordTitle").value="";
+    document.getElementById("recordAmount").value="";
+    document.getElementById("recordNote").value="";
+    loadDiaryRecords(); showToast("Record saved.");
+}
 
 /* =========================================================
    LOGOUT

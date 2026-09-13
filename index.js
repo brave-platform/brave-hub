@@ -137,6 +137,18 @@ const aiConversationsFile =
         "ai-conversations.json"
     );
 
+const recordsFile =
+    path.join(backendFolder, "records.json");
+
+const transactionsFile =
+    path.join(backendFolder, "transactions.json");
+
+const receiptsFile =
+    path.join(backendFolder, "receipts.json");
+
+const refundsFile =
+    path.join(backendFolder, "refunds.json");
+
 
 /* =====================================================
    CREATE FILE IF MISSING
@@ -486,6 +498,23 @@ app.get(
 );
 
 
+
+/* =====================================================
+   BRAVE GENERAL FAQ KNOWLEDGE
+===================================================== */
+const BRAVE_FAQ = [
+    {q:["what is brave","what is unique brave"], a:"Unique BRAVE is a marketplace for discovering products, services and businesses, with tools for buyers, sellers and professionals."},
+    {q:["how do i buy","how to buy","buy a product"], a:"Search the Marketplace, open a listing, review the seller or provider information, and follow the available order or contact steps."},
+    {q:["how do i sell","become a seller","sell on brave"], a:"Create a BRAVE account, complete your profile, then use the seller/product tools in your dashboard to publish suitable listings."},
+    {q:["find a service","hire a professional","service provider"], a:"Open Services and search for the type of professional you need. BRAVE keeps services separate from goods and commodity listings."},
+    {q:["refund","request refund"], a:"Open your order or transaction record and use the refund option when available. BRAVE can review the request and its transaction evidence."},
+    {q:["receipt","payment receipt"], a:"BRAVE receipts should be generated from BRAVE transaction records. A bank-transfer screenshot alone should not be treated as verified payment."},
+    {q:["reset password","forgot password"], a:"Use Reset Password on the login page and follow the email instructions."},
+    {q:["workshop","brave workshop"], a:"BRAVE Workshop is a learning and tools area for useful online workflows, including design, photo editing, video editing and document-related work."},
+    {q:["terms","terms and conditions"], a:"BRAVE's Terms and Conditions explain the rules for using the marketplace, accounts, listings, transactions and platform services."},
+    {q:["contact support","help","support"], a:"Use BRAVE support or the available help and message tools. For account-specific issues, BRAVE should use your authenticated records rather than guess."}
+];
+
 /* =====================================================
    REGISTER
 ===================================================== */
@@ -500,7 +529,8 @@ app.post(
                 fullname,
                 email,
                 country,
-                password
+                password,
+                acceptedTerms
             } = req.body;
 
 
@@ -508,7 +538,8 @@ app.post(
                 !fullname ||
                 !email ||
                 !country ||
-                !password
+                !password ||
+                acceptedTerms !== true
             ) {
 
                 return res
@@ -725,13 +756,15 @@ app.post(
 
             const {
                 email,
-                password
+                password,
+                acceptedTerms
             } = req.body;
 
 
             if (
                 !email ||
-                !password
+                !password ||
+                acceptedTerms !== true
             ) {
 
                 return res
@@ -6211,6 +6244,92 @@ app.use(
     }
 );
 
+
+
+/* =====================================================
+   USER RECORDS / MONEY DIARY
+===================================================== */
+
+app.get("/api/records/:userId", (req, res) => {
+    const records = readData(recordsFile);
+    res.json({
+        records: records
+            .filter(r => String(r.userId) === String(req.params.userId))
+            .sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    });
+});
+
+app.post("/api/records", (req, res) => {
+    const { userId, type, title, amount, note, date } = req.body || {};
+    if (!userId || !title) {
+        return res.status(400).json({ message: "User ID and record title are required." });
+    }
+    const records = readData(recordsFile);
+    const record = {
+        id: "REC-" + Date.now(),
+        userId, type: type || "note",
+        title, amount: amount || "",
+        note: note || "",
+        date: date || new Date().toISOString().slice(0,10),
+        createdAt: new Date().toISOString()
+    };
+    records.push(record);
+    writeData(recordsFile, records);
+    res.status(201).json({ message: "Record saved.", record });
+});
+
+/* =====================================================
+   TRANSACTIONS / RECEIPTS / REFUNDS
+   These records are designed for future payment-provider
+   webhooks. Uploaded screenshots alone never mean verified.
+===================================================== */
+
+app.get("/api/admin/transactions", requireAdmin, (req, res) => {
+    const transactions = readData(transactionsFile);
+    res.json({ transactions: transactions.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)) });
+});
+
+app.get("/api/admin/receipts", requireAdmin, (req, res) => {
+    const receipts = readData(receiptsFile);
+    res.json({ receipts: receipts.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)) });
+});
+
+app.get("/api/admin/refunds", requireAdmin, (req, res) => {
+    const refunds = readData(refundsFile);
+    res.json({ refunds: refunds.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)) });
+});
+
+app.patch("/api/admin/receipts/:receiptId/verify", requireAdmin, (req, res) => {
+    const { status, reason } = req.body || {};
+    const allowed = ["pending", "verified", "rejected"];
+    if (!allowed.includes(status)) return res.status(400).json({ message: "Invalid receipt status." });
+    const receipts = readData(receiptsFile);
+    const i = receipts.findIndex(r => String(r.id) === String(req.params.receiptId));
+    if (i < 0) return res.status(404).json({ message: "Receipt not found." });
+    receipts[i].verificationStatus = status;
+    receipts[i].verificationReason = reason || "";
+    receipts[i].verifiedAt = new Date().toISOString();
+    writeData(receiptsFile, receipts);
+    res.json({ message: "Receipt verification updated.", receipt: receipts[i] });
+});
+
+app.patch("/api/admin/refunds/:refundId", requireAdmin, (req, res) => {
+    const { status, reason } = req.body || {};
+    const allowed = ["pending", "approved", "rejected", "completed"];
+    if (!allowed.includes(status)) return res.status(400).json({ message: "Invalid refund status." });
+    const refunds = readData(refundsFile);
+    const i = refunds.findIndex(r => String(r.id) === String(req.params.refundId));
+    if (i < 0) return res.status(404).json({ message: "Refund not found." });
+    refunds[i].status = status;
+    refunds[i].reviewReason = reason || "";
+    refunds[i].reviewedAt = new Date().toISOString();
+    writeData(refundsFile, refunds);
+    res.json({ message: "Refund updated.", refund: refunds[i] });
+});
+
+app.get("/api/brave/faq", (req, res) => {
+    res.json({ faq: BRAVE_FAQ });
+});
 
 /* =====================================================
    START SERVER

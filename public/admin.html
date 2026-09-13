@@ -79,8 +79,8 @@ header {
 }
 
 .brand img {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
 
     object-fit: contain;
 }
@@ -1066,6 +1066,11 @@ tr:hover td {
 
 }
 
+
+.admin-menu-btn{display:none;border:1px solid rgba(255,216,61,.35);background:rgba(255,216,61,.08);color:var(--gold);border-radius:10px;padding:9px 12px;font-size:19px;cursor:pointer;}
+.txn-row{padding:14px;border:1px solid rgba(255,216,61,.14);border-radius:12px;background:rgba(255,255,255,.03);margin:8px 0;}
+.status-pill{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,216,61,.12);color:var(--gold);font-size:11px;font-weight:700;}
+@media(max-width:800px){.admin-menu-btn{display:block}.layout .sidebar{position:fixed;left:0;top:72px;transform:translateX(-105%);transition:.2s;z-index:1000}.layout .sidebar.open{transform:translateX(0)}.admin-main-backdrop{display:none}.admin-main-backdrop.open{display:block;position:fixed;inset:72px 0 0;background:rgba(0,0,0,.45);z-index:900}}
 </style>
 
 </head>
@@ -1125,6 +1130,8 @@ tr:hover td {
 
 
 
+<div class="admin-main-backdrop" id="adminBackdrop" onclick="toggleAdminMenu()"></div>
+
 <div class="layout">
 
 
@@ -1173,6 +1180,15 @@ tr:hover td {
     >
         <span class="nav-icon">🛍️</span>
         Products
+    </button>
+
+
+    <button
+        class="nav-btn"
+        onclick="showPage('transactions', this)"
+    >
+        <span class="nav-icon">🧾</span>
+        Transactions & Receipts
     </button>
 
 
@@ -1968,6 +1984,18 @@ tr:hover td {
 
 <!-- ================= VERIFICATION ================= -->
 
+<section id="page-transactions" class="page">
+    <h1 class="page-title">🧾 Transactions & Receipts</h1>
+    <p class="page-description">Review transaction records, receipt evidence and refund requests. Bank screenshots alone are not payment verification.</p>
+    <div class="grid grid-3">
+      <div class="stat"><div class="stat-icon">💳</div><div class="stat-number" id="adminTxnCount">0</div><div class="stat-label">Transactions</div></div>
+      <div class="stat"><div class="stat-icon">🧾</div><div class="stat-number" id="adminReceiptCount">0</div><div class="stat-label">Receipts</div></div>
+      <div class="stat"><div class="stat-icon">↩️</div><div class="stat-number" id="adminRefundCount">0</div><div class="stat-label">Refund Requests</div></div>
+    </div>
+    <div class="panel" style="margin-top:16px;"><h3>🧾 Receipts</h3><div id="adminReceiptsList"><div class="empty">Loading receipts...</div></div></div>
+    <div class="panel" style="margin-top:16px;"><h3>↩️ Refund Requests</h3><div id="adminRefundsList"><div class="empty">Loading refunds...</div></div></div>
+</section>
+
 <section
     id="page-verification"
     class="page"
@@ -2530,6 +2558,8 @@ function showPage(page, button) {
     document
         .getElementById("sidebar")
         .classList.remove("open");
+    const backdrop=document.getElementById("adminBackdrop");
+    if(backdrop) backdrop.classList.remove("open");
 
 
     if (page === "users") {
@@ -2562,6 +2592,10 @@ function showPage(page, button) {
 
     if (page === "activity") {
         loadAdminActivity();
+    }
+
+    if (page === "transactions") {
+        loadAdminTransactions();
     }
 
 }
@@ -4552,6 +4586,53 @@ function formatDate(date) {
 }
 
 
+
+
+function toggleAdminMenu(){
+    const s=document.querySelector(".layout .sidebar");
+    const b=document.getElementById("adminBackdrop");
+    if(s) s.classList.toggle("open");
+    if(b) b.classList.toggle("open");
+}
+
+async function loadAdminTransactions(){
+    const receiptsBox=document.getElementById("adminReceiptsList");
+    const refundsBox=document.getElementById("adminRefundsList");
+    if(!receiptsBox) return;
+    try{
+      const [r1,r2,r3]=await Promise.all([
+        apiFetch("/api/admin/transactions"),
+        apiFetch("/api/admin/receipts"),
+        apiFetch("/api/admin/refunds")
+      ]);
+      const tx=r1.data.transactions||[];
+      const receipts=r2.data.receipts||[];
+      const refunds=r3.data.refunds||[];
+      document.getElementById("adminTxnCount").textContent=tx.length;
+      document.getElementById("adminReceiptCount").textContent=receipts.length;
+      document.getElementById("adminRefundCount").textContent=refunds.length;
+      receiptsBox.innerHTML=receipts.length ? receipts.map(x=>`
+        <div class="txn-row">
+          <strong>${escapeHTML(x.id||"Receipt")}</strong>
+          <span class="status-pill">${escapeHTML(x.verificationStatus||"pending")}</span>
+          <div style="margin-top:6px;color:var(--muted);">${escapeHTML(x.transactionId||"No transaction ID")} • ${escapeHTML(x.userId||"Unknown user")}</div>
+          ${x.verificationStatus==="pending" ? `<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn" onclick="verifyAdminReceipt('${escapeAttribute(x.id)}','verified')">Verify</button><button class="btn btn-outline" onclick="verifyAdminReceipt('${escapeAttribute(x.id)}','rejected')">Reject</button></div>`:""}
+        </div>`).join("") : '<div class="empty">No receipt records yet.</div>';
+      refundsBox.innerHTML=refunds.length ? refunds.map(x=>`
+        <div class="txn-row"><strong>${escapeHTML(x.id||"Refund")}</strong> <span class="status-pill">${escapeHTML(x.status||"pending")}</span>
+        <div style="margin-top:6px;color:var(--muted);">${escapeHTML(x.transactionId||"No transaction ID")} • ${escapeHTML(x.reason||"No reason supplied")}</div>
+        ${x.status==="pending"?`<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn" onclick="updateAdminRefund('${escapeAttribute(x.id)}','approved')">Approve</button><button class="btn btn-outline" onclick="updateAdminRefund('${escapeAttribute(x.id)}','rejected')">Reject</button></div>`:""}</div>`).join(""):'<div class="empty">No refund requests yet.</div>';
+    }catch(e){
+      receiptsBox.innerHTML='<div class="empty">Transaction backend is not available yet.</div>';
+      refundsBox.innerHTML='<div class="empty">Refund backend is not available yet.</div>';
+    }
+}
+async function verifyAdminReceipt(id,status){
+  try{await apiFetch("/api/admin/receipts/"+encodeURIComponent(id)+"/verify",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});showToast("Receipt status updated.");loadAdminTransactions();}catch(e){showToast("Could not update receipt.");}
+}
+async function updateAdminRefund(id,status){
+  try{await apiFetch("/api/admin/refunds/"+encodeURIComponent(id),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});showToast("Refund status updated.");loadAdminTransactions();}catch(e){showToast("Could not update refund.");}
+}
 
 /* =====================================================
    LOGOUT
