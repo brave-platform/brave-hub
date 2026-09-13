@@ -7,6 +7,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const db = require("./backend/database");
 
 const app = express();
 
@@ -149,6 +150,8 @@ const receiptsFile =
 const refundsFile =
     path.join(backendFolder, "refunds.json");
 
+const adRequestsFile = path.join(backendFolder, "ad-requests.json");
+
 
 /* =====================================================
    CREATE FILE IF MISSING
@@ -181,7 +184,8 @@ function createFileIfMissing(file) {
     moderationFile,
     auditFile,
     notificationsFile,
-    aiConversationsFile
+    aiConversationsFile,
+    adRequestsFile
 ].forEach(createFileIfMissing);
 
 
@@ -190,6 +194,11 @@ function createFileIfMissing(file) {
 ===================================================== */
 
 function readData(file) {
+
+    if (file === registrationFile) {
+        try { return loadAuthUsers(); }
+        catch (error) { console.error("Account database read error:", error); return []; }
+    }
 
     try {
 
@@ -227,6 +236,11 @@ function readData(file) {
 
 
 function writeData(file, data) {
+
+    if (file === registrationFile) {
+        syncAuthUsers(data);
+        return;
+    }
 
     fs.writeFileSync(
         file,
@@ -275,6 +289,85 @@ function safeUser(user) {
 
 
 /* =====================================================
+   PERSISTENT ACCOUNT DATABASE
+   Authentication is stored in SQLite so account lookup is
+   not dependent on the JSON file surviving a Render restart.
+===================================================== */
+
+function dbUserToObject(row) {
+    if (!row) return null;
+    return {
+        id: row.brave_id,
+        dbId: row.id,
+        fullname: row.fullname,
+        email: row.email,
+        phone: row.phone || "",
+        country: row.country,
+        password: row.password_hash,
+        accountStatus: row.account_status || "active",
+        verificationStatus: row.verification_status || "unverified",
+        emailVerified: Boolean(row.email_verified),
+        phoneVerified: Boolean(row.phone_verified),
+        createdAt: row.created_at
+    };
+}
+
+function loadAuthUsers() {
+    return db.prepare("SELECT * FROM users ORDER BY id ASC").all().map(dbUserToObject);
+}
+
+function syncAuthUsers(users) {
+    const insert = db.prepare(`
+        INSERT INTO users (brave_id, fullname, email, country, phone, password_hash, account_status, verification_status, email_verified, phone_verified, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(brave_id) DO UPDATE SET
+            fullname=excluded.fullname,
+            email=excluded.email,
+            country=excluded.country,
+            phone=excluded.phone,
+            password_hash=excluded.password_hash,
+            account_status=excluded.account_status,
+            verification_status=excluded.verification_status,
+            email_verified=excluded.email_verified,
+            phone_verified=excluded.phone_verified
+    `);
+    const tx = db.transaction((items) => {
+        const keep = new Set(items.map(u => u.id));
+        const existing = db.prepare("SELECT brave_id FROM users").all();
+        for (const row of existing) {
+            if (!keep.has(row.brave_id)) db.prepare("DELETE FROM users WHERE brave_id = ?").run(row.brave_id);
+        }
+        for (const u of items) {
+            insert.run(
+                u.id,
+                u.fullname || "",
+                (u.email || "").trim().toLowerCase(),
+                u.country || "",
+                u.phone || "",
+                u.password || "",
+                u.accountStatus || "active",
+                u.verificationStatus || "unverified",
+                u.emailVerified ? 1 : 0,
+                u.phoneVerified ? 1 : 0,
+                u.createdAt || new Date().toISOString()
+            );
+        }
+    });
+    tx(users);
+}
+
+// One-time migration of the old registration.json accounts into SQLite.
+try {
+    const existingDbUsers = db.prepare("SELECT COUNT(*) AS count FROM users").get().count;
+    if (existingDbUsers === 0 && fs.existsSync(registrationFile)) {
+        const oldUsers = JSON.parse(fs.readFileSync(registrationFile, "utf8"));
+        if (Array.isArray(oldUsers) && oldUsers.length) syncAuthUsers(oldUsers);
+    }
+} catch (migrationError) {
+    console.error("Account migration warning:", migrationError.message);
+}
+
+/* =====================================================
    EMAIL SETUP
 ===================================================== */
 
@@ -313,6 +406,77 @@ const adminSessions =
 
 const ADMIN_SESSION_DURATION =
     8 * 60 * 60 * 1000;
+
+const userSessions = new Map();
+const USER_SESSION_DURATION = 7 * 24 * 60 * 60 * 1000;
+const emailVerificationTokens = new Map();
+const phoneVerificationChallenges = new Map();
+const phoneChangeChallenges = new Map();
+const phoneResetChallenges = new Map();
+
+function normalizePhone(phone, country = "Nigeria") {
+    let value = String(phone || "").trim().replace(/[\s().-]/g, "");
+    if (country.toLowerCase() === "nigeria" && /^0\d{10}$/.test(value)) value = "+234" + value.slice(1);
+    if (/^234\d{10}$/.test(value)) value = "+" + value;
+    return value;
+}
+
+function isE164(phone) { return /^\+[1-9]\d{7,14}$/.test(phone); }
+
+async function twilioVerifyStart(to, channel = "sms") {
+    const sid = process.env.TWILIO_VERIFY_SERVICE_SID;
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    if (!sid || !accountSid || !authToken) throw new Error("Phone verification is not configured. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_VERIFY_SERVICE_SID in Render.");
+    const body = new URLSearchParams({To: to, Channel: channel});
+    const r = await fetch(`https://verify.twilio.com/v2/Services/${encodeURIComponent(sid)}/Verifications`, {
+        method:"POST", headers:{"Authorization":"Basic "+Buffer.from(accountSid+":"+authToken).toString("base64"),"Content-Type":"application/x-www-form-urlencoded"}, body
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message || "Unable to send phone verification code.");
+    return data;
+}
+
+async function twilioVerifyCheck(to, code) {
+    const sid = process.env.TWILIO_VERIFY_SERVICE_SID;
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    if (!sid || !accountSid || !authToken) throw new Error("Phone verification is not configured.");
+    const body = new URLSearchParams({To: to, Code: String(code || "").trim()});
+    const r = await fetch(`https://verify.twilio.com/v2/Services/${encodeURIComponent(sid)}/VerificationCheck`, {
+        method:"POST", headers:{"Authorization":"Basic "+Buffer.from(accountSid+":"+authToken).toString("base64"),"Content-Type":"application/x-www-form-urlencoded"}, body
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message || "Unable to verify the code.");
+    return data.status === "approved";
+}
+
+function createUserSession(userId) {
+    const token = crypto.randomBytes(48).toString("hex");
+    userSessions.set(token, {userId, createdAt:Date.now(), expiresAt:Date.now()+USER_SESSION_DURATION});
+    return token;
+}
+
+function getUserSession(req) {
+    const token = req.headers["x-user-token"] || req.body?.userToken;
+    if (!token) return null;
+    const session = userSessions.get(token);
+    if (!session) return null;
+    if (Date.now() > session.expiresAt) { userSessions.delete(token); return null; }
+    return session;
+}
+
+function requireUser(req,res,next) {
+    const session = getUserSession(req);
+    if (!session) return res.status(401).json({message:"Please log in again.", code:"AUTH_REQUIRED"});
+    req.userSession = session;
+    next();
+}
+
+function findUserById(id) {
+    return readData(registrationFile).find(u => String(u.id) === String(id));
+}
+
 
 
 function createAdminSession(email) {
@@ -528,6 +692,7 @@ app.post(
             const {
                 fullname,
                 email,
+                phone,
                 country,
                 password,
                 acceptedTerms
@@ -537,6 +702,7 @@ app.post(
             if (
                 !fullname ||
                 !email ||
+                !phone ||
                 !country ||
                 !password ||
                 acceptedTerms !== true
@@ -605,6 +771,16 @@ app.post(
 
             }
 
+            const normalizedPhone = normalizePhone(phone, country);
+            if (!isE164(normalizedPhone)) {
+                return res.status(400).json({ message: "Enter a valid phone number with country code, for example +2348012345678." });
+            }
+
+            const existingPhone = users.find(user => normalizePhone(user.phone, user.country) === normalizedPhone);
+            if (existingPhone) {
+                return res.status(400).json({ message: "An account with this phone number already exists." });
+            }
+
 
             const hashedPassword =
                 await bcrypt.hash(
@@ -626,7 +802,10 @@ app.post(
                     fullname.trim(),
 
                 email:
-                    email.trim(),
+                    email.trim().toLowerCase(),
+
+                phone:
+                    normalizedPhone,
 
                 country:
                     country.trim(),
@@ -639,6 +818,12 @@ app.post(
 
                 verificationStatus:
                     "unverified",
+
+                emailVerified:
+                    false,
+
+                phoneVerified:
+                    false,
 
                 createdAt:
                     now
@@ -706,14 +891,31 @@ app.post(
                 profiles
             );
 
+            let phoneVerificationSent = false;
+            try {
+                await twilioVerifyStart(newUser.phone, "sms");
+                phoneVerificationSent = true;
+            } catch (phoneError) {
+                console.error("Registration phone OTP error:", phoneError.message);
+            }
+
+            const emailToken = crypto.randomBytes(32).toString("hex");
+            emailVerificationTokens.set(emailToken, {userId:newUser.id, expiresAt:Date.now()+24*60*60*1000});
+            try {
+                const verifyLink = `${req.protocol}://${req.get("host")}/verify-email?token=${emailToken}`;
+                await transporter.sendMail({from:process.env.EMAIL_USER,to:newUser.email,subject:"Verify your Unique BRAVE email",text:`Hello ${newUser.fullname},\n\nVerify your BRAVE email by opening:\n${verifyLink}\n\nThis link expires in 24 hours.
+
+BRAVE Team`});
+            } catch (emailError) { console.error("Registration email verification error:", emailError.message); }
 
             return res
                 .status(201)
                 .json({
 
                     message:
-                        "Account created successfully.",
-
+                        phoneVerificationSent ? "Account created. Enter the OTP sent to your phone." : "Account created. Phone verification still needs to be completed.",
+                    verificationRequired: true,
+                    phoneVerificationSent,
                     user:
                         safeUser(
                             newUser
@@ -756,13 +958,17 @@ app.post(
 
             const {
                 email,
+                phone,
+                identifier,
                 password,
                 acceptedTerms
             } = req.body;
 
 
+            const loginIdentifier = (identifier || email || phone || "").trim();
+
             if (
-                !email ||
+                !loginIdentifier ||
                 !password ||
                 acceptedTerms !== true
             ) {
@@ -785,16 +991,12 @@ app.post(
                 );
 
 
-            const user =
-                users.find(
-                    item =>
-                        item.email
-                            .trim()
-                            .toLowerCase() ===
-                        email
-                            .trim()
-                            .toLowerCase()
-                );
+            const normalizedIdentifier = loginIdentifier.toLowerCase();
+            const normalizedLoginPhone = normalizePhone(loginIdentifier);
+            const user = users.find(item =>
+                item.email.trim().toLowerCase() === normalizedIdentifier ||
+                (item.phone && normalizePhone(item.phone, item.country) === normalizedLoginPhone)
+            );
 
 
             if (!user) {
@@ -866,16 +1068,13 @@ app.post(
             }
 
 
+            const sessionToken = createUserSession(user.id);
             return res.json({
-
-                message:
-                    "Login successful.",
-
-                user:
-                    safeUser(
-                        user
-                    )
-
+                message:"Login successful.",
+                token:sessionToken,
+                expiresIn:USER_SESSION_DURATION,
+                phoneVerified: user.phoneVerified === true || user.verificationStatus === "verified",
+                user:safeUser(user)
             });
 
 
@@ -1283,6 +1482,110 @@ BRAVE Team`
     }
 );
 
+
+
+/* =====================================================
+   EMAIL VERIFICATION
+===================================================== */
+app.get("/verify-email", (req,res)=>{
+    const token=req.query.token;
+    const data=emailVerificationTokens.get(token);
+    if(!data || Date.now()>data.expiresAt) return res.status(400).send("This email verification link is invalid or expired. You can request another verification email from your account.");
+    const users=readData(registrationFile); const i=users.findIndex(u=>u.id===data.userId);
+    if(i<0) return res.status(404).send("Account not found.");
+    users[i].emailVerified=true; users[i].emailVerifiedAt=new Date().toISOString();
+    writeData(registrationFile,users); emailVerificationTokens.delete(token);
+    res.send(`<html><body style="font-family:Arial;background:#24103f;color:white;display:grid;place-items:center;min-height:100vh"><div style="text-align:center"><h1 style="color:#ffd34d">Email verified ✓</h1><p>Your Unique BRAVE email has been verified.</p><a href="/login.html" style="color:#ffd34d">Return to login</a></div></body></html>`);
+});
+
+app.post("/api/phone/send-otp", async (req,res)=>{
+    try {
+        const phone=normalizePhone(req.body.phone,req.body.country||"Nigeria");
+        if(!isE164(phone)) return res.status(400).json({message:"Enter a valid phone number with country code."});
+        await twilioVerifyStart(phone, req.body.channel === "call" ? "call" : "sms");
+        res.json({message:`Verification ${req.body.channel === "call" ? "call" : "code"} sent.`});
+    } catch(e) { console.error(e); res.status(500).json({message:e.message}); }
+});
+
+app.post("/api/phone/verify", async (req,res)=>{
+    try {
+        const phone=normalizePhone(req.body.phone,req.body.country||"Nigeria");
+        const approved=await twilioVerifyCheck(phone,req.body.code);
+        if(!approved) return res.status(400).json({message:"Incorrect or expired verification code."});
+        const users=readData(registrationFile); const i=users.findIndex(u=>normalizePhone(u.phone,u.country)===phone);
+        if(i>=0){users[i].phoneVerified=true; users[i].phoneVerifiedAt=new Date().toISOString(); users[i].verificationStatus="verified"; writeData(registrationFile,users);}
+        res.json({message:"Phone number verified successfully.",verified:true});
+    } catch(e){console.error(e);res.status(500).json({message:e.message});}
+});
+
+/* =====================================================
+   ACCOUNT PHONE CHANGE
+===================================================== */
+app.post("/api/account/phone/change/start", requireUser, async (req,res)=>{
+    try {
+        const user=findUserById(req.userSession.userId);
+        if(!user || !user.phone) return res.status(404).json({message:"Current phone number not found."});
+        await twilioVerifyStart(normalizePhone(user.phone,user.country), "sms");
+        phoneChangeChallenges.set(req.userSession.userId,{stage:"current",currentPhone:normalizePhone(user.phone,user.country),expiresAt:Date.now()+10*60*1000});
+        res.json({message:"OTP sent to your currently registered phone number."});
+    } catch(e){res.status(500).json({message:e.message});}
+});
+
+app.post("/api/account/phone/change/verify-current", requireUser, async (req,res)=>{
+    try {
+        const c=phoneChangeChallenges.get(req.userSession.userId); if(!c||c.expiresAt<Date.now()) return res.status(400).json({message:"Start the phone change process again."});
+        if(!(await twilioVerifyCheck(c.currentPhone,req.body.code))) return res.status(400).json({message:"Incorrect or expired OTP."});
+        c.stage="currentVerified"; phoneChangeChallenges.set(req.userSession.userId,c); res.json({message:"Current phone verified. You can now add the new number."});
+    } catch(e){res.status(500).json({message:e.message});}
+});
+
+app.post("/api/account/phone/change/send-new", requireUser, async (req,res)=>{
+    try {
+        const c=phoneChangeChallenges.get(req.userSession.userId); if(!c||c.stage!=="currentVerified"||c.expiresAt<Date.now()) return res.status(400).json({message:"Verify your current phone first."});
+        const user=findUserById(req.userSession.userId); const phone=normalizePhone(req.body.phone,user?.country||"Nigeria");
+        if(!isE164(phone)) return res.status(400).json({message:"Enter a valid new phone number."});
+        const users=readData(registrationFile); if(users.some(u=>u.id!==user.id && normalizePhone(u.phone,u.country)===phone)) return res.status(400).json({message:"That phone number is already linked to another BRAVE account."});
+        await twilioVerifyStart(phone, req.body.channel === "call" ? "call" : "sms");
+        c.newPhone=phone; c.stage="newPending"; c.expiresAt=Date.now()+10*60*1000; phoneChangeChallenges.set(req.userSession.userId,c);
+        res.json({message:`Verification ${req.body.channel === "call" ? "call" : "code"} sent to the new number."`});
+    } catch(e){res.status(500).json({message:e.message});}
+});
+
+app.post("/api/account/phone/change/verify-new", requireUser, async (req,res)=>{
+    try {
+        const c=phoneChangeChallenges.get(req.userSession.userId); if(!c||c.stage!=="newPending"||c.expiresAt<Date.now()) return res.status(400).json({message:"Start the phone change process again."});
+        if(!(await twilioVerifyCheck(c.newPhone,req.body.code))) return res.status(400).json({message:"Incorrect or expired OTP."});
+        const users=readData(registrationFile); const i=users.findIndex(u=>u.id===req.userSession.userId); if(i<0)return res.status(404).json({message:"Account not found."});
+        users[i].phone=c.newPhone; users[i].phoneVerified=true; users[i].phoneChangedAt=new Date().toISOString(); users[i].verificationStatus="verified"; writeData(registrationFile,users); phoneChangeChallenges.delete(req.userSession.userId);
+        res.json({message:"Phone number changed and verified successfully.",phone:c.newPhone});
+    } catch(e){res.status(500).json({message:e.message});}
+});
+
+/* =====================================================
+   PASSWORD RESET BY PHONE
+===================================================== */
+app.post("/forgot-password-phone", async (req,res)=>{
+    try {
+        const phone=normalizePhone(req.body.phone,req.body.country||"Nigeria");
+        const user=readData(registrationFile).find(u=>normalizePhone(u.phone,u.country)===phone);
+        if(!user) return res.json({message:"If that phone belongs to a BRAVE account, a verification code has been sent."});
+        await twilioVerifyStart(phone,"sms");
+        phoneResetChallenges.set(phone,{userId:user.id,expiresAt:Date.now()+10*60*1000});
+        res.json({message:"If that phone belongs to a BRAVE account, a verification code has been sent."});
+    } catch(e){res.status(500).json({message:e.message});}
+});
+
+app.post("/reset-password-phone", async (req,res)=>{
+    try {
+        const phone=normalizePhone(req.body.phone,req.body.country||"Nigeria"); const c=phoneResetChallenges.get(phone);
+        if(!c||c.expiresAt<Date.now()) return res.status(400).json({message:"The phone reset request is invalid or expired."});
+        if(!(await twilioVerifyCheck(phone,req.body.code))) return res.status(400).json({message:"Incorrect or expired OTP."});
+        if(!req.body.password || req.body.password.length<6) return res.status(400).json({message:"Password must be at least 6 characters."});
+        const users=readData(registrationFile); const i=users.findIndex(u=>u.id===c.userId); if(i<0)return res.status(404).json({message:"Account not found."});
+        users[i].password=await bcrypt.hash(req.body.password,10); users[i].passwordChangedAt=new Date().toISOString(); writeData(registrationFile,users); phoneResetChallenges.delete(phone);
+        res.json({message:"Password reset successful. You can now log in."});
+    } catch(e){res.status(500).json({message:e.message});}
+});
 
 /* =====================================================
    FORGOT PASSWORD
@@ -6080,6 +6383,22 @@ app.patch(
 );
 
 
+
+/* =====================================================
+   ADVERTISING REQUESTS
+===================================================== */
+app.post("/api/advertising-requests", requireUser, (req,res)=>{
+    const {title,description,category,contactPreference}=req.body||{};
+    if(!title||!description) return res.status(400).json({message:"Advertisement title and description are required."});
+    const user=findUserById(req.userSession.userId); if(!user)return res.status(404).json({message:"Account not found."});
+    const items=readData(adRequestsFile); const item={id:createId("adreq"),userId:user.id,fullname:user.fullname,email:user.email,phone:user.phone||"",title:title.trim(),description:description.trim(),category:category||"General",contactPreference:contactPreference||"BRAVE messages",status:"pending",createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    items.push(item); writeData(adRequestsFile,items); addAuditLog({adminEmail:"system",action:"AD_REQUEST_CREATED",targetType:"advertising_request",targetId:item.id,reason:"User submitted an advertising request."});
+    res.status(201).json({message:"Advertising request submitted successfully.",request:item});
+});
+app.get("/api/advertising-requests/mine", requireUser, (req,res)=>{ const items=readData(adRequestsFile).filter(x=>x.userId===req.userSession.userId).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); res.json({requests:items}); });
+app.get("/api/admin/advertising-requests", requireAdmin, (req,res)=>{ const items=readData(adRequestsFile).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); res.json({requests:items}); });
+app.patch("/api/admin/advertising-requests/:id", requireAdmin, (req,res)=>{ const allowed=["pending","reviewing","approved","rejected","completed"]; if(!allowed.includes(req.body.status)) return res.status(400).json({message:"Invalid advertising request status."}); const items=readData(adRequestsFile); const i=items.findIndex(x=>x.id===req.params.id); if(i<0)return res.status(404).json({message:"Advertising request not found."}); items[i].status=req.body.status; items[i].adminNote=req.body.adminNote||""; items[i].updatedAt=new Date().toISOString(); writeData(adRequestsFile,items); addAuditLog({adminEmail:req.admin.email,action:"AD_REQUEST_UPDATED",targetType:"advertising_request",targetId:items[i].id,reason:items[i].adminNote}); res.json({message:"Advertising request updated.",request:items[i]}); });
+
 /* =====================================================
    ADMIN ACTIVITY
 ===================================================== */
@@ -6125,6 +6444,24 @@ app.get(
     }
 );
 
+
+
+/* =====================================================
+   BRAVE SMART AI
+===================================================== */
+app.post("/api/ai/chat", async (req,res)=>{
+    try {
+        const question=String(req.body.question||"").trim(); if(!question)return res.status(400).json({message:"Ask BRAVE AI a question."});
+        const q=question.toLowerCase(); const products=readData(productsFile); const services=readData(servicesFile);
+        let matches=[];
+        for(const item of [...products,...services]) { const text=JSON.stringify(item).toLowerCase(); const words=q.split(/\s+/).filter(w=>w.length>2); const score=words.filter(w=>text.includes(w)).length; if(score) matches.push({...item,_score:score}); }
+        matches.sort((a,b)=>b._score-a._score); const top=matches.slice(0,5).map(({_score,...x})=>x);
+        let answer=BRAVE_FAQ.find(x=>x.q.some(k=>q.includes(k)))?.a || "I can help you search BRAVE products and services, compare suitable listings, explain account features, and guide you through BRAVE tools.";
+        if(top.length) answer += " I found these potentially relevant BRAVE listings: " + top.map(x=>x.name||x.title||"listing").join(", ") + ".";
+        const conversations=readData(aiConversationsFile); conversations.push({id:createId("ai"),userId:req.body.userId||"guest",question,answer,matchedListings:top,createdAt:new Date().toISOString()}); writeData(aiConversationsFile,conversations);
+        res.json({answer,matches:top});
+    } catch(e){console.error("AI error",e);res.status(500).json({message:"BRAVE AI is temporarily unavailable."});}
+});
 
 /* =====================================================
    ADMIN AI CONVERSATIONS

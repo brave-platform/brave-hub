@@ -578,10 +578,8 @@ loginForm.addEventListener(
                    without the password.
                 */
 
-                localStorage.setItem(
-                    "braveUser",
-                    JSON.stringify(data.user)
-                );
+                localStorage.setItem("braveUser", JSON.stringify(data.user));
+                if (data.token) localStorage.setItem("braveToken", data.token);
 
 
                 message.className =
@@ -645,6 +643,7 @@ loginForm.addEventListener(
 </script>
 
 
+<p style="text-align:center;margin-top:12px"><a href="phone-reset.html" style="color:#ffd34d;font-weight:bold">Reset password with phone OTP</a></p>
 </body>
 
 </html>

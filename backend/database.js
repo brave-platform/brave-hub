@@ -201,6 +201,13 @@ CREATE TABLE IF NOT EXISTS notifications (
 `);
 
 
+// Authentication/profile fields used by the live BRAVE account system.
+try { db.exec("ALTER TABLE users ADD COLUMN phone TEXT"); } catch (e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN account_status TEXT DEFAULT 'active'"); } catch (e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN verification_status TEXT DEFAULT 'unverified'"); } catch (e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0"); } catch (e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN phone_verified INTEGER DEFAULT 0"); } catch (e) {}
+
 console.log("BRAVE database connected successfully.");
 
 module.exports = db;

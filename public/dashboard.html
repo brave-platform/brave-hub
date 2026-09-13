@@ -1009,6 +1009,11 @@ textarea.form-control{
         <span class="label">Notifications</span>
     </button>
 
+    <button class="nav-btn" onclick="showPage('advertising',this)">
+        <span class="nav-icon">📢</span>
+        <span class="label">Advertise on BRAVE</span>
+    </button>
+
     <button class="nav-btn" onclick="showPage('suggestions',this)">
         <span class="nav-icon">💡</span>
         <span class="label">Suggestion Box</span>
@@ -2166,7 +2171,9 @@ textarea.form-control{
         </section>
 
 
-        <!-- ================= SETTINGS ================= -->
+        <section id="advertising" class="page"><h1 class="page-title">📢 Advertise on BRAVE</h1><p class="page-subtitle">Send an advertising request to the BRAVE team for review.</p><div class="card"><input id="adTitle" class="form-control" placeholder="Advertisement title"><select id="adCategory" class="form-control"><option>Product</option><option>Service</option><option>Business</option><option>Event</option><option>Other</option></select><textarea id="adDescription" class="form-control" rows="6" placeholder="Tell BRAVE what you want advertised..."></textarea><select id="adContact" class="form-control"><option>BRAVE messages</option><option>Email</option><option>Phone</option></select><button class="btn" onclick="submitAdRequest()">Submit advertising request</button><div id="adMsg" style="margin-top:12px"></div></div><div class="card" style="margin-top:20px"><h3>My advertising requests</h3><div id="myAdRequests">Loading...</div></div></section>
+
+<!-- ================= SETTINGS ================= -->
 
         <section id="settings" class="page">
 
@@ -2230,6 +2237,12 @@ textarea.form-control{
                                 Open
                             </button>
 
+                        </div>
+
+
+                        <div class="setting-item">
+                            <div><strong>Change Phone Number</strong><br><span>Verify your current number, then verify the new number by SMS or phone call.</span></div>
+                            <button class="btn btn-outline" onclick="openPhoneChange()">Change</button>
                         </div>
 
 
@@ -3384,14 +3397,7 @@ function sendAI(){
     input.value="";
 
 
-    setTimeout(()=>{
-
-        const answer =
-            generateAIReply(text);
-
-        addAIMessage(answer,"ai");
-
-    },500);
+    fetch("/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:text,userId:(JSON.parse(localStorage.getItem("braveUser")||"{}").id||"")})}).then(r=>r.json()).then(d=>addAIMessage(d.answer||generateAIReply(text),"ai")).catch(()=>addAIMessage(generateAIReply(text),"ai"));
 
 }
 
@@ -3760,6 +3766,8 @@ function rateStar(number){
 }
 
 
+async function submitAdRequest(){const token=localStorage.getItem("braveToken")||"";const r=await fetch("/api/advertising-requests",{method:"POST",headers:{"Content-Type":"application/json","x-user-token":token},body:JSON.stringify({title:adTitle.value,description:adDescription.value,category:adCategory.value,contactPreference:adContact.value})});const d=await r.json();adMsg.textContent=d.message;if(r.ok){adTitle.value="";adDescription.value="";loadMyAdRequests()}}async function loadMyAdRequests(){const token=localStorage.getItem("braveToken")||"";try{const r=await fetch("/api/advertising-requests/mine",{headers:{"x-user-token":token}});const d=await r.json();myAdRequests.innerHTML=(d.requests||[]).map(x=>`<div style="padding:12px;border-bottom:1px solid #ffffff18"><strong>${escapeHTML(x.title)}</strong><br><small>${escapeHTML(x.category)} · ${escapeHTML(x.status)}</small><br>${escapeHTML(x.description)}</div>`).join("")||"No advertising requests yet."}catch(e){myAdRequests.textContent="Unable to load requests."}}loadMyAdRequests();
+
 /* =========================================================
    SUGGESTION BOX
 ========================================================= */
@@ -3847,6 +3855,7 @@ function wireSettingsButtons(){
             else if(title.includes("ai")) showPage("ai");
             else if(title.includes("help") || title.includes("support")) showPage("messages");
             else if(title.includes("security")) window.location.href="forgot-password.html";
+            else if(title.includes("phone")) openPhoneChange();
             else showToast(title ? title.charAt(0).toUpperCase()+title.slice(1)+" settings are ready to configure." : "Settings opened.");
         };
     });
@@ -3949,5 +3958,5 @@ function logout(){
 
 </script>
 
-</body>
+<div id="phoneChangeModal" style="display:none;position:fixed;inset:0;background:#0009;z-index:5000;align-items:center;justify-content:center;padding:20px"><div style="background:#241039;border:1px solid #ffd34d;border-radius:20px;padding:24px;max-width:460px;width:100%"><h2 style="color:#ffd34d">Change phone number</h2><p id="phoneChangeInfo" style="line-height:1.5;color:#ddd">First verify the phone currently on your account.</p><input id="currentPhoneOtp" class="form-control" placeholder="Current phone OTP" inputmode="numeric" maxlength="6"><button class="btn" onclick="startPhoneChange()">Send OTP to current phone</button><button class="btn btn-outline" onclick="verifyCurrentPhone()">Verify current phone</button><hr style="margin:18px 0;border-color:#ffffff22"><input id="newPhoneNumber" class="form-control" placeholder="New phone number, e.g. +2348012345678"><select id="newPhoneChannel" class="form-control"><option value="sms">SMS OTP</option><option value="call">Phone call verification</option></select><input id="newPhoneOtp" class="form-control" placeholder="New phone OTP" inputmode="numeric" maxlength="6"><button class="btn" onclick="sendNewPhone()">Send verification</button><button class="btn" onclick="verifyNewPhone()">Verify & Change Number</button><button class="btn btn-outline" onclick="closePhoneChange()">Close</button><div id="phoneChangeMsg" style="margin-top:12px;text-align:center"></div></div></div>\n<script>function openPhoneChange(){document.getElementById('phoneChangeModal').style.display='flex'}function closePhoneChange(){document.getElementById('phoneChangeModal').style.display='none'}function userToken(){return localStorage.getItem('braveToken')||''}async function pc(url,body){let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-user-token':userToken()},body:JSON.stringify(body||{})});let d=await r.json();document.getElementById('phoneChangeMsg').textContent=d.message||'Done';return r.ok}async function startPhoneChange(){await pc('/api/account/phone/change/start')}async function verifyCurrentPhone(){await pc('/api/account/phone/change/verify-current',{code:document.getElementById('currentPhoneOtp').value})}async function sendNewPhone(){await pc('/api/account/phone/change/send-new',{phone:document.getElementById('newPhoneNumber').value,channel:document.getElementById('newPhoneChannel').value})}async function verifyNewPhone(){let ok=await pc('/api/account/phone/change/verify-new',{code:document.getElementById('newPhoneOtp').value});if(ok){let u=JSON.parse(localStorage.getItem('braveUser')||'{}');u.phone=document.getElementById('newPhoneNumber').value;u.phoneVerified=true;localStorage.setItem('braveUser',JSON.stringify(u));setTimeout(closePhoneChange,900)}}</script></body>
 </html>

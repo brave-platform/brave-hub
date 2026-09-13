@@ -832,6 +832,18 @@ footer {
 
 
             <label>
+                Phone Number
+            </label>
+
+            <input
+                type="tel"
+                name="phone"
+                placeholder="Enter your phone number"
+                autocomplete="tel"
+                required>
+
+
+            <label>
                 Password
             </label>
 
@@ -1077,15 +1089,8 @@ document
                     form.reset();
 
 
-                    setTimeout(
-                        function() {
-
-                            window.location.href =
-                                "login.html";
-
-                        },
-                        1000
-                    );
+                    localStorage.setItem("braveUser", JSON.stringify(result.user || {}));
+                    window.location.href = "verify-phone.html?phone=" + encodeURIComponent((result.user || {}).phone || "");
 
 
                 } else {

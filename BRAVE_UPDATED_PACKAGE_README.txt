@@ -35,3 +35,10 @@ The new receipt/admin workflow provides the structure for verification. Real ban
 TEST
 Node syntax for index.js and backend/server.js has been checked.
 Inline JavaScript in the key HTML pages has also been syntax checked.
+
+
+AUTHENTICATION UPDATE
+- User accounts now use backend/brave.db (SQLite) for authentication persistence within the deployed service.
+- Registration collects phone number and prevents duplicate email/phone.
+- Login accepts the existing email field and can also accept a phone identifier when sent by the client.
+- Passwords remain bcrypt-hashed and are never returned to admin/client responses.

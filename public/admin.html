@@ -1236,6 +1236,8 @@ tr:hover td {
     </div>
 
 
+    <button class="nav-btn" onclick="showPage('advertising', this)"><span class="nav-icon">📢</span>Advertising Requests</button>
+
     <button
         class="nav-btn"
         onclick="showPage('messages', this)"
@@ -2179,6 +2181,8 @@ tr:hover td {
 </section>
 
 
+
+<section id="page-advertising" class="page"><h1 class="page-title">📢 Advertising Requests</h1><p class="page-description">Review advertising requests submitted by BRAVE users.</p><div class="panel"><div id="adRequestList">Loading advertising requests...</div></div></section>
 
 <!-- ================= SECURITY ================= -->
 
@@ -4669,6 +4673,6 @@ loadStats();
 </script>
 
 
-</body>
+<script>async function loadAdRequests(){const token=localStorage.getItem("braveAdminToken")||localStorage.getItem("adminToken")||"";try{const r=await fetch('/api/admin/advertising-requests',{headers:{'x-admin-token':token}});const d=await r.json();adRequestList.innerHTML=(d.requests||[]).map(x=>`<div style="padding:16px;border-bottom:1px solid #ffffff18"><strong>${x.title}</strong><br><small>${x.fullname} · ${x.email} · ${x.status}</small><p>${x.description}</p><select onchange="updateAdRequest('${x.id}',this.value)"><option ${x.status==='pending'?'selected':''}>pending</option><option ${x.status==='reviewing'?'selected':''}>reviewing</option><option ${x.status==='approved'?'selected':''}>approved</option><option ${x.status==='rejected'?'selected':''}>rejected</option><option ${x.status==='completed'?'selected':''}>completed</option></select></div>`).join('')||'No advertising requests yet.'}catch(e){adRequestList.textContent='Unable to load advertising requests.'}}async function updateAdRequest(id,status){const token=localStorage.getItem('braveAdminToken')||localStorage.getItem('adminToken')||'';await fetch('/api/admin/advertising-requests/'+encodeURIComponent(id),{method:'PATCH',headers:{'Content-Type':'application/json','x-admin-token':token},body:JSON.stringify({status})});loadAdRequests()}loadAdRequests();</script></body>
 
 </html>
