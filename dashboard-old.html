@@ -1,0 +1,3707 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BRAVE Dashboard</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f5f1fa;
+    color: #24103f;
+}
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar {
+    height: 72px;
+    background: white;
+    border-bottom: 1px solid #e5dce9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: #3d1761;
+}
+
+
+/* MENU BUTTON */
+
+.menu-button {
+    border: none;
+    background: #f0e8f5;
+    color: #3d1761;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.menu-button:hover {
+    background: #e4d8ec;
+}
+
+
+/* =========================
+   USER AREA
+========================= */
+
+.user-area {
+    position: relative;
+}
+
+.user-button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: white;
+    border: 1px solid #e0d5e9;
+    border-radius: 12px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #70429a;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.user-name {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.user-email {
+    font-size: 11px;
+    color: #887b92;
+}
+
+.user-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 55px;
+    width: 190px;
+    background: white;
+    border: 1px solid #e2d9e9;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(40,20,60,0.15);
+    padding: 8px;
+}
+
+.user-menu.show {
+    display: block;
+}
+
+.menu-item {
+    width: 100%;
+    padding: 11px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    color: #3b2850;
+}
+
+.menu-item:hover {
+    background: #f1e9f7;
+}
+
+.logout {
+    color: #a52d2d !important;
+}
+
+
+/* =========================
+   SIDE MENU
+========================= */
+
+.side-menu {
+    position: fixed;
+    left: -280px;
+    top: 72px;
+    width: 280px;
+    height: calc(100vh - 72px);
+    background: #24103f;
+    color: white;
+    padding: 20px 14px;
+    overflow-y: auto;
+    transition: 0.25s ease;
+    z-index: 40;
+}
+
+.side-menu.open {
+    left: 0;
+}
+
+.side-title {
+    color: #cdbddd;
+    font-size: 12px;
+    margin: 5px 12px 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-button {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 5px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: #d8cbe4;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.nav-button:hover,
+.nav-button.active {
+    background: #57317d;
+    color: white;
+}
+
+
+/* DARK OVERLAY */
+
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 72px 0 0 0;
+    background: rgba(20, 10, 30, 0.35);
+    z-index: 30;
+}
+
+.overlay.show {
+    display: block;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.main {
+    min-height: calc(100vh - 72px);
+    padding: 30px 35px;
+    max-width: 1400px;
+    margin: auto;
+}
+
+
+/* =========================
+   GENERAL
+========================= */
+
+.welcome {
+    margin-bottom: 22px;
+}
+
+.welcome h1 {
+    margin: 0 0 7px;
+    font-size: 29px;
+}
+
+.welcome p {
+    margin: 0;
+    color: #7d7088;
+}
+
+.section-title {
+    font-size: 18px;
+    margin: 25px 0 15px;
+}
+
+
+/* =========================
+   BALANCE
+========================= */
+
+.balance-card {
+    background: linear-gradient(135deg, #3d1761, #70429a);
+    color: white;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 12px 30px rgba(75,35,105,0.25);
+    margin-bottom: 22px;
+}
+
+.balance-label {
+    color: #d9c9e8;
+    font-size: 14px;
+}
+
+.balance {
+    font-size: 36px;
+    font-weight: bold;
+    margin: 10px 0 18px;
+}
+
+.account-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.account-status {
+    background: rgba(255,255,255,0.15);
+    padding: 8px 13px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+
+/* =========================
+   ACCOUNT DETAILS
+========================= */
+
+.account-details {
+    background: white;
+    border: 1px solid #e5dce9;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.details-header strong {
+    display: block;
+    font-size: 17px;
+}
+
+.details-header span {
+    color: #887b92;
+    font-size: 12px;
+}
+
+.verified {
+    background: #eee5f5;
+    color: #57317d !important;
+    padding: 7px 10px;
+    border-radius: 15px;
+}
+
+.account-number-box {
+    background: #f7f3fa;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.account-number-box span {
+    display: block;
+    color: #887b92;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.account-number-box strong {
+    font-size: 22px;
+    letter-spacing: 2px;
+}
+
+.account-number-box button {
+    float: right;
+    border: none;
+    background: #57317d;
+    color: white;
+    padding: 8px 13px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.details-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 18px;
+}
+
+.details-row span {
+    display: block;
+    color: #887b92;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+
+/* =========================
+   QUICK ACTIONS
+========================= */
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.action-card {
+    background: white;
+    border: 1px solid #e5dce9;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.action-card:hover {
+    box-shadow: 0 8px 20px rgba(60,30,80,0.1);
+    transform: translateY(-2px);
+}
+
+.action-icon {
+    font-size: 27px;
+    margin-bottom: 10px;
+}
+
+.action-card strong {
+    display: block;
+    font-size: 14px;
+}
+
+.action-card span {
+    display: block;
+    margin-top: 5px;
+    color: #8a7d94;
+    font-size: 12px;
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid #e5dce9;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.stat-card p {
+    color: #897c93;
+    margin: 0 0 8px;
+    font-size: 13px;
+}
+
+.stat-card h3 {
+    margin: 0;
+    font-size: 22px;
+}
+
+
+/* =========================
+   PAGE BOX
+========================= */
+
+.page-box {
+    background: white;
+    border: 1px solid #e5dce9;
+    border-radius: 16px;
+    padding: 22px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.page-header h2 {
+    margin: 0;
+}
+
+.primary-button {
+    background: #57317d;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    padding: 11px 16px;
+    cursor: pointer;
+}
+
+.primary-button:hover {
+    background: #452564;
+}
+
+
+/* =========================
+   FORM
+========================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ddd3e5;
+    border-radius: 9px;
+    outline: none;
+}
+
+.form-group textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #70429a;
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 13px 10px;
+    border-bottom: 1px solid #eee8f1;
+    text-align: left;
+    font-size: 13px;
+}
+
+.data-table th {
+    color: #766780;
+    font-size: 12px;
+}
+
+.empty {
+    text-align: center;
+    padding: 35px;
+    color: #8b7e94;
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-box {
+    background: white;
+    border: 1px solid #e5dce9;
+    border-radius: 15px;
+    padding: 22px;
+}
+
+.profile-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #eee8f1;
+}
+
+.profile-item:last-child {
+    border-bottom: none;
+}
+
+.profile-item strong {
+    display: inline-block;
+    width: 150px;
+}
+
+
+/* =========================
+   MESSAGES
+========================= */
+
+.messages-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 500px;
+}
+
+.conversation-list {
+    border-right: 1px solid #eee8f1;
+}
+
+.conversation {
+    padding: 15px;
+    border-bottom: 1px solid #eee8f1;
+    cursor: pointer;
+}
+
+.conversation:hover {
+    background: #f7f3fa;
+}
+
+.chat-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 15px;
+    border-bottom: 1px solid #eee8f1;
+    font-weight: bold;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    min-height: 330px;
+    background: #faf8fc;
+}
+
+.message {
+    max-width: 70%;
+    padding: 10px 13px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    background: white;
+}
+
+.message.me {
+    margin-left: auto;
+    background: #e9def1;
+}
+
+.chat-input {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid #eee8f1;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 11px;
+    border: 1px solid #ddd3e5;
+    border-radius: 9px;
+}
+
+
+/* =========================
+   NOTIFICATIONS
+========================= */
+
+.notification-box {
+    background: white;
+    border: 1px solid #e5dce9;
+    border-radius: 15px;
+    padding: 35px;
+    text-align: center;
+}
+
+.notification-icon {
+    font-size: 40px;
+}
+
+
+/* =========================
+   SETTINGS
+========================= */
+
+.setting {
+    background: white;
+    border: 1px solid #e5dce9;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.setting p {
+    color: #80738b;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 900px) {
+
+    .main {
+        padding: 22px 15px;
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .messages-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .conversation-list {
+        display: none;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .topbar {
+        padding: 0 14px;
+    }
+
+    .logo {
+        font-size: 21px;
+    }
+
+    .quick-actions,
+    .stats,
+    .details-row,
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .user-name,
+    .user-email {
+        display: none;
+    }
+
+    .balance {
+        font-size: 30px;
+    }
+
+    .account-info {
+        align-items: flex-start;
+        gap: 10px;
+        flex-direction: column;
+    }
+
+    .profile-item strong {
+        display: block;
+        width: auto;
+        margin-bottom: 5px;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     TOP BAR
+========================= -->
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <button
+            class="menu-button"
+            onclick="toggleSideMenu()">
+
+            ☰
+
+        </button>
+
+        <div class="logo">
+            BRAVE
+        </div>
+
+    </div>
+
+
+    <div class="user-area">
+
+        <button
+            class="user-button"
+            onclick="toggleUserMenu()">
+
+            <div
+                class="avatar"
+                id="avatar">
+
+                B
+
+            </div>
+
+            <div>
+
+                <div
+                    class="user-name"
+                    id="topName">
+
+                    User
+
+                </div>
+
+                <div
+                    class="user-email"
+                    id="topEmail">
+
+                    Loading...
+
+                </div>
+
+            </div>
+
+            ▼
+
+        </button>
+
+
+        <div
+            class="user-menu"
+            id="userMenu">
+
+            <button
+                class="menu-item"
+                onclick="openProfile()">
+
+                👤 My Profile
+
+            </button>
+
+            <button
+                class="menu-item"
+                onclick="openSettings()">
+
+                ⚙️ Settings
+
+            </button>
+
+            <button
+                class="menu-item logout"
+                onclick="logout()">
+
+                🚪 Logout
+
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- =========================
+     SIDE MENU
+========================= -->
+
+<aside
+    class="side-menu"
+    id="sideMenu">
+
+    <div class="side-title">
+        BRAVE MENU
+    </div>
+
+
+    <button
+        class="nav-button active"
+        onclick="showSection('home', this)">
+
+        🏠 Dashboard
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('customers', this)">
+
+        👥 Customers
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('products', this)">
+
+        🛍️ Products
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('services', this)">
+
+        🛠️ Services
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('jobs', this)">
+
+        📋 Jobs / Orders
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('invoices', this)">
+
+        🧾 Invoices
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('transactions', this)">
+
+        💰 Transactions
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('messages', this)">
+
+        💬 Messages
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('jobrequests', this)">
+
+        📢 Job Requests
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('skills', this)">
+
+        🎨 My Skills
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('reports', this)">
+
+        📊 Reports
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('notifications', this)">
+
+        🔔 Notifications
+
+    </button>
+
+
+    <button
+        class="nav-button"
+        onclick="showSection('settings', this)">
+
+        ⚙️ Settings
+
+    </button>
+
+</aside>
+
+
+<div
+    class="overlay"
+    id="overlay"
+    onclick="closeSideMenu()">
+</div>
+
+
+<!-- =========================
+     MAIN CONTENT
+========================= -->
+
+<main class="main">
+
+    <section id="content"></section>
+
+</main>
+
+
+<script>
+
+
+/* =========================
+   USER
+========================= */
+
+let user = null;
+
+try {
+
+    user = JSON.parse(
+        localStorage.getItem("braveUser")
+    );
+
+} catch (error) {
+
+    user = null;
+
+}
+
+
+if (
+    !user ||
+    typeof user !== "object" ||
+    !user.email
+) {
+
+    localStorage.removeItem("braveUser");
+
+    window.location.href = "login.html";
+
+}
+
+
+/* =========================
+   STORAGE
+========================= */
+
+function getData(key) {
+
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(key)
+        ) || [];
+
+    } catch (error) {
+
+        return [];
+
+    }
+
+}
+
+
+function saveData(key, data) {
+
+    localStorage.setItem(
+        key,
+        JSON.stringify(data)
+    );
+
+}
+
+
+/* =========================
+   USER DISPLAY
+========================= */
+
+document.getElementById("topName").textContent =
+    user.fullname || "BRAVE User";
+
+document.getElementById("topEmail").textContent =
+    user.email;
+
+document.getElementById("avatar").textContent =
+    (user.fullname || "B")
+        .charAt(0)
+        .toUpperCase();
+
+
+/* =========================
+   SIDE MENU
+========================= */
+
+function toggleSideMenu() {
+
+    document
+        .getElementById("sideMenu")
+        .classList.toggle("open");
+
+    document
+        .getElementById("overlay")
+        .classList.toggle("show");
+
+}
+
+
+function closeSideMenu() {
+
+    document
+        .getElementById("sideMenu")
+        .classList.remove("open");
+
+    document
+        .getElementById("overlay")
+        .classList.remove("show");
+
+}
+
+
+/* =========================
+   USER MENU
+========================= */
+
+function toggleUserMenu() {
+
+    document
+        .getElementById("userMenu")
+        .classList.toggle("show");
+
+}
+
+
+function closeUserMenu() {
+
+    document
+        .getElementById("userMenu")
+        .classList.remove("show");
+
+}
+
+
+function openProfile() {
+
+    closeUserMenu();
+    closeSideMenu();
+
+    showSection("profile", null);
+
+}
+
+
+function openSettings() {
+
+    closeUserMenu();
+    closeSideMenu();
+
+    showSection("settings", null);
+
+}
+
+
+function logout() {
+
+    const answer =
+        confirm("Are you sure you want to log out?");
+
+    if (!answer) return;
+
+    localStorage.removeItem("braveUser");
+
+    window.location.href = "login.html";
+
+}
+
+
+/* =========================
+   ACCOUNT NUMBER
+========================= */
+
+function copyAccountNumber() {
+
+    const number =
+        document
+        .getElementById("accountNumber")
+        .textContent;
+
+    navigator.clipboard.writeText(number);
+
+    alert("Account number copied.");
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+function showSection(section, button) {
+
+    const content =
+        document.getElementById("content");
+
+
+    if (button) {
+
+        document
+            .querySelectorAll(".nav-button")
+            .forEach(function(btn) {
+
+                btn.classList.remove("active");
+
+            });
+
+        button.classList.add("active");
+
+    }
+
+
+    closeSideMenu();
+
+
+    /* HOME / DASHBOARD */
+
+    if (section === "home") {
+
+        const customers =
+            getData("braveCustomers");
+
+        const products =
+            getData("braveProducts");
+
+        const jobs =
+            getData("braveJobs");
+
+        const invoices =
+            getData("braveInvoices");
+
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    Welcome back, ${user.fullname || "BRAVE User"} 👋
+                </h1>
+
+                <p>
+                    Your BRAVE business dashboard.
+                </p>
+
+            </div>
+
+
+            <div class="balance-card">
+
+                <div class="balance-label">
+                    BRAVE Account Balance
+                </div>
+
+                <div class="balance">
+                    ₦0.00
+                </div>
+
+                <div class="account-info">
+
+                    <span>
+                        ${user.email}
+                    </span>
+
+                    <span class="account-status">
+                        ● Active
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="account-details">
+
+                <div class="details-header">
+
+                    <div>
+
+                        <strong>
+                            BRAVE Account
+                        </strong>
+
+                        <span>
+                            Account details
+                        </span>
+
+                    </div>
+
+                    <span class="verified">
+                        ✓ Active
+                    </span>
+
+                </div>
+
+
+                <div class="account-number-box">
+
+                    <span>
+                        Account Number
+                    </span>
+
+                    <strong id="accountNumber">
+                        0000000000
+                    </strong>
+
+                    <button
+                        onclick="copyAccountNumber()">
+
+                        Copy
+
+                    </button>
+
+                </div>
+
+
+                <div class="details-row">
+
+                    <div>
+
+                        <span>
+                            Account Name
+                        </span>
+
+                        <strong>
+                            ${user.fullname || "BRAVE User"}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Country
+                        </span>
+
+                        <strong>
+                            ${user.country || "Not specified"}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <h3 class="section-title">
+                Quick Actions
+            </h3>
+
+
+            <div class="quick-actions">
+
+                <div
+                    class="action-card"
+                    onclick="showSection('customers')">
+
+                    <div class="action-icon">
+                        👥
+                    </div>
+
+                    <strong>
+                        Customers
+                    </strong>
+
+                    <span>
+                        Manage customers
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="action-card"
+                    onclick="showSection('products')">
+
+                    <div class="action-icon">
+                        🛍️
+                    </div>
+
+                    <strong>
+                        Products
+                    </strong>
+
+                    <span>
+                        Manage products
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="action-card"
+                    onclick="showSection('invoices')">
+
+                    <div class="action-icon">
+                        🧾
+                    </div>
+
+                    <strong>
+                        Invoice
+                    </strong>
+
+                    <span>
+                        Create invoice
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="action-card"
+                    onclick="showSection('messages')">
+
+                    <div class="action-icon">
+                        💬
+                    </div>
+
+                    <strong>
+                        Messages
+                    </strong>
+
+                    <span>
+                        Chat with customers
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <h3 class="section-title">
+                Business Overview
+            </h3>
+
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <p>
+                        Customers
+                    </p>
+
+                    <h3>
+                        ${customers.length}
+                    </h3>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <p>
+                        Products
+                    </p>
+
+                    <h3>
+                        ${products.length}
+                    </h3>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <p>
+                        Jobs
+                    </p>
+
+                    <h3>
+                        ${jobs.length}
+                    </h3>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <p>
+                        Invoices
+                    </p>
+
+                    <h3>
+                        ${invoices.length}
+                    </h3>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* CUSTOMERS */
+
+    else if (section === "customers") {
+
+        const customers =
+            getData("braveCustomers");
+
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    👥 Customers
+                </h1>
+
+                <p>
+                    Keep your customer information organized.
+                </p>
+
+            </div>
+
+
+            <div class="page-box">
+
+                <div class="page-header">
+
+                    <h2>
+                        Customer List
+                    </h2>
+
+                    <button
+                        class="primary-button"
+                        onclick="showAddCustomer()">
+
+                        + Add Customer
+
+                    </button>
+
+                </div>
+
+
+                <div id="customerArea">
+
+                    ${
+                        customers.length === 0
+
+                        ?
+
+                        `
+                        <div class="empty">
+
+                            No customers added yet.
+
+                            <br><br>
+
+                            Add your first customer to BRAVE.
+
+                        </div>
+                        `
+
+                        :
+
+                        `
+                        <div class="table-wrap">
+
+                            <table class="data-table">
+
+                                <tr>
+
+                                    <th>
+                                        Name
+                                    </th>
+
+                                    <th>
+                                        Phone
+                                    </th>
+
+                                    <th>
+                                        Email
+                                    </th>
+
+                                </tr>
+
+
+                                ${customers.map(function(customer) {
+
+                                    return `
+
+                                    <tr>
+
+                                        <td>
+                                            ${customer.name}
+                                        </td>
+
+                                        <td>
+                                            ${customer.phone}
+                                        </td>
+
+                                        <td>
+                                            ${customer.email || "-"}
+                                        </td>
+
+                                    </tr>
+
+                                    `;
+
+                                }).join("")}
+
+                            </table>
+
+                        </div>
+                        `
+
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* PRODUCTS */
+
+    else if (section === "products") {
+
+        const products =
+            getData("braveProducts");
+
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    🛍️ Products
+                </h1>
+
+                <p>
+                    Add products and their prices.
+                </p>
+
+            </div>
+
+
+            <div class="page-box">
+
+                <div class="page-header">
+
+                    <h2>
+                        Products
+                    </h2>
+
+                    <button
+                        class="primary-button"
+                        onclick="showAddProduct()">
+
+                        + Add Product
+
+                    </button>
+
+                </div>
+
+
+                ${
+                    products.length === 0
+
+                    ?
+
+                    `
+                    <div class="empty">
+                        No products added yet.
+                    </div>
+                    `
+
+                    :
+
+                    `
+                    <div class="table-wrap">
+
+                        <table class="data-table">
+
+                            <tr>
+
+                                <th>
+                                    Product
+                                </th>
+
+                                <th>
+                                    Price
+                                </th>
+
+                                <th>
+                                    Stock
+                                </th>
+
+                            </tr>
+
+
+                            ${products.map(function(product) {
+
+                                return `
+
+                                <tr>
+
+                                    <td>
+                                        ${product.name}
+                                    </td>
+
+                                    <td>
+                                        ₦${product.price}
+                                    </td>
+
+                                    <td>
+                                        ${product.stock || "Not specified"}
+                                    </td>
+
+                                </tr>
+
+                                `;
+
+                            }).join("")}
+
+                        </table>
+
+                    </div>
+                    `
+
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* SERVICES */
+
+    else if (section === "services") {
+
+        const services =
+            getData("braveServices");
+
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    🛠️ Services
+                </h1>
+
+                <p>
+                    List the services or skills your business provides.
+                </p>
+
+            </div>
+
+
+            <div class="page-box">
+
+                <div class="page-header">
+
+                    <h2>
+                        My Services
+                    </h2>
+
+                    <button
+                        class="primary-button"
+                        onclick="showAddService()">
+
+                        + Add Service
+
+                    </button>
+
+                </div>
+
+
+                ${
+                    services.length === 0
+
+                    ?
+
+                    `
+                    <div class="empty">
+                        No services added yet.
+                    </div>
+                    `
+
+                    :
+
+                    `
+                    <div class="table-wrap">
+
+                        <table class="data-table">
+
+                            <tr>
+
+                                <th>
+                                    Service
+                                </th>
+
+                                <th>
+                                    Description
+                                </th>
+
+                            </tr>
+
+
+                            ${services.map(function(service) {
+
+                                return `
+
+                                <tr>
+
+                                    <td>
+                                        ${service.name}
+                                    </td>
+
+                                    <td>
+                                        ${service.description || "-"}
+                                    </td>
+
+                                </tr>
+
+                                `;
+
+                            }).join("")}
+
+                        </table>
+
+                    </div>
+                    `
+
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* JOBS */
+
+    else if (section === "jobs") {
+
+        const jobs =
+            getData("braveJobs");
+
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    📋 Jobs / Orders
+                </h1>
+
+                <p>
+                    Track work and customer orders.
+                </p>
+
+            </div>
+
+
+            <div class="page-box">
+
+                <div class="page-header">
+
+                    <h2>
+                        Jobs
+                    </h2>
+
+                    <button
+                        class="primary-button"
+                        onclick="showAddJob()">
+
+                        + New Job
+
+                    </button>
+
+                </div>
+
+
+                ${
+                    jobs.length === 0
+
+                    ?
+
+                    `
+                    <div class="empty">
+                        No jobs recorded yet.
+                    </div>
+                    `
+
+                    :
+
+                    `
+                    <div class="table-wrap">
+
+                        <table class="data-table">
+
+                            <tr>
+
+                                <th>
+                                    Customer
+                                </th>
+
+                                <th>
+                                    Job
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+
+                            ${jobs.map(function(job) {
+
+                                return `
+
+                                <tr>
+
+                                    <td>
+                                        ${job.customer}
+                                    </td>
+
+                                    <td>
+                                        ${job.description}
+                                    </td>
+
+                                    <td>
+                                        ${job.status}
+                                    </td>
+
+                                </tr>
+
+                                `;
+
+                            }).join("")}
+
+                        </table>
+
+                    </div>
+                    `
+
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* INVOICES */
+
+    else if (section === "invoices") {
+
+        const invoices =
+            getData("braveInvoices");
+
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    🧾 Invoices
+                </h1>
+
+                <p>
+                    Create and track business invoices.
+                </p>
+
+            </div>
+
+
+            <div class="page-box">
+
+                <div class="page-header">
+
+                    <h2>
+                        Invoice Records
+                    </h2>
+
+                    <button
+                        class="primary-button"
+                        onclick="showAddInvoice()">
+
+                        + Create Invoice
+
+                    </button>
+
+                </div>
+
+
+                ${
+                    invoices.length === 0
+
+                    ?
+
+                    `
+                    <div class="empty">
+                        No invoices created yet.
+                    </div>
+                    `
+
+                    :
+
+                    `
+                    <div class="table-wrap">
+
+                        <table class="data-table">
+
+                            <tr>
+
+                                <th>
+                                    Customer
+                                </th>
+
+                                <th>
+                                    Amount
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+
+                            ${invoices.map(function(invoice) {
+
+                                return `
+
+                                <tr>
+
+                                    <td>
+                                        ${invoice.customer}
+                                    </td>
+
+                                    <td>
+                                        ₦${invoice.amount}
+                                    </td>
+
+                                    <td>
+                                        ${invoice.status}
+                                    </td>
+
+                                </tr>
+
+                                `;
+
+                            }).join("")}
+
+                        </table>
+
+                    </div>
+                    `
+
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* TRANSACTIONS */
+
+    else if (section === "transactions") {
+
+        const transactions =
+            getData("braveTransactions");
+
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    💰 Transactions
+                </h1>
+
+                <p>
+                    Record business income and expenses.
+                </p>
+
+            </div>
+
+
+            <div class="page-box">
+
+                <div class="page-header">
+
+                    <h2>
+                        Transaction Records
+                    </h2>
+
+                    <button
+                        class="primary-button"
+                        onclick="showAddTransaction()">
+
+                        + Record Transaction
+
+                    </button>
+
+                </div>
+
+
+                ${
+                    transactions.length === 0
+
+                    ?
+
+                    `
+                    <div class="empty">
+                        No transactions recorded yet.
+                    </div>
+                    `
+
+                    :
+
+                    `
+                    <div class="table-wrap">
+
+                        <table class="data-table">
+
+                            <tr>
+
+                                <th>
+                                    Description
+                                </th>
+
+                                <th>
+                                    Amount
+                                </th>
+
+                                <th>
+                                    Type
+                                </th>
+
+                            </tr>
+
+
+                            ${transactions.map(function(transaction) {
+
+                                return `
+
+                                <tr>
+
+                                    <td>
+                                        ${transaction.description}
+                                    </td>
+
+                                    <td>
+                                        ₦${transaction.amount}
+                                    </td>
+
+                                    <td>
+                                        ${transaction.type}
+                                    </td>
+
+                                </tr>
+
+                                `;
+
+                            }).join("")}
+
+                        </table>
+
+                    </div>
+                    `
+
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* MESSAGES */
+
+    else if (section === "messages") {
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    💬 BRAVE Messages
+                </h1>
+
+                <p>
+                    Communicate with customers and business contacts.
+                </p>
+
+            </div>
+
+
+            <div class="page-box messages-layout">
+
+                <div class="conversation-list">
+
+                    <div class="conversation">
+
+                        👤 Customer
+
+                        <br>
+
+                        <small>
+                            No conversations yet
+                        </small>
+
+                    </div>
+
+
+                    <div class="conversation">
+
+                        🔧 Service Provider
+
+                        <br>
+
+                        <small>
+                            BRAVE communication
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="chat-box">
+
+                    <div class="chat-header">
+                        BRAVE Conversation
+                    </div>
+
+
+                    <div
+                        class="chat-messages"
+                        id="chatMessages">
+
+                        <div class="message">
+
+                            🤖 BRAVE Assistant
+
+                            <br>
+
+                            <small>
+                                Welcome to BRAVE Messages.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="chat-input">
+
+                        <input
+                            id="chatInput"
+                            type="text"
+                            placeholder="Type a message..."
+                        >
+
+
+                        <button
+                            class="primary-button"
+                            onclick="sendMessage()">
+
+                            Send
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* JOB REQUESTS */
+
+    else if (section === "jobrequests") {
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    📢 Job Requests
+                </h1>
+
+                <p>
+                    Discover work requests posted by customers.
+                </p>
+
+            </div>
+
+
+            <div class="page-box">
+
+                <div class="empty">
+
+                    No job requests available yet.
+
+                    <br><br>
+
+                    Customer job requests will appear here.
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* SKILLS */
+
+    else if (section === "skills") {
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    🎨 My Skills
+                </h1>
+
+                <p>
+                    Showcase what you can do.
+                </p>
+
+            </div>
+
+
+            <div class="page-box">
+
+                <div class="page-header">
+
+                    <h2>
+                        Skills & Services
+                    </h2>
+
+                    <button
+                        class="primary-button"
+                        onclick="showAddSkill()">
+
+                        + Add Skill
+
+                    </button>
+
+                </div>
+
+
+                <div class="empty">
+
+                    Showcase skills such as typing,
+                    graphic design, photo editing,
+                    document formatting, painting,
+                    POP installation and other services.
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* REPORTS */
+
+    else if (section === "reports") {
+
+        const transactions =
+            getData("braveTransactions");
+
+
+        const income =
+            transactions
+            .filter(t => t.type === "Income")
+            .reduce(
+                (sum, t) => sum + Number(t.amount),
+                0
+            );
+
+
+        const expenses =
+            transactions
+            .filter(t => t.type === "Expense")
+            .reduce(
+                (sum, t) => sum + Number(t.amount),
+                0
+            );
+
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    📊 Business Reports
+                </h1>
+
+                <p>
+                    Overview of your recorded business activity.
+                </p>
+
+            </div>
+
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <p>
+                        Recorded Income
+                    </p>
+
+                    <h3>
+                        ₦${income.toLocaleString()}
+                    </h3>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <p>
+                        Recorded Expenses
+                    </p>
+
+                    <h3>
+                        ₦${expenses.toLocaleString()}
+                    </h3>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <p>
+                        Net Record
+                    </p>
+
+                    <h3>
+                        ₦${(income - expenses).toLocaleString()}
+                    </h3>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* NOTIFICATIONS */
+
+    else if (section === "notifications") {
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    🔔 Notifications
+                </h1>
+
+                <p>
+                    Stay updated with your BRAVE activity.
+                </p>
+
+            </div>
+
+
+            <div class="notification-box">
+
+                <div class="notification-icon">
+                    🔔
+                </div>
+
+                <h3>
+                    No new notifications
+                </h3>
+
+                <p>
+                    You're all caught up.
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* PROFILE */
+
+    else if (section === "profile") {
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    👤 My Profile
+                </h1>
+
+                <p>
+                    Your BRAVE account information.
+                </p>
+
+            </div>
+
+
+            <div class="profile-box">
+
+                <div class="profile-item">
+
+                    <strong>
+                        Full Name
+                    </strong>
+
+                    ${user.fullname || "Not provided"}
+
+                </div>
+
+
+                <div class="profile-item">
+
+                    <strong>
+                        Email
+                    </strong>
+
+                    ${user.email}
+
+                </div>
+
+
+                <div class="profile-item">
+
+                    <strong>
+                        Country
+                    </strong>
+
+                    ${user.country || "Not provided"}
+
+                </div>
+
+
+                <div class="profile-item">
+
+                    <strong>
+                        Account Status
+                    </strong>
+
+                    Active
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* SETTINGS */
+
+    else if (section === "settings") {
+
+        content.innerHTML = `
+
+            <div class="welcome">
+
+                <h1>
+                    ⚙️ Settings
+                </h1>
+
+                <p>
+                    Manage your BRAVE account preferences.
+                </p>
+
+            </div>
+
+
+            <div class="setting">
+
+                <h3>
+                    Account
+                </h3>
+
+                <p>
+                    Your BRAVE account is currently active.
+                </p>
+
+            </div>
+
+
+            <div class="setting">
+
+                <h3>
+                    Privacy & Security
+                </h3>
+
+                <p>
+                    Stronger security and protected database
+                    storage will be required before handling
+                    real customer data.
+                </p>
+
+            </div>
+
+
+            <div class="setting">
+
+                <h3>
+                    Sign Out
+                </h3>
+
+                <p>
+                    You will be asked to confirm before logging out.
+                </p>
+
+                <button
+                    class="primary-button logout"
+                    onclick="logout()">
+
+                    🚪 Logout
+
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================
+   ADD CUSTOMER
+========================= */
+
+function showAddCustomer() {
+
+    document.getElementById("content").innerHTML = `
+
+        <div class="welcome">
+
+            <h1>
+                Add Customer
+            </h1>
+
+            <p>
+                Add a customer to your BRAVE records.
+            </p>
+
+        </div>
+
+
+        <div class="page-box">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        Customer Name
+                    </label>
+
+                    <input
+                        id="customerName"
+                        type="text"
+                        placeholder="Full name"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Phone Number
+                    </label>
+
+                    <input
+                        id="customerPhone"
+                        type="tel"
+                        placeholder="Phone number"
+                    >
+
+                </div>
+
+
+                <div class="form-group full">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <input
+                        id="customerEmail"
+                        type="email"
+                        placeholder="Email address (optional)"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button
+                class="primary-button"
+                onclick="saveCustomer()">
+
+                Save Customer
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+function saveCustomer() {
+
+    const name =
+        document
+        .getElementById("customerName")
+        .value
+        .trim();
+
+    const phone =
+        document
+        .getElementById("customerPhone")
+        .value
+        .trim();
+
+    const email =
+        document
+        .getElementById("customerEmail")
+        .value
+        .trim();
+
+
+    if (!name || !phone) {
+
+        alert(
+            "Please enter the customer's name and phone number."
+        );
+
+        return;
+
+    }
+
+
+    const customers =
+        getData("braveCustomers");
+
+
+    customers.push({
+        name: name,
+        phone: phone,
+        email: email
+    });
+
+
+    saveData(
+        "braveCustomers",
+        customers
+    );
+
+
+    alert("Customer saved successfully.");
+
+
+    showSection("customers");
+
+}
+
+
+/* =========================
+   ADD PRODUCT
+========================= */
+
+function showAddProduct() {
+
+    document.getElementById("content").innerHTML = `
+
+        <div class="welcome">
+
+            <h1>
+                Add Product
+            </h1>
+
+            <p>
+                Product sellers can add their prices here.
+            </p>
+
+        </div>
+
+
+        <div class="page-box">
+
+            <div class="form-group">
+
+                <label>
+                    Product Name
+                </label>
+
+                <input
+                    id="productName"
+                    type="text"
+                    placeholder="Product name"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Price
+                </label>
+
+                <input
+                    id="productPrice"
+                    type="number"
+                    placeholder="Price"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Stock
+                </label>
+
+                <input
+                    id="productStock"
+                    type="number"
+                    placeholder="Quantity (optional)"
+                >
+
+            </div>
+
+
+            <button
+                class="primary-button"
+                onclick="saveProduct()">
+
+                Save Product
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+function saveProduct() {
+
+    const name =
+        document
+        .getElementById("productName")
+        .value
+        .trim();
+
+    const price =
+        document
+        .getElementById("productPrice")
+        .value
+        .trim();
+
+    const stock =
+        document
+        .getElementById("productStock")
+        .value
+        .trim();
+
+
+    if (!name || !price) {
+
+        alert(
+            "Please enter the product name and price."
+        );
+
+        return;
+
+    }
+
+
+    const products =
+        getData("braveProducts");
+
+
+    products.push({
+        name: name,
+        price: price,
+        stock: stock
+    });
+
+
+    saveData(
+        "braveProducts",
+        products
+    );
+
+
+    alert("Product saved successfully.");
+
+
+    showSection("products");
+
+}
+
+
+/* =========================
+   ADD SERVICE
+========================= */
+
+function showAddService() {
+
+    document.getElementById("content").innerHTML = `
+
+        <div class="welcome">
+
+            <h1>
+                Add Service
+            </h1>
+
+            <p>
+                Services do not require a public fixed price.
+            </p>
+
+        </div>
+
+
+        <div class="page-box">
+
+            <div class="form-group">
+
+                <label>
+                    Service Name
+                </label>
+
+                <input
+                    id="serviceName"
+                    type="text"
+                    placeholder="e.g. Generator Repair"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Description
+                </label>
+
+                <textarea
+                    id="serviceDescription"
+                    placeholder="Describe what you offer"
+                ></textarea>
+
+            </div>
+
+
+            <button
+                class="primary-button"
+                onclick="saveService()">
+
+                Save Service
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+function saveService() {
+
+    const name =
+        document
+        .getElementById("serviceName")
+        .value
+        .trim();
+
+    const description =
+        document
+        .getElementById("serviceDescription")
+        .value
+        .trim();
+
+
+    if (!name) {
+
+        alert(
+            "Please enter the service name."
+        );
+
+        return;
+
+    }
+
+
+    const services =
+        getData("braveServices");
+
+
+    services.push({
+        name: name,
+        description: description
+    });
+
+
+    saveData(
+        "braveServices",
+        services
+    );
+
+
+    alert("Service saved successfully.");
+
+
+    showSection("services");
+
+}
+
+
+/* =========================
+   ADD JOB
+========================= */
+
+function showAddJob() {
+
+    document.getElementById("content").innerHTML = `
+
+        <div class="welcome">
+
+            <h1>
+                Create Job
+            </h1>
+
+            <p>
+                Record work or an order for a customer.
+            </p>
+
+        </div>
+
+
+        <div class="page-box">
+
+            <div class="form-group">
+
+                <label>
+                    Customer
+                </label>
+
+                <input
+                    id="jobCustomer"
+                    type="text"
+                    placeholder="Customer name"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Job / Order Description
+                </label>
+
+                <textarea
+                    id="jobDescription"
+                    placeholder="Describe the work or order"
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Status
+                </label>
+
+                <select id="jobStatus">
+
+                    <option>
+                        Pending
+                    </option>
+
+                    <option>
+                        In Progress
+                    </option>
+
+                    <option>
+                        Completed
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                class="primary-button"
+                onclick="saveJob()">
+
+                Save Job
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+function saveJob() {
+
+    const customer =
+        document
+        .getElementById("jobCustomer")
+        .value
+        .trim();
+
+    const description =
+        document
+        .getElementById("jobDescription")
+        .value
+        .trim();
+
+    const status =
+        document
+        .getElementById("jobStatus")
+        .value;
+
+
+    if (!customer || !description) {
+
+        alert(
+            "Please enter the customer and job description."
+        );
+
+        return;
+
+    }
+
+
+    const jobs =
+        getData("braveJobs");
+
+
+    jobs.push({
+        customer: customer,
+        description: description,
+        status: status
+    });
+
+
+    saveData(
+        "braveJobs",
+        jobs
+    );
+
+
+    alert("Job saved successfully.");
+
+
+    showSection("jobs");
+
+}
+
+
+/* =========================
+   ADD INVOICE
+========================= */
+
+function showAddInvoice() {
+
+    document.getElementById("content").innerHTML = `
+
+        <div class="welcome">
+
+            <h1>
+                Create Invoice
+            </h1>
+
+            <p>
+                Create a simple BRAVE invoice record.
+            </p>
+
+        </div>
+
+
+        <div class="page-box">
+
+            <div class="form-group">
+
+                <label>
+                    Customer
+                </label>
+
+                <input
+                    id="invoiceCustomer"
+                    type="text"
+                    placeholder="Customer name"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Amount
+                </label>
+
+                <input
+                    id="invoiceAmount"
+                    type="number"
+                    placeholder="Amount"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Status
+                </label>
+
+                <select id="invoiceStatus">
+
+                    <option>
+                        Pending
+                    </option>
+
+                    <option>
+                        Paid
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                class="primary-button"
+                onclick="saveInvoice()">
+
+                Create Invoice
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+function saveInvoice() {
+
+    const customer =
+        document
+        .getElementById("invoiceCustomer")
+        .value
+        .trim();
+
+    const amount =
+        document
+        .getElementById("invoiceAmount")
+        .value
+        .trim();
+
+    const status =
+        document
+        .getElementById("invoiceStatus")
+        .value;
+
+
+    if (!customer || !amount) {
+
+        alert(
+            "Please enter the customer and amount."
+        );
+
+        return;
+
+    }
+
+
+    const invoices =
+        getData("braveInvoices");
+
+
+    invoices.push({
+        customer: customer,
+        amount: amount,
+        status: status
+    });
+
+
+    saveData(
+        "braveInvoices",
+        invoices
+    );
+
+
+    alert("Invoice created successfully.");
+
+
+    showSection("invoices");
+
+}
+
+
+/* =========================
+   TRANSACTION
+========================= */
+
+function showAddTransaction() {
+
+    document.getElementById("content").innerHTML = `
+
+        <div class="welcome">
+
+            <h1>
+                Record Transaction
+            </h1>
+
+            <p>
+                Record business income or expenses.
+            </p>
+
+        </div>
+
+
+        <div class="page-box">
+
+            <div class="form-group">
+
+                <label>
+                    Description
+                </label>
+
+                <input
+                    id="transactionDescription"
+                    type="text"
+                    placeholder="Transaction description"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Amount
+                </label>
+
+                <input
+                    id="transactionAmount"
+                    type="number"
+                    placeholder="Amount"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Type
+                </label>
+
+                <select id="transactionType">
+
+                    <option>
+                        Income
+                    </option>
+
+                    <option>
+                        Expense
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                class="primary-button"
+                onclick="saveTransaction()">
+
+                Save Transaction
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+function saveTransaction() {
+
+    const description =
+        document
+        .getElementById("transactionDescription")
+        .value
+        .trim();
+
+    const amount =
+        document
+        .getElementById("transactionAmount")
+        .value
+        .trim();
+
+    const type =
+        document
+        .getElementById("transactionType")
+        .value;
+
+
+    if (!description || !amount) {
+
+        alert(
+            "Please enter the description and amount."
+        );
+
+        return;
+
+    }
+
+
+    const transactions =
+        getData("braveTransactions");
+
+
+    transactions.push({
+        description: description,
+        amount: amount,
+        type: type
+    });
+
+
+    saveData(
+        "braveTransactions",
+        transactions
+    );
+
+
+    alert("Transaction recorded.");
+
+
+    showSection("transactions");
+
+}
+
+
+/* =========================
+   SKILL
+========================= */
+
+function showAddSkill() {
+
+    document.getElementById("content").innerHTML = `
+
+        <div class="welcome">
+
+            <h1>
+                Add Your Skill
+            </h1>
+
+            <p>
+                Promote what you can do.
+            </p>
+
+        </div>
+
+
+        <div class="page-box">
+
+            <div class="form-group">
+
+                <label>
+                    Skill
+                </label>
+
+                <input
+                    id="skillName"
+                    type="text"
+                    placeholder="e.g. Typing and document formatting"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    About Your Skill
+                </label>
+
+                <textarea
+                    id="skillDescription"
+                    placeholder="Tell customers what you can help them with."
+                ></textarea>
+
+            </div>
+
+
+            <button
+                class="primary-button"
+                onclick="saveSkill()">
+
+                Save Skill
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+function saveSkill() {
+
+    const name =
+        document
+        .getElementById("skillName")
+        .value
+        .trim();
+
+    const description =
+        document
+        .getElementById("skillDescription")
+        .value
+        .trim();
+
+
+    if (!name) {
+
+        alert(
+            "Please enter your skill."
+        );
+
+        return;
+
+    }
+
+
+    const skills =
+        getData("braveSkills");
+
+
+    skills.push({
+        name: name,
+        description: description
+    });
+
+
+    saveData(
+        "braveSkills",
+        skills
+    );
+
+
+    alert("Skill saved successfully.");
+
+
+    showSection("skills");
+
+}
+
+
+/* =========================
+   MESSAGES
+========================= */
+
+function sendMessage() {
+
+    const input =
+        document.getElementById("chatInput");
+
+    const message =
+        input.value.trim();
+
+
+    if (!message) return;
+
+
+    const chat =
+        document.getElementById("chatMessages");
+
+
+    const newMessage =
+        document.createElement("div");
+
+
+    newMessage.className =
+        "message me";
+
+
+    newMessage.textContent =
+        message;
+
+
+    chat.appendChild(newMessage);
+
+
+    input.value = "";
+
+
+    chat.scrollTop =
+        chat.scrollHeight;
+
+
+    setTimeout(function() {
+
+        const reply =
+            document.createElement("div");
+
+
+        reply.className =
+            "message";
+
+
+        reply.innerHTML =
+            "🤖 BRAVE Assistant<br><small>Thanks for your message. The BRAVE Assistant prototype is available to help with common questions.</small>";
+
+
+        chat.appendChild(reply);
+
+
+        chat.scrollTop =
+            chat.scrollHeight;
+
+
+    }, 600);
+
+}
+
+
+/* =========================
+   START DASHBOARD
+========================= */
+
+showSection("home", null);
+
+
+</script>
+
+
+</body>
+
+</html>
+```

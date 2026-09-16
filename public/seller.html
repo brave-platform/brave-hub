@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRAVE Seller & Provider</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f6f8;
+    color: #222;
+}
+
+.header {
+    background: #171a2b;
+    color: white;
+    padding: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: bold;
+    color: #19b89a;
+}
+
+.back {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 15px;
+}
+
+.hero {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+}
+
+.hero h1 {
+    margin-bottom: 8px;
+}
+
+.hero p {
+    color: #666;
+}
+
+.type-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.type {
+    border: 2px solid #ddd;
+    padding: 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    background: white;
+}
+
+.type:hover,
+.type.active {
+    border-color: #19b89a;
+    background: #effcf8;
+}
+
+.type h3 {
+    margin-bottom: 6px;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+}
+
+.card h2 {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #ccc;
+    border-radius: 9px;
+    font-size: 15px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+button {
+    border: none;
+    border-radius: 9px;
+    padding: 13px 18px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.add-btn {
+    background: #171a2b;
+    color: white;
+    margin-top: 15px;
+}
+
+.save-btn {
+    width: 100%;
+    background: #19b89a;
+    color: white;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+.item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 12px;
+    background: #fafafa;
+}
+
+.item strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.remove {
+    background: #eee;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+#message {
+    display: none;
+    padding: 13px;
+    border-radius: 8px;
+    margin-top: 15px;
+    background: #e8fff8;
+    color: #08785f;
+}
+
+@media(max-width:600px) {
+    .type-box {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="logo">BRAVE</div>
+    <a href="/dashboard.html" class="back">← Dashboard</a>
+</header>
+
+<div class="container">
+
+    <section class="hero">
+        <h1>Seller & Service Provider</h1>
+        <p>Create your BRAVE business profile and let customers discover what you offer.</p>
+
+        <div class="type-box">
+            <div class="type active" onclick="selectType('seller', this)">
+                <h3>🛍️ Goods Seller</h3>
+                <p>Sell products, commodities and physical goods.</p>
+            </div>
+
+            <div class="type" onclick="selectType('provider', this)">
+                <h3>🛠️ Service Provider</h3>
+                <p>Offer services to customers and businesses.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+
+        <h2>Business Profile</h2>
+
+        <label>Business / Provider Name</label>
+        <input id="businessName" type="text" placeholder="e.g. BRAVE Electrical Services">
+
+        <label>Business Description</label>
+        <textarea id="description"
+        placeholder="Tell customers about your business or service..."></textarea>
+
+        <label>Phone Number</label>
+        <input id="phone" type="tel" placeholder="Phone number">
+
+        <label>Location</label>
+        <input id="location" type="text" placeholder="e.g. Lagos State">
+
+        <label>Category</label>
+        <select id="category">
+            <option value="">Select category</option>
+            <option>Fashion</option>
+            <option>Electronics</option>
+            <option>Food</option>
+            <option>Beauty</option>
+            <option>Automobile</option>
+            <option>Electrical</option>
+            <option>Education</option>
+            <option>Technology</option>
+            <option>Repairs</option>
+            <option>Other</option>
+        </select>
+
+    </section>
+
+    <section class="card">
+
+        <h2 id="listingTitle">Products</h2>
+
+        <label>Name</label>
+        <input id="itemName" type="text" placeholder="Product name">
+
+        <label>Price</label>
+        <input id="itemPrice" type="number" placeholder="Price in ₦">
+
+        <label>Description</label>
+        <textarea id="itemDescription"
+        placeholder="Describe the product or service"></textarea>
+
+        <button class="add-btn" onclick="addItem()">+ Add</button>
+
+        <div id="items"></div>
+
+    </section>
+
+    <section class="card">
+
+        <h2>Business Preview</h2>
+
+        <div class="item">
+            <strong id="previewName">Your Business Name</strong>
+            <p id="previewType">Goods Seller</p>
+            <p id="previewDescription">Your business description will appear here.</p>
+            <p id="previewLocation">📍 Location</p>
+        </div>
+
+    </section>
+
+    <button class="save-btn" onclick="saveBusiness()">
+        Save Business Profile
+    </button>
+
+    <div id="message"></div>
+
+</div>
+
+<script>
+
+let businessType = "seller";
+let items = [];
+
+function selectType(type, element) {
+
+    businessType = type;
+
+    document.querySelectorAll(".type").forEach(function(box) {
+        box.classList.remove("active");
+    });
+
+    element.classList.add("active");
+
+    if(type === "seller") {
+        document.getElementById("listingTitle").innerText = "Products";
+        document.getElementById("itemName").placeholder = "Product name";
+        document.getElementById("previewType").innerText = "Goods Seller";
+    } else {
+        document.getElementById("listingTitle").innerText = "Services";
+        document.getElementById("itemName").placeholder = "Service name";
+        document.getElementById("previewType").innerText = "Service Provider";
+    }
+}
+
+function addItem() {
+
+    const name = document.getElementById("itemName").value.trim();
+    const price = document.getElementById("itemPrice").value;
+    const description = document.getElementById("itemDescription").value.trim();
+
+    if(!name) {
+        alert("Please enter a product or service name.");
+        return;
+    }
+
+    items.push({
+        name: name,
+        price: price,
+        description: description
+    });
+
+    document.getElementById("itemName").value = "";
+    document.getElementById("itemPrice").value = "";
+    document.getElementById("itemDescription").value = "";
+
+    displayItems();
+}
+
+function displayItems() {
+
+    const container = document.getElementById("items");
+
+    container.innerHTML = "";
+
+    items.forEach(function(item, index) {
+
+        const div = document.createElement("div");
+
+        div.className = "item";
+
+        div.innerHTML = `
+            <strong>${escapeHtml(item.name)}</strong>
+            <p>₦${escapeHtml(item.price || "Contact seller")}</p>
+            <p>${escapeHtml(item.description)}</p>
+            <button class="remove" onclick="removeItem(${index})">
+                Remove
+            </button>
+        `;
+
+        container.appendChild(div);
+    });
+}
+
+function removeItem(index) {
+
+    items.splice(index, 1);
+
+    displayItems();
+}
+
+function escapeHtml(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+document.getElementById("businessName").addEventListener("input", updatePreview);
+document.getElementById("description").addEventListener("input", updatePreview);
+document.getElementById("location").addEventListener("input", updatePreview);
+
+function updatePreview() {
+
+    const name = document.getElementById("businessName").value;
+    const description = document.getElementById("description").value;
+    const location = document.getElementById("location").value;
+
+    document.getElementById("previewName").innerText =
+        name || "Your Business Name";
+
+    document.getElementById("previewDescription").innerText =
+        description || "Your business description will appear here.";
+
+    document.getElementById("previewLocation").innerText =
+        location ? "📍 " + location : "📍 Location";
+}
+
+async function saveBusiness() {
+
+    const business = {
+
+        type: businessType,
+
+        businessName:
+            document.getElementById("businessName").value,
+
+        description:
+            document.getElementById("description").value,
+
+        phone:
+            document.getElementById("phone").value,
+
+        location:
+            document.getElementById("location").value,
+
+        category:
+            document.getElementById("category").value,
+
+        items: items
+    };
+
+    if(!business.businessName) {
+        alert("Please enter your business/provider name.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch("/api/business", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(business)
+
+        });
+
+        const result = await response.json();
+
+        const message = document.getElementById("message");
+
+        message.style.display = "block";
+
+        message.innerText =
+            result.message || "Business profile saved successfully.";
+
+    } catch(error) {
+
+        const message = document.getElementById("message");
+
+        message.style.display = "block";
+
+        message.innerText =
+            "Profile created on this page. Backend connection will be completed when the server route is added.";
+
+    }
+}
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>BRAVE — Create Account</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top, #6d3fa0 0%, #24103f 45%, #12091f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            color: white;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: rgba(50, 22, 83, 0.97);
+            border: 1px solid #70429a;
+            border-radius: 24px;
+            padding: 32px 28px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.45);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo img {
+            width: 105px;
+            height: 105px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .brand {
+            text-align: center;
+            font-size: 34px;
+            font-weight: bold;
+            color: #d4af37;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #ddd;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 7px;
+            font-weight: bold;
+            color: #f4e7c1;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #76519b;
+            border-radius: 12px;
+            outline: none;
+            background: #241337;
+            color: white;
+            font-size: 15px;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 8px rgba(212,175,55,0.25);
+        }
+
+        select option {
+            background: #241337;
+            color: white;
+        }
+
+        .password-box {
+            position: relative;
+        }
+
+        .password-box input {
+            padding-right: 75px;
+        }
+
+        .show-btn {
+            position: absolute;
+            right: 8px;
+            top: 7px;
+            border: none;
+            background: #70429a;
+            color: white;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .show-btn:hover {
+            background: #8a59b5;
+        }
+
+        .register-btn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #d4af37, #f1d36b);
+            color: #24103f;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 7px 20px rgba(212,175,55,0.25);
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            font-size: 14px;
+        }
+
+        .success {
+            display: block;
+            background: rgba(42, 180, 110, 0.18);
+            border: 1px solid #2ecc71;
+            color: #8ff0b5;
+        }
+
+        .error {
+            display: block;
+            background: rgba(220, 60, 60, 0.18);
+            border: 1px solid #e74c3c;
+            color: #ff9d94;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 22px;
+            line-height: 2;
+        }
+
+        .links a {
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            margin: 15px 0;
+            border-top: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .back-home {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-home:hover {
+            color: #d4af37;
+        }
+
+        @media (max-width: 480px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 25px 20px;
+            }
+
+            .brand {
+                font-size: 29px;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        <img src="images/brave-lion.png"
+             alt="BRAVE Lion"
+             onerror="this.style.display='none'">
+    </div>
+
+    <div class="brand">
+        BRAVE
+    </div>
+
+    <div class="subtitle">
+        Create your BRAVE account
+    </div>
+
+
+    <form id="registerForm">
+
+        <label for="fullname">
+            Full Name
+        </label>
+
+        <input
+            type="text"
+            id="fullname"
+            name="fullname"
+            placeholder="Enter your full name"
+            required
+        >
+
+
+        <label for="email">
+            Email Address
+        </label>
+
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email"
+            required
+        >
+
+
+        <label for="country">
+            Country
+        </label>
+
+        <select
+            id="country"
+            name="country"
+            required
+        >
+
+            <option value="">
+                Select your country
+            </option>
+
+            <option value="Nigeria">
+                Nigeria
+            </option>
+
+            <option value="Ghana">
+                Ghana
+            </option>
+
+            <option value="Kenya">
+                Kenya
+            </option>
+
+            <option value="South Africa">
+                South Africa
+            </option>
+
+            <option value="United Kingdom">
+                United Kingdom
+            </option>
+
+            <option value="United States">
+                United States
+            </option>
+
+            <option value="Canada">
+                Canada
+            </option>
+
+            <option value="Other">
+                Other
+            </option>
+
+        </select>
+
+
+        <label for="password">
+            Password
+        </label>
+
+        <div class="password-box">
+
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Create a password"
+                minlength="6"
+                required
+            >
+
+            <button
+                type="button"
+                class="show-btn"
+                onclick="togglePassword()"
+            >
+                Show
+            </button>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="register-btn"
+            id="registerBtn"
+        >
+            Create BRAVE Account
+        </button>
+
+    </form>
+
+
+    <div id="message"
+         class="message">
+    </div>
+
+
+    <div class="links">
+
+        <div>
+            Already have an account?
+            <a href="login.html">
+                Login
+            </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <div>
+            🔑
+            <a href="forgot-password.html">
+                Reset Password
+            </a>
+        </div>
+
+        <div>
+            📧
+            <a href="forgot-email.html">
+                Forgot Email?
+            </a>
+        </div>
+
+    </div>
+
+
+    <a href="home.html"
+       class="back-home">
+        ← Back to BRAVE Home
+    </a>
+
+</div>
+
+
+<script>
+
+    function togglePassword() {
+
+        const password =
+            document.getElementById("password");
+
+        const button =
+            document.querySelector(".show-btn");
+
+        if (password.type === "password") {
+
+            password.type = "text";
+            button.textContent = "Hide";
+
+        } else {
+
+            password.type = "password";
+            button.textContent = "Show";
+
+        }
+
+    }
+
+
+    const form =
+        document.getElementById("registerForm");
+
+    const message =
+        document.getElementById("message");
+
+    const registerBtn =
+        document.getElementById("registerBtn");
+
+
+    form.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        message.className = "message";
+        message.textContent = "";
+        message.style.display = "none";
+
+        registerBtn.disabled = true;
+        registerBtn.textContent = "Creating Account...";
+
+
+        const fullname =
+            document.getElementById("fullname").value.trim();
+
+        const email =
+            document.getElementById("email").value.trim();
+
+        const country =
+            document.getElementById("country").value;
+
+        const password =
+            document.getElementById("password").value;
+
+
+        try {
+
+            const response =
+                await fetch("/register", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        fullname,
+                        email,
+                        country,
+                        password
+
+                    })
+
+                });
+
+
+            const data =
+                await response.json();
+
+
+            if (response.ok) {
+
+                message.className =
+                    "message success";
+
+                message.textContent =
+                    "✅ Account created successfully! Redirecting to login...";
+
+                form.reset();
+
+                setTimeout(function() {
+
+                    window.location.href =
+                        "login.html";
+
+                }, 1500);
+
+            } else {
+
+                message.className =
+                    "message error";
+
+                message.textContent =
+                    "❌ " +
+                    (data.message ||
+                     "Unable to create account.");
+
+            }
+
+        } catch (error) {
+
+            message.className =
+                "message error";
+
+            message.textContent =
+                "❌ Unable to connect to server. Please make sure BRAVE backend is running.";
+
+        }
+
+
+        registerBtn.disabled = false;
+        registerBtn.textContent =
+            "Create BRAVE Account";
+
+    });
+
+</script>
+
+</body>
+</html>
