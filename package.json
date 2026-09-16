@@ -1,0 +1,17 @@
+{
+  "name": "brave-com",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Unique BRAVE marketplace, services, business and productivity platform",
+  "main": "index.js",
+  "scripts": {"start": "node index.js"},
+  "engines": {"node": ">=18"},
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nodemailer": "^7.0.6"
+  }
+}
