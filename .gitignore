@@ -1,6 +1,6 @@
 node_modules/
 .env
-*.db-shm
-*.db-wal
-npm-debug.log*
+backend/brave.db
+backend/*.db-shm
+backend/*.db-wal
 .DS_Store

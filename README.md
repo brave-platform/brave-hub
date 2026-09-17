@@ -1,39 +1,33 @@
-# BRAVE Reviews — Unique BRAVE
+# BRAVE COM — Unique BRAVE
 
-This is the existing BRAVE application with additive improvements. The project is intentionally preserved rather than replaced with a demo.
+This package is a cleaned, rebuilt BRAVE application folder. It includes:
 
-## Included
-- BRAVE public homepage, purple/gold/white branding and lion asset.
-- Existing user dashboard, marketplace, services, timeline, profiles, messaging, notifications, AI, Workshop, Company Centre, records, receipts, settings and verification.
-- Login and registration with password visibility controls and Terms & Conditions hidden behind a viewer.
-- Persistent password-reset tokens with expiry and single-use invalidation.
-- Admin Control Centre with users, marketplace moderation, verification, reports, security, advertising, AI activity, companies and audit activity.
-- User Timeline Viewer.
-- Reviews & Ratings plus suspicious/flagged review administration.
-- Content moderation queue for new products, services and timeline posts.
+- SQLite storage for accounts, usernames, products, services, timeline posts, records, receipts, messages, notifications, admin requests and security events.
+- User dashboard with four-item mobile navigation: Home, Market, Timeline, Menu.
+- WhatsApp-style BRAVE AI chat with a large offline response library and marketplace matching.
+- Image and video timeline posts.
+- Workshop tools with usable workspaces.
+- Multiple receipt types and print/save-PDF flow.
+- Company Centre and business profile tools.
+- Admin login and a functional admin dashboard at `/admin-login` and `/admin.html`.
+- Admin approval queue for protected account changes.
+- Suspicious-activity review signals (failed login bursts, rapid account activity, repeated protected requests).
+- Public username profiles at `/u/<username>`.
+- No hard-coded localhost links in the frontend. Production share links use `PUBLIC_BASE_URL`.
 
-## Local Windows setup
-1. Install Node.js 18 or newer.
-2. Open Command Prompt in the project folder.
-3. Run `npm install`.
-4. Copy `.env.example` to `.env`.
-5. Fill in `ADMIN_EMAIL` and `ADMIN_PASSWORD` for local admin testing.
-6. For password recovery email, configure the SMTP variables. Never place a real App Password in source code.
-7. Run `npm start`.
-8. Open `http://localhost:3000/`.
+## Run locally
+
+1. `npm install`
+2. Copy `.env.example` to `.env` and set admin credentials for local testing.
+3. `npm start`
+4. Open `http://localhost:3000/`
 
 ## Render
-Use `npm install` as the build/install step and `npm start` as the start command. Render supplies `PORT`; the server reads `process.env.PORT` and falls back to 3000 locally.
 
-Set environment variables from `.env.example` in Render. Do not commit `.env` or credentials.
+Set the Environment Variables in Render from `.env.example`. The application uses `PORT` supplied by Render automatically.
 
-SQLite remains the current database. For durable production data on Render, use persistent storage or move the data/media layer to managed storage.
+Important: SQLite is real database storage, but Render's normal ephemeral filesystem can reset between deploys/restarts. For durable production data, attach a persistent disk or move the database/media layer to managed storage later.
 
-## Phone verification
-The existing Twilio-compatible endpoints are preserved. If Twilio variables are not configured, the UI reports that phone verification is pending/optional rather than pretending an OTP was delivered.
+The public URL is an access URL, not a database. The app stores structured information in SQLite and exposes shareable records through the public web URL.
 
-## AI
-BRAVE AI currently uses the existing offline response library plus marketplace database search. It does not claim to be an external model/API when one is not connected.
-
-## Reports
-`BRAVE_TEST_REPORT.md` records the tests actually performed for this delivery. `BRAVE_IMPLEMENTATION_REPORT.md` records implementation status and known limitations.
+Google ID/OAuth is intentionally left for the next phase after this setup is tested.
