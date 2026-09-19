@@ -1,0 +1,38 @@
+{
+  "appName": "UNIQUE BRAVE",
+  "version": "2.1.0",
+  "registration": {
+    "required": [
+      "fullname",
+      "username",
+      "email",
+      "phone",
+      "country",
+      "accountType",
+      "password",
+      "confirmPassword",
+      "termsAccepted"
+    ],
+    "accountTypes": [
+      "Buyer",
+      "Product-Goods Seller",
+      "Service Provider"
+    ],
+    "countries": [
+      "Nigeria",
+      "United Kingdom",
+      "United States",
+      "Other"
+    ],
+    "passwordMinLength": 8,
+    "emailOrPhoneLogin": true,
+    "phoneVerification": "optional-until-Twilio-is-configured",
+    "termsRequired": true,
+    "storage": "SQLite database via backend/database.js"
+  },
+  "privacy": {
+    "passwords": "hashed",
+    "secrets": "environment variables only",
+    "envFileIgnoredByGit": true
+  }
+}
