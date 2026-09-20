@@ -174,6 +174,39 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
     tx();
   } catch(e) { console.error('Staging seed warning:', e.message); }
 
+  // Additive public showcase catalogue. Only creates missing demo listings; never clears user data.
+  try {
+    const demoProducts = [
+      ['showcase-phone','Nova X Smartphone','Phones & Tablets','Modern everyday smartphone with a bright display and long battery life.',185000,'/images/catalog/phone.svg'],
+      ['showcase-laptop','ProBook Work Laptop','Computers & Laptops','Reliable laptop for school, documents, business and everyday work.',320000,'/images/catalog/laptop.svg'],
+      ['showcase-headphones','Wireless Headphones','Electronics','Comfortable wireless headphones for music, calls and study.',28000,'/images/catalog/headphones.svg'],
+      ['showcase-watch','Smart Watch','Electronics','Everyday smartwatch for notifications, fitness and timekeeping.',45000,'/images/catalog/watch.svg'],
+      ['showcase-sneakers','Classic Sneakers','Fashion','Clean everyday sneakers for casual wear.',35000,'/images/catalog/sneakers.svg'],
+      ['showcase-chair','Ergonomic Office Chair','Home & Furniture','Supportive office chair for study and work spaces.',95000,'/images/catalog/chair.svg'],
+      ['showcase-bag','Travel Backpack','Fashion','Durable multi-pocket backpack for school, work and travel.',30000,'/images/catalog/bag.svg'],
+      ['showcase-speaker','Bluetooth Speaker','Electronics','Portable speaker for home, study breaks and small gatherings.',32000,'/images/catalog/speaker.svg'],
+      ['showcase-blender','Kitchen Blender','Home','Compact blender for smoothies and everyday kitchen use.',42000,'/images/catalog/blender.svg'],
+      ['showcase-shirt','Casual Shirt','Fashion','Simple smart-casual shirt suitable for everyday use.',22000,'/images/catalog/shirt.svg'],
+      ['showcase-camera','Digital Camera','Electronics','Compact camera for product, event and creative photography.',180000,'/images/catalog/camera.svg'],
+      ['showcase-powerbank','Fast-Charge Power Bank','Electronics','Portable power bank for phones and everyday devices.',25000,'/images/catalog/powerbank.svg']
+    ];
+    const ins=db.prepare(`INSERT OR IGNORE INTO products(public_id,owner_id,owner_name,owner_username,name,category,description,price,delivery_price,payment_method,image_url,featured,status,stock,quantity,location,delivery_estimate,tags,published_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+    demoProducts.forEach((x,i)=>ins.run(x[0],'BRAVE_SHOWCASE','UNIQUE BRAVE','uniquebrave',x[1],x[2],x[3],x[4],0,'pay_on_delivery',x[5],i<6,'active',20,20,'Nigeria','1-3 days','showcase,featured',now(),now(),now()));
+    const serviceImages=['phone','laptop','camera','speaker','shirt','bag','chair','powerbank'];
+    const demoServices=[
+      ['showcase-design','Graphic Design','Creative & Digital','Logos, flyers, social media graphics and business branding.',15000],
+      ['showcase-web','Web Development','Technology','Business websites, landing pages and web applications.',75000],
+      ['showcase-photo','Photography','Media','Product, portrait and event photography.',30000],
+      ['showcase-video','Video Editing','Media','Short videos, adverts, reels and social content editing.',25000],
+      ['showcase-docs','Document & CV Services','Digital Services','Typing, formatting, CVs, letters and PDF document help.',5000],
+      ['showcase-fashion','Tailoring & Fashion','Fashion','Custom clothing, alterations and finishing.',20000],
+      ['showcase-repair','Phone & Laptop Repairs','Repairs','Device diagnostics, software support and repairs.',10000],
+      ['showcase-tutoring','Tutoring','Education','One-to-one academic tutoring and revision support.',12000]
+    ];
+    const sin=db.prepare(`INSERT OR IGNORE INTO services(public_id,owner_id,owner_name,owner_username,name,category,description,price,image_url,status,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)`);
+    demoServices.forEach((x,i)=>sin.run(x[0],'BRAVE_SHOWCASE','UNIQUE BRAVE','uniquebrave',x[1],x[2],x[3],x[4],`/images/catalog/${serviceImages[i]}.svg`,'active',now()));
+  } catch(e) { console.error('Showcase seed warning:', e.message); }
+
   // Stronger, specific plan descriptions; existing plan codes remain intact.
   const planRows = [
     ['basic','Basic','Free','Free access to the essentials','Browse goods & services','Post on Timeline','Basic BRAVE AI assistance','Basic Workshop tools','Personal profile','Standard customer support'],
