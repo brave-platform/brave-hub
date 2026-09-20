@@ -48,6 +48,7 @@ function safeUser(u){if(!u)return null;return {id:u.brave_id,username:u.username
 function currentUser(req){const t=clean((req.headers.authorization||'').replace(/^Bearer\s+/i,'')||req.headers['x-session-token']); if(!t)return null; const mem=userSessions.get(t); if(mem){const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(mem.userId); if(u)return u;} try{const h=crypto.createHash('sha256').update(t).digest('hex'); const row=db.prepare('SELECT user_id,expires_at FROM user_sessions WHERE token_hash=?').get(h); if(!row||new Date(row.expires_at).getTime()<Date.now())return null; const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(row.user_id); if(u){userSessions.set(t,{userId:u.brave_id,createdAt:Date.now(),rememberMe:true}); db.prepare('UPDATE user_sessions SET last_seen=? WHERE token_hash=?').run(now(),h); return u;} }catch(_){} return null;}
 function requireUser(req,res,next){const u=currentUser(req);if(!u)return res.status(401).json({message:'Please log in to continue.'});if(u.account_status!=='active')return res.status(403).json({message:'Your account is not currently active.'});req.user=u;next();}
 function requireAdmin(req,res,next){const t=clean(req.headers['x-admin-token']);if(!t||!adminSessions.has(t))return res.status(401).json({message:'Administrator authentication required.'});req.admin=true;next();}
+function requireOwnerOrAdmin(req,res,next){const u=currentUser(req);if(u && u.account_status==='active'){req.user=u;req.admin=false;return next();}const t=clean(req.headers['x-admin-token']);if(t && adminSessions.has(t)){req.admin=true;return next();}return res.status(401).json({message:'Please log in to manage this listing.'});}
 function audit(action,targetType='',targetId='',details=''){db.prepare('INSERT INTO admin_audit(public_id,action,target_type,target_id,details) VALUES(?,?,?,?,?)').run(id('audit'),action,targetType,targetId,details);}
 function security(req,eventType,userId='',details='',score=0){db.prepare('INSERT INTO security_events(public_id,user_id,event_type,ip,user_agent,details,risk_score) VALUES(?,?,?,?,?,?,?)').run(id('sec'),userId,eventType,req.ip,clean(req.get('user-agent')),details,score);}
 function publicUrl(p){return PUBLIC_BASE_URL+p;}
@@ -455,7 +456,7 @@ app.get('/api/workshop/documents',requireUser,(req,res)=>res.json({documents:db.
 require('./backend/feature_additions')({app,db,helpers:{requireUser,requireAdmin,clean,base64,id,now,serial15,audit,publicUrl,safeUser}});
 // Marketplace management is ADMIN ONLY. Sellers/users may publish listings, but only an authenticated administrator may edit, change stock, or delete them.
 
-app.put('/api/products/:id', requireAdmin, (req,res)=>{
+app.put('/api/products/:id', requireOwnerOrAdmin, (req,res)=>{
   const p=db.prepare('SELECT * FROM products WHERE public_id=?').get(req.params.id);
   if(!p) return res.status(404).json({message:'Product not found.'});
   const name=clean(req.body.name ?? p.name) || p.name;
@@ -479,9 +480,10 @@ app.patch('/api/products/:id/stock', requireAdmin, (req,res)=>{
   res.json({message:'Stock updated.',stock});
 });
 
-app.delete('/api/products/:id', requireAdmin, (req,res)=>{
+app.delete('/api/products/:id', requireOwnerOrAdmin, (req,res)=>{
   const p=db.prepare('SELECT * FROM products WHERE public_id=?').get(req.params.id);
   if(!p) return res.status(404).json({message:'Product not found.'});
+  if(!req.admin && p.owner_id!==req.user.brave_id)return res.status(403).json({message:'You can only delete your own product.'});
   db.prepare('UPDATE products SET status="deleted",updated_at=? WHERE public_id=?').run(now(),p.public_id);
   res.json({message:'Product deleted from the marketplace.'});
 });
