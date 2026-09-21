@@ -1,4 +1,4 @@
-const CACHE='unique-brave-v3';
+const CACHE='unique-brave-v4-mobile';
 const SHELL=['/','/home','/marketplace.html','/login.html','/register','/dashboard.html','/forgot-password.html','/reset-password.html','/download.html','/manifest.json','/app.css','/app.js','/brave-enhancements.js','/brave-final-layer.js','/admin-addons.js','/images/brave-lion.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

@@ -9,4 +9,4 @@ async function openService(id){const r=await fetch('/api/services/'+encodeURICom
 function closeService(){$('modal').classList.remove('open')}
 async function contactProvider(id,name){const t=localStorage.getItem('braveToken');if(!t)return location.href='/login.html?next=services';const msg=prompt('Message '+name+':','Hello, I am interested in your service.');if(!msg)return;const r=await fetch('/api/conversations/'+encodeURIComponent(id),{method:'POST',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify({message:msg,context:'service'})});const d=await r.json();alert(d.message||'Message sent.')}
 const initialQ=new URLSearchParams(location.search).get('q')||'';$('q').value=initialQ;loadCats();loadServices();
-</script></body></html>
+</script><script src="/app.js"></script></body></html>
