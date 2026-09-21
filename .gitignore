@@ -4,3 +4,7 @@ backend/brave.db
 backend/*.db-shm
 backend/*.db-wal
 .DS_Store
+
+storage/migrated/*.db
+storage/migrated/*.json
+!storage/migrated/SCHEMA_VERSION.json

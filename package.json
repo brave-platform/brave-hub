@@ -5,7 +5,8 @@
   "description": "UNIQUE BRAVE marketplace, services, business, social timeline and productivity platform",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "backup": "node scripts/backup-db.js"
   },
   "engines": {
     "node": ">=18"

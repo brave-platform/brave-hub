@@ -13,6 +13,15 @@
  }
  function addPasswordEyes(){document.querySelectorAll('input[type="password"]').forEach(input=>{if(input.parentElement.classList.contains('password-wrap'))return;const wrap=document.createElement('div');wrap.className='password-wrap';input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);const b=document.createElement('button');b.type='button';b.className='password-eye';b.setAttribute('aria-label','Show password');b.textContent='◉';b.onclick=()=>{const show=input.type==='password';input.type=show?'text':'password';b.textContent=show?'◉':'◌';b.setAttribute('aria-label',show?'Hide password':'Show password')};wrap.appendChild(b)})}
 
+ async function restoreSession(){
+  try{
+    const r=await fetch('/api/session/check',{credentials:'include'});
+    if(r.ok){
+      const d=await r.json();
+      if(d.user) localStorage.setItem('braveUser',JSON.stringify(d.user));
+    }
+  }catch(_){}
+ }
  function addInstallBanner(){
   if(location.pathname.startsWith('/admin')||document.getElementById('braveInstallBar'))return;
   let deferred=null;
@@ -20,6 +29,6 @@
   const bar=document.createElement('div');bar.id='braveInstallBar';bar.hidden=true;bar.innerHTML='<div><b>📲 Get UNIQUE BRAVE as an app</b><small>Install it on this device without an app store.</small></div><button id="braveInstallBtn">Install</button><button id="braveInstallClose" aria-label="Close">×</button>';document.body.appendChild(bar);
   bar.querySelector('#braveInstallBtn').onclick=async()=>{if(!deferred){location.href='/download.html';return}deferred.prompt();await deferred.userChoice;deferred=null;bar.hidden=true};bar.querySelector('#braveInstallClose').onclick=()=>bar.remove();
  }
- function inject(){const e=document.createElement('script');e.src='/brave-enhancements.js';document.head.appendChild(e);const f=document.createElement('script');f.src='/brave-final-layer.js';document.head.appendChild(f);if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});const l=document.createElement('link');l.rel='stylesheet';l.href='/app.css';document.head.appendChild(l);addBottomNav();addPasswordEyes();addInstallBanner();}
+ function inject(){restoreSession();const e=document.createElement('script');e.src='/brave-enhancements.js';document.head.appendChild(e);const f=document.createElement('script');f.src='/brave-final-layer.js';document.head.appendChild(f);if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});const l=document.createElement('link');l.rel='stylesheet';l.href='/app.css';document.head.appendChild(l);addBottomNav();addPasswordEyes();addInstallBanner();}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject);else inject();
 })();

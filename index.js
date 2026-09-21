@@ -4,8 +4,23 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const storageService = require('./backend/storage_service');
 const path = require('path');
+const fs = require('fs');
 const db = require('./backend/database');
+function maybeBackupDatabase(){
+  if(String(process.env.BRAVE_AUTO_DB_BACKUP||'').toLowerCase()!=='true') return;
+  try{
+    const dir=process.env.BRAVE_MIGRATED_DIR||path.join(__dirname,'storage','migrated');
+    fs.mkdirSync(dir,{recursive:true});
+    try{db.pragma('wal_checkpoint(TRUNCATE)');}catch(_){}
+    const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+    const target=path.join(dir,`brave-${stamp}.db`);
+    fs.copyFileSync(db.name,target);
+    console.log('[STORAGE] Automatic database backup created:',target);
+  }catch(e){console.error('[STORAGE] Automatic database backup failed:',e.message);}
+}
+maybeBackupDatabase();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -45,7 +60,12 @@ function username(v){return clean(v).toLowerCase().replace(/[^a-z0-9_]/g,'').sli
 function phone(v){let x=clean(v).replace(/[^\d+]/g,''); if(x.startsWith('0')) x='+234'+x.slice(1); return x;}
 function base64(v){return typeof v==='string' && v.length < 14000000 ? v : '';}
 function safeUser(u){if(!u)return null;return {id:u.brave_id,username:u.username,fullname:u.fullname,email:u.email,phone:u.phone||'',accountType:u.account_type||'Buyer',country:u.country,profileImage:u.profile_image||'',accountStatus:u.account_status||'active',verificationStatus:u.verification_status||'unverified',emailVerified:!!u.email_verified,phoneVerified:!!u.phone_verified,verificationSerial:u.verification_serial||'',createdAt:u.created_at};}
-function currentUser(req){const t=clean((req.headers.authorization||'').replace(/^Bearer\s+/i,'')||req.headers['x-session-token']); if(!t)return null; const mem=userSessions.get(t); if(mem){const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(mem.userId); if(u)return u;} try{const h=crypto.createHash('sha256').update(t).digest('hex'); const row=db.prepare('SELECT user_id,expires_at FROM user_sessions WHERE token_hash=?').get(h); if(!row||new Date(row.expires_at).getTime()<Date.now())return null; const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(row.user_id); if(u){userSessions.set(t,{userId:u.brave_id,createdAt:Date.now(),rememberMe:true}); db.prepare('UPDATE user_sessions SET last_seen=? WHERE token_hash=?').run(now(),h); return u;} }catch(_){} return null;}
+function cookieValue(req,name){
+ const raw=String(req.headers.cookie||'');
+ const part=raw.split(';').map(x=>x.trim()).find(x=>x.startsWith(name+'='));
+ return part ? decodeURIComponent(part.slice(name.length+1)) : '';
+}
+function currentUser(req){const t=clean((req.headers.authorization||'').replace(/^Bearer\s+/i,'')||req.headers['x-session-token']||cookieValue(req,'brave_session')); if(!t)return null; const mem=userSessions.get(t); if(mem){const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(mem.userId); if(u)return u;} try{const h=crypto.createHash('sha256').update(t).digest('hex'); const row=db.prepare('SELECT user_id,expires_at FROM user_sessions WHERE token_hash=?').get(h); if(!row||new Date(row.expires_at).getTime()<Date.now())return null; const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(row.user_id); if(u){userSessions.set(t,{userId:u.brave_id,createdAt:Date.now(),rememberMe:true}); db.prepare('UPDATE user_sessions SET last_seen=? WHERE token_hash=?').run(now(),h); return u;} }catch(_){} return null;}
 function requireUser(req,res,next){const u=currentUser(req);if(!u)return res.status(401).json({message:'Please log in to continue.'});if(u.account_status!=='active')return res.status(403).json({message:'Your account is not currently active.'});req.user=u;next();}
 function requireAdmin(req,res,next){const t=clean(req.headers['x-admin-token']);if(!t||!adminSessions.has(t))return res.status(401).json({message:'Administrator authentication required.'});req.admin=true;next();}
 function requireOwnerOrAdmin(req,res,next){const u=currentUser(req);if(u && u.account_status==='active'){req.user=u;req.admin=false;return next();}const t=clean(req.headers['x-admin-token']);if(t && adminSessions.has(t)){req.admin=true;return next();}return res.status(401).json({message:'Please log in to manage this listing.'});}
@@ -120,6 +140,10 @@ app.post('/login',async(req,res)=>{
   const rememberMe=req.body.rememberMe!==false;
   userSessions.set(token,{userId:u.brave_id,createdAt:Date.now(),rememberMe});
   try{db.prepare('DELETE FROM user_sessions WHERE user_id=? AND expires_at < ?').run(u.brave_id,now()); const expires=new Date(Date.now()+(rememberMe?30:1)*24*60*60*1000).toISOString(); db.prepare('INSERT INTO user_sessions(token_hash,user_id,remember_me,expires_at,ip,user_agent) VALUES(?,?,?,?,?,?)').run(crypto.createHash('sha256').update(token).digest('hex'),u.brave_id,rememberMe?1:0,expires,req.ip,clean(req.get('user-agent')));}catch(e){console.error('session persistence warning:',e.message);}
+  const cookieMaxAge=rememberMe?30*24*60*60:24*60*60;
+  const secureCookie=process.env.NODE_ENV==='production'||req.secure||req.get('x-forwarded-proto')==='https';
+  res.setHeader('Set-Cookie',`brave_session=${encodeURIComponent(token)}; Max-Age=${cookieMaxAge}; Path=/; HttpOnly; SameSite=Lax${secureCookie?'; Secure':''}`);
+  try{storageService.save(db,u.brave_id);}catch(e){console.error('[STORAGE] user snapshot warning:',e.message);}
   db.prepare('INSERT INTO login_events(public_id,user_id,identifier,success,ip,user_agent) VALUES(?,?,?,?,?,?)').run(id('login'),u.brave_id,identifier,1,req.ip,clean(req.get('user-agent')));
   try{db.prepare('UPDATE users SET last_login_at=?,preferred_language=COALESCE(preferred_language,?) WHERE brave_id=?').run(now(),clean(req.body.locale)||'ng',u.brave_id);}catch(_){}
   audit('user_login','user',u.brave_id,u.username);
@@ -127,7 +151,7 @@ app.post('/login',async(req,res)=>{
  }catch(e){console.error(e);res.status(500).json({message:'Unable to log in right now.'});}
 });
 
-app.post('/logout',(req,res)=>{const t=clean((req.headers.authorization||'').replace(/^Bearer\s+/i,'')||req.headers['x-session-token']);userSessions.delete(t);try{db.prepare('DELETE FROM user_sessions WHERE token_hash=?').run(crypto.createHash('sha256').update(t).digest('hex'));}catch(_){}res.json({message:'Logged out successfully.'});});
+app.post('/logout',(req,res)=>{const t=clean((req.headers.authorization||'').replace(/^Bearer\s+/i,'')||req.headers['x-session-token']||cookieValue(req,'brave_session'));userSessions.delete(t);try{db.prepare('DELETE FROM user_sessions WHERE token_hash=?').run(crypto.createHash('sha256').update(t).digest('hex'));}catch(_){}res.setHeader('Set-Cookie','brave_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax');res.json({message:'Logged out successfully.'});});
 app.get('/api/me',requireUser,(req,res)=>res.json({user:safeUser(req.user),usernameLink:publicUrl('/u/'+req.user.username)}));
 app.post('/api/account/profile',requireUser,(req,res)=>{const name=clean(req.body.fullname);if(!name)return res.status(400).json({message:'Name is required.'});db.prepare('UPDATE users SET fullname=?,updated_at=? WHERE brave_id=?').run(name,now(),req.user.brave_id);res.json({message:'Profile updated.',user:safeUser(db.prepare('SELECT * FROM users WHERE brave_id=?').get(req.user.brave_id))});});
 app.post('/api/account/username',requireUser,(req,res)=>{
@@ -354,7 +378,11 @@ app.post('/api/orders',requireUser,(req,res)=>{
   rows.push({p,qty,total});
  }
  const oid=id('order'), total=subtotal+delivery, purchaseSerial='BRV-PUR-'+serial15();
- const tx=db.transaction(()=>{db.prepare('INSERT INTO orders(public_id,buyer_id,status,subtotal,delivery,total,delivery_address,payment_method,purchase_serial,seller_payment_notice) VALUES(?,?,?,?,?,?,?,?,?,?)').run(oid,req.user.brave_id,'pending_payment',subtotal,delivery,total,address,clean(req.body.paymentMethod)||'bank_transfer',purchaseSerial,'Payment safety: follow the listing arrangement; never share OTPs or private credentials.');const ins=db.prepare('INSERT INTO order_items(order_id,product_id,seller_id,seller_name,product_name,quantity,unit_price,total) VALUES(?,?,?,?,?,?,?,?)');for(const r of rows)ins.run(oid,r.p.public_id,r.p.owner_id,r.p.owner_name,r.p.name,r.qty,r.p.price,r.total);});
+ const allowedPayment=['pay_on_delivery','bank_transfer','half_payment','full_payment'];
+ const paymentMethod=allowedPayment.includes(clean(req.body.paymentMethod))?clean(req.body.paymentMethod):'bank_transfer';
+ const deliveryMethod=['standard','express','pickup'].includes(clean(req.body.deliveryMethod))?clean(req.body.deliveryMethod):'standard';
+ const customerNote=clean(req.body.customerNote).slice(0,1000);
+ const tx=db.transaction(()=>{db.prepare('INSERT INTO orders(public_id,buyer_id,status,subtotal,delivery,total,delivery_address,payment_method,delivery_method,customer_note,purchase_serial,seller_payment_notice) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)').run(oid,req.user.brave_id,'pending_payment',subtotal,delivery,total,address,paymentMethod,deliveryMethod,customerNote,purchaseSerial,'Payment safety: follow the selected arrangement; never share OTPs or private credentials.');const ins=db.prepare('INSERT INTO order_items(order_id,product_id,seller_id,seller_name,product_name,quantity,unit_price,total) VALUES(?,?,?,?,?,?,?,?)');for(const r of rows)ins.run(oid,r.p.public_id,r.p.owner_id,r.p.owner_name,r.p.name,r.qty,r.p.price,r.total);});
  tx();
  const inv='BRV-INV-'+serial15();db.prepare('INSERT INTO records(public_id,user_id,record_type,title,details,amount,reference) VALUES(?,?,?,?,?,?,?)').run(id('record'),req.user.brave_id,'invoice','UNIQUE BRAVE Invoice',`Invoice for order ${oid}`,total,inv);
  res.status(201).json({message:'Order created. Complete payment using the displayed payment instructions.',order:db.prepare('SELECT * FROM orders WHERE public_id=?').get(oid)});
@@ -373,7 +401,8 @@ app.post('/api/orders/:id/evidence',requireUser,(req,res)=>{
 app.get('/api/admin/orders',requireAdmin,(req,res)=>{
  const orders=db.prepare('SELECT o.*,u.fullname,u.username,u.email,u.phone FROM orders o LEFT JOIN users u ON u.brave_id=o.buyer_id ORDER BY o.id DESC').all();
  for(const o of orders)o.items=db.prepare('SELECT * FROM order_items WHERE order_id=?').all(o.public_id);
- res.json({orders});
+ const serviceOrders=db.prepare('SELECT s.*,u.fullname,u.username,u.email,u.phone FROM service_orders s LEFT JOIN users u ON u.brave_id=s.buyer_id ORDER BY s.id DESC').all();
+ res.json({orders,serviceOrders});
 });
 app.post('/api/admin/orders/:id/action',requireAdmin,(req,res)=>{
  const action=clean(req.body.action), status=action==='confirm_payment'?'paid':action==='processing'?'processing':action==='shipped'?'shipped':action==='delivered'?'delivered':action==='cancel'?'cancelled':null;
@@ -487,8 +516,12 @@ app.put('/api/products/:id', requireOwnerOrAdmin, (req,res)=>{
   const delivery=req.body.deliveryPrice===''||req.body.deliveryPrice==null?p.delivery_price:Number(req.body.deliveryPrice);
   const payment=normalizePayment(req.body.paymentMethod ?? p.payment_method,'product');
   const stock=req.body.stock===undefined ? p.stock : Math.max(0,Number(req.body.stock)||0);
-  db.prepare(`UPDATE products SET name=?,category=?,description=?,price=?,delivery_price=?,payment_method=?,stock=?,quantity=?,updated_at=? WHERE public_id=?`)
-    .run(name,category,description,price,delivery,payment,stock,stock,now(),p.public_id);
+  const image=req.body.imageData===undefined?p.image_data:base64(req.body.imageData);
+  const video=req.body.videoData===undefined?p.video_data:base64(req.body.videoData);
+  const status=['active','hidden','draft','removed'].includes(clean(req.body.status))?clean(req.body.status):p.status;
+  let variants=[];try{variants=Array.isArray(req.body.variants)?req.body.variants:JSON.parse(p.variants_json||'[]')}catch(_){}
+  db.prepare(`UPDATE products SET name=?,category=?,description=?,price=?,delivery_price=?,payment_method=?,stock=?,quantity=?,image_data=?,video_data=?,status=?,variants_json=?,updated_at=? WHERE public_id=?`)
+    .run(name,category,description,price,delivery,payment,stock,stock,image,video,status,JSON.stringify(variants),now(),p.public_id);
   res.json({message:'Product updated successfully.',product:db.prepare('SELECT * FROM products WHERE public_id=?').get(p.public_id)});
 });
 
@@ -519,8 +552,12 @@ app.put('/api/services/:id', requireOwnerOrAdmin, (req,res)=>{
   const description=clean(req.body.description ?? x.description);
   const price=req.body.price===''||req.body.price==null?x.price:Number(req.body.price);
   const payment=normalizePayment(req.body.paymentMethod ?? x.payment_method,'service');
-  db.prepare(`UPDATE services SET name=?,category=?,description=?,price=?,payment_method=?,updated_at=? WHERE public_id=?`)
-    .run(name,category,description,price,payment,now(),x.public_id);
+  const image=req.body.imageData===undefined?x.image_data:base64(req.body.imageData);
+  const video=req.body.videoData===undefined?x.video_data:base64(req.body.videoData);
+  const status=['active','hidden','draft','removed'].includes(clean(req.body.status))?clean(req.body.status):x.status;
+  let variants=[];try{variants=Array.isArray(req.body.variants)?req.body.variants:JSON.parse(x.variants_json||'[]')}catch(_){}
+  db.prepare(`UPDATE services SET name=?,category=?,description=?,price=?,payment_method=?,image_data=?,video_data=?,status=?,variants_json=?,updated_at=? WHERE public_id=?`)
+    .run(name,category,description,price,payment,image,video,status,JSON.stringify(variants),now(),x.public_id);
   res.json({message:'Service updated successfully.',service:db.prepare('SELECT * FROM services WHERE public_id=?').get(x.public_id)});
 });
 
@@ -556,6 +593,61 @@ app.patch('/api/admin/marketplace-listing/:type/:id', requireAdmin, (req,res)=>{
   res.json({message:'Marketplace listing updated by admin.',listing:db.prepare(`SELECT * FROM ${table} WHERE public_id=?`).get(row.public_id)});
 });
 
+
+// Full UNIQUE BRAVE catalogue manager: Admin can edit published, unpublished, saved and removed catalogue listings.
+app.get('/api/admin/catalog', requireAdmin, (req,res)=>{
+  const products=db.prepare(`SELECT * FROM products WHERE owner_id IN ('ADMIN','catalog','demo','CATALOGUE_STAGING') ORDER BY id DESC`).all();
+  const services=db.prepare(`SELECT * FROM services WHERE owner_id IN ('ADMIN','catalog','demo','CATALOGUE_STAGING') ORDER BY id DESC`).all();
+  res.json({products,services});
+});
+app.patch('/api/admin/catalog/:type/:id', requireAdmin, (req,res)=>{
+  const type=clean(req.params.type);
+  const table=type==='product'?'products':type==='service'?'services':null;
+  if(!table)return res.status(400).json({message:'Type must be product or service.'});
+  const row=db.prepare(`SELECT * FROM ${table} WHERE public_id=?`).get(req.params.id);
+  if(!row)return res.status(404).json({message:'Catalogue listing not found.'});
+  const name=clean(req.body.name ?? row.name)||row.name;
+  const category=clean(req.body.category ?? row.category)||row.category;
+  const description=clean(req.body.description ?? row.description);
+  const price=req.body.price===undefined?row.price:Math.max(0,Number(req.body.price)||0);
+  const status=['active','hidden','removed','pending','draft','deleted'].includes(clean(req.body.status))?clean(req.body.status):row.status;
+  const payment=clean(req.body.paymentMethod ?? row.payment_method)||row.payment_method;
+  const image=req.body.imageData===undefined?row.image_data:clean(req.body.imageData);
+  const video=req.body.videoData===undefined?row.video_data:clean(req.body.videoData);
+  const featured=req.body.featured===undefined?row.featured:(req.body.featured?1:0);
+  let variants=[];
+  try{variants=Array.isArray(req.body.variants)?req.body.variants:JSON.parse(row.variants_json||'[]')}catch(_){}
+  if(type==='product'){
+    const delivery=req.body.deliveryPrice===undefined?row.delivery_price:Math.max(0,Number(req.body.deliveryPrice)||0);
+    const stock=req.body.stock===undefined?(row.stock??row.quantity??0):Math.max(0,Number(req.body.stock)||0);
+    db.prepare(`UPDATE products SET name=?,category=?,description=?,price=?,delivery_price=?,payment_method=?,image_data=?,video_data=?,
+      featured=?,status=?,stock=?,quantity=?,variants_json=?,updated_at=? WHERE public_id=?`).run(name,category,description,price,delivery,payment,image,video,featured,status,stock,stock,JSON.stringify(variants),now(),row.public_id);
+  }else{
+    db.prepare(`UPDATE services SET name=?,category=?,description=?,price=?,payment_method=?,image_data=?,video_data=?,status=?,variants_json=?,updated_at=? WHERE public_id=?`)
+      .run(name,category,description,price,payment,image,video,status,JSON.stringify(variants),now(),row.public_id);
+  }
+  audit('admin_catalog_edited',type,row.public_id,`status=${status}`);
+  res.json({message:'Catalogue listing saved.',listing:db.prepare(`SELECT * FROM ${table} WHERE public_id=?`).get(row.public_id)});
+});
+app.post('/api/admin/catalog/:type/:id/publish', requireAdmin, (req,res)=>{
+  const type=clean(req.params.type), table=type==='product'?'products':type==='service'?'services':null;
+  if(!table)return res.status(400).json({message:'Type must be product or service.'});
+  const row=db.prepare(`SELECT * FROM ${table} WHERE public_id=?`).get(req.params.id);
+  if(!row)return res.status(404).json({message:'Catalogue listing not found.'});
+  if(table==='products') db.prepare(`UPDATE products SET status='active',published_at=COALESCE(published_at,?),updated_at=? WHERE public_id=?`).run(now(),now(),row.public_id);
+  else db.prepare(`UPDATE services SET status='active',updated_at=? WHERE public_id=?`).run(now(),row.public_id);
+  audit('admin_catalog_published',type,row.public_id);
+  res.json({message:'Listing published.',listing:db.prepare(`SELECT * FROM ${table} WHERE public_id=?`).get(row.public_id)});
+});
+app.post('/api/admin/catalog/:type/:id/unpublish', requireAdmin, (req,res)=>{
+  const type=clean(req.params.type), table=type==='product'?'products':type==='service'?'services':null;
+  if(!table)return res.status(400).json({message:'Type must be product or service.'});
+  const row=db.prepare(`SELECT * FROM ${table} WHERE public_id=?`).get(req.params.id);
+  if(!row)return res.status(404).json({message:'Catalogue listing not found.'});
+  db.prepare(`UPDATE ${table} SET status='hidden',updated_at=? WHERE public_id=?`).run(now(),row.public_id);
+  audit('admin_catalog_unpublished',type,row.public_id);
+  res.json({message:'Listing unpublished.',listing:db.prepare(`SELECT * FROM ${table} WHERE public_id=?`).get(row.public_id)});
+});
 
 // Compatibility endpoints used by older frontend versions.
 app.get('/api/admin/transactions',requireAdmin,(req,res)=>res.json({transactions:[]}));

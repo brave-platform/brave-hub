@@ -1,7 +1,9 @@
 const crypto = require('crypto');
+const storageService = require('./storage_service');
 
 module.exports = function registerBraveAdditions({app, db, helpers}) {
   const {requireUser, requireAdmin, clean, base64, id, now, serial15, audit, publicUrl, safeUser} = helpers;
+  const cookieValue = (req,name) => { const raw=String(req.headers.cookie||''); const part=raw.split(';').map(x=>x.trim()).find(x=>x.startsWith(name+'=')); return part ? decodeURIComponent(part.slice(name.length+1)) : ''; };
   const hashToken = (token) => crypto.createHash('sha256').update(String(token)).digest('hex');
   const json = (v, fallback=[]) => { try { return JSON.parse(v || JSON.stringify(fallback)); } catch { return fallback; } };
   const ensureColumn = (table, columnDef) => { try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${columnDef}`); } catch (_) {} };
@@ -30,6 +32,13 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
   ensureColumn('products', "image_source TEXT DEFAULT ''");
   ensureColumn('products', "image_license TEXT DEFAULT ''");
   ensureColumn('products', "admin_note TEXT DEFAULT ''");
+  ensureColumn('products', "variants_json TEXT DEFAULT '[]'");
+  ensureColumn('products', "visibility TEXT DEFAULT 'public'");
+  ensureColumn('services', "variants_json TEXT DEFAULT '[]'");
+  ensureColumn('services', "visibility TEXT DEFAULT 'public'");
+  ensureColumn('orders', "delivery_method TEXT DEFAULT 'standard'");
+  ensureColumn('orders', "customer_note TEXT DEFAULT ''");
+
   ensureColumn('products', "published_at TEXT");
   ensureColumn('orders', "purchase_serial TEXT");
   ensureColumn('orders', "seller_payment_notice TEXT DEFAULT ''");
@@ -120,6 +129,36 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
     posts INTEGER DEFAULT 0,
     messages INTEGER DEFAULT 0,
     revenue REAL DEFAULT 0
+  );
+  CREATE TABLE IF NOT EXISTS user_storage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT UNIQUE NOT NULL,
+    encrypted_snapshot TEXT NOT NULL,
+    snapshot_version TEXT DEFAULT '1',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS profile_views (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    viewed_user_id TEXT NOT NULL,
+    viewer_user_id TEXT,
+    viewed_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS service_orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    public_id TEXT UNIQUE NOT NULL,
+    buyer_id TEXT NOT NULL,
+    service_id TEXT NOT NULL,
+    provider_id TEXT,
+    service_name TEXT NOT NULL,
+    amount REAL DEFAULT 0,
+    payment_method TEXT DEFAULT 'pay_after_service',
+    payment_status TEXT DEFAULT 'pending',
+    status TEXT DEFAULT 'requested',
+    delivery_address TEXT DEFAULT '',
+    customer_note TEXT DEFAULT '',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
   `);
 
@@ -263,7 +302,7 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
     req.user=u; const r=staff(req); if(!r||!r.permissions.includes('customer_support')) return res.status(403).json({message:'Customer-service access is not enabled for this account.'}); next();
   }
   function requireUserResult(req){
-    const token=String((req.headers.authorization||'').replace(/^Bearer\s+/i,'')||req.headers['x-session-token']||'').trim(); if(!token)return null;
+    const token=String((req.headers.authorization||'').replace(/^Bearer\s+/i,'')||req.headers['x-session-token']||cookieValue(req,'brave_session')||'').trim(); if(!token)return null;
     const row=db.prepare('SELECT user_id,expires_at FROM user_sessions WHERE token_hash=?').get(hashToken(token));
     if(!row||new Date(row.expires_at).getTime()<Date.now()) return null;
     const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(row.user_id); if(!u)return null;
@@ -271,7 +310,27 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
   }
 
   // Persistent session lookup endpoint for the frontend.
-  app.get('/api/session/check', requireUser, (req,res)=>res.json({user:safeUser(req.user)}));
+  app.get('/api/session/check', requireUser, (req,res)=>{
+  let storage=null;
+  try{storage=storageService.save(db,req.user.brave_id);}catch(e){console.error('[STORAGE] snapshot warning:',e.message);}
+  res.json({user:safeUser(req.user),storage});
+});
+app.get('/api/account/storage/status', requireUser, (req,res)=>{
+  const row=db.prepare('SELECT snapshot_version,updated_at FROM user_storage WHERE user_id=?').get(req.user.brave_id);
+  res.json({available:!!row,version:row?.snapshot_version||null,updatedAt:row?.updated_at||null,encrypted:true,passwordStored:false});
+});
+app.post('/api/account/storage/snapshot', requireUser, (req,res)=>{
+  try{res.json({message:'Secure account storage snapshot saved.',storage:storageService.save(db,req.user.brave_id)});}
+  catch(e){console.error('[STORAGE] snapshot failed:',e.message);res.status(500).json({message:'Secure storage is not configured. Set BRAVE_STORAGE_KEY on the server.'});}
+});
+app.get('/api/account/storage/export', requireUser, (req,res)=>{
+  try{
+    const x=storageService.read(db,req.user.brave_id);
+    if(!x)return res.status(404).json({message:'No storage snapshot exists yet. Open your dashboard once to create one.'});
+    res.setHeader('Content-Disposition',`attachment; filename="brave-${req.user.username}-migration.json"`);
+    res.json(x.data);
+  }catch(e){console.error('[STORAGE] export failed:',e.message);res.status(500).json({message:'Unable to open the encrypted storage snapshot.'});}
+});
 
   // Profile image + cover, kept separate from the protected change-request workflow.
   app.post('/api/account/profile-image', requireUser, (req,res)=>{
@@ -572,6 +631,23 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
       db.prepare('SELECT COALESCE(SUM(amount),0) total FROM receipts').get().total || 0
     );
   } catch(e) { console.error('Daily metric warning:', e.message); }
+
+  // Service booking/payment flow: separate from product orders but uses the same payment arrangements.
+  app.post('/api/service-orders', requireUser, (req,res)=>{
+    const service=db.prepare("SELECT * FROM services WHERE public_id=? AND status='active'").get(clean(req.body.serviceId));
+    if(!service)return res.status(404).json({message:'Service is no longer available.'});
+    const paymentAllowed=['pay_after_service','half_payment','full_payment','bank_transfer'];
+    const payment=paymentAllowed.includes(clean(req.body.paymentMethod))?clean(req.body.paymentMethod):'pay_after_service';
+    const oid=id('service-order');
+    db.prepare(`INSERT INTO service_orders(public_id,buyer_id,service_id,provider_id,service_name,amount,payment_method,delivery_address,customer_note)
+      VALUES(?,?,?,?,?,?,?,?,?)`).run(oid,req.user.brave_id,service.public_id,service.owner_id,service.name,Number(service.price)||0,payment,clean(req.body.deliveryAddress),clean(req.body.customerNote).slice(0,1000));
+    db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),service.owner_id||req.user.brave_id,'New service request',`A customer requested ${service.name}. Request ${oid}.`);
+    res.status(201).json({message:'Service request created. Continue with the selected payment arrangement.',order:db.prepare('SELECT * FROM service_orders WHERE public_id=?').get(oid)});
+  });
+  app.get('/api/service-orders', requireUser, (req,res)=>{
+    const rows=db.prepare(`SELECT * FROM service_orders WHERE buyer_id=? OR provider_id=? ORDER BY id DESC`).all(req.user.brave_id,req.user.brave_id);
+    res.json({orders:rows});
+  });
 
   // Complete marketplace discovery layer: user-owned and administrator-owned listings are shuffled together,
   // while the API still exposes who owns each listing and links back to the owner's public profile.

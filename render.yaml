@@ -38,3 +38,9 @@ services:
         sync: false
       - key: ADMIN_CHAT_TIMEOUT_MINUTES
         sync: false
+      - key: BRAVE_STORAGE_KEY
+        sync: false
+      - key: BRAVE_MIGRATED_DIR
+        sync: false
+      - key: BRAVE_AUTO_DB_BACKUP
+        sync: false

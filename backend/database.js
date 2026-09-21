@@ -2,7 +2,6 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const stagedCatalogue = require('./staged_products_100');
 
 const dir = __dirname;
 fs.mkdirSync(dir, { recursive: true });
@@ -376,50 +375,26 @@ for (const sql of [
   "ALTER TABLE users ADD COLUMN profile_image TEXT DEFAULT ''",
   "ALTER TABLE users ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP",
   "ALTER TABLE users ADD COLUMN terms_accepted_at TEXT",
-  "ALTER TABLE users ADD COLUMN account_type TEXT DEFAULT 'Buyer'"
+"ALTER TABLE users ADD COLUMN account_type TEXT DEFAULT 'Buyer'",
+  "ALTER TABLE products ADD COLUMN stock INTEGER",
+  "ALTER TABLE products ADD COLUMN quantity INTEGER",
+  "ALTER TABLE products ADD COLUMN sku TEXT",
+  "ALTER TABLE products ADD COLUMN brand TEXT DEFAULT ''",
+  "ALTER TABLE products ADD COLUMN condition TEXT DEFAULT 'new'",
+  "ALTER TABLE products ADD COLUMN location TEXT DEFAULT ''",
+  "ALTER TABLE products ADD COLUMN delivery_estimate TEXT DEFAULT ''",
+  "ALTER TABLE products ADD COLUMN return_policy TEXT DEFAULT ''",
+  "ALTER TABLE products ADD COLUMN tags TEXT DEFAULT ''",
+  "ALTER TABLE products ADD COLUMN published_at TEXT"
 ]) { try { db.exec(sql); } catch (_) {} }
 
 
-// Seed safe demo marketplace content and plans once. These are demo listings, not fulfilled orders.
+// Seed official UNIQUE BRAVE catalogue and plans once. Existing user data is never overwritten.
 try {
- const demoProducts = [
-  ['LONTOR 6 Inches Rechargeable Table Fan CTL-MF037-6','Home & Office','6-inch rechargeable table fan with portable design. Demo listing price reference.',9950],
-  ['COLASOLAR Colahome 16-inch Rechargeable Solar Fan','Home & Office','16-inch rechargeable solar fan with panel. Demo listing price reference.',46800],
-  ['AEON 18-inch Rechargeable Fan ARF-18B','Home & Office','18-inch rechargeable fan. Demo listing price reference.',59275],
-  ['itel 4000mAh Foldable Rechargeable Fan','Electronics','Foldable rechargeable fan with LED light. Demo listing price reference.',19650],
-  ['6-inch Rechargeable Mini Fan with Power Bank','Electronics','Portable mini rechargeable fan with power-bank function. Demo listing price reference.',12445]
- ];
- const ins=db.prepare("INSERT OR IGNORE INTO products(public_id,owner_id,owner_name,owner_username,name,category,description,price,delivery_price,payment_method,featured,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
- for(const [name,cat,desc,price] of demoProducts) ins.run('demo-'+crypto.randomBytes(6).toString('hex'),'demo', 'UNIQUE BRAVE Demo Store','',name,cat,desc,price,0,'bank_transfer',1,'active');
- // Public test catalogue: real product-family images already referenced by the project. Clearly marked as catalogue/demo until a real seller owns the listing.
- const catIns=db.prepare("INSERT OR IGNORE INTO products(public_id,owner_id,owner_name,owner_username,name,category,description,price,delivery_price,payment_method,image_data,featured,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
- for(const item of stagedCatalogue.slice(0,50)){
-   if(!item.image_url) continue;
-   catIns.run('catalog-'+item.sku,'catalog','UNIQUE BRAVE Catalogue','uniquebrave',item.name,item.category,item.description,item.price||0,0,item.payment_method||'bank_transfer',item.image_url,item.featured?1:0,'active');
- }
- const serviceSeeds=[
-  ['Phone Repair & Diagnostics','Electronics Services','Phone diagnostics, software setup and repair consultation.',15000,'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80'],
-  ['Graphic Design & Branding','Creative Services','Flyers, logos, social media graphics and business branding.',20000,'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=900&q=80'],
-  ['Hair Styling & Wig Installation','Beauty','Professional hair styling and wig installation.',25000,'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=80'],
-  ['Home Cleaning Service','Home Services','Residential and office cleaning service.',18000,'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=900&q=80'],
-  ['Web Design & Development','Technology','Responsive business website design and development.',75000,'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80'],
-  ['Photography Session','Creative Services','Portrait and product photography sessions.',30000,'https://images.unsplash.com/photo-1452780212940-6f5c0d14d848?auto=format&fit=crop&w=900&q=80'],
-  ['Fashion Tailoring','Fashion','Custom sewing, alterations and native wear.',25000,'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=900&q=80'],
-  ['Catering & Small Events','Food & Events','Food trays and small event catering.',40000,'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=900&q=80'],
-  ['Tutoring & Academic Support','Education','One-on-one tutoring and academic support.',10000,'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80'],
-  ['Social Media Management','Business Services','Content planning, captions and social media management.',30000,'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=900&q=80']
- ];
- const sins=db.prepare("INSERT OR IGNORE INTO services(public_id,owner_id,owner_name,owner_username,name,category,description,price,image_data,status) VALUES(?,?,?,?,?,?,?,?,?,?)");
- for(const [name,cat,desc,price,img] of serviceSeeds) sins.run('service-demo-'+crypto.createHash('md5').update(name).digest('hex').slice(0,10),'catalog','UNIQUE BRAVE Service Directory','uniquebrave',name,cat,desc,price,img,'active');
- const plans=[
-  ['basic','Basic',0,'monthly',JSON.stringify(['Marketplace access','Timeline posting','Basic workshop tools','Standard records'])],
-  ['premium','Premium',2500,'monthly',JSON.stringify(['Everything in Basic','Featured profile options','Expanded workshop tools','Priority support'])],
-  ['luxury','Luxury',7500,'monthly',JSON.stringify(['Everything in Premium','Business growth tools','Advanced records','Priority admin support'])]
- ];
- const pi=db.prepare("INSERT OR IGNORE INTO plans(code,name,price,billing,features) VALUES(?,?,?,?,?)");
- for(const p of plans) pi.run(...p);
- db.prepare("INSERT OR IGNORE INTO bank_settings(id,bank_name,account_name,account_number,instructions) VALUES(1,'','','','Payment details are managed by the UNIQUE BRAVE administrator.')").run();
-} catch(e) { console.error('Demo seed warning:', e.message); }
+  require('./catalog_seed')({db});
+} catch (e) {
+  console.error('Catalogue seed warning:', e.message);
+}
 
 console.log('BRAVE database connected successfully.');
 module.exports = db;
