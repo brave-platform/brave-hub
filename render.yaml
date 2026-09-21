@@ -10,6 +10,8 @@ services:
         value: production
       - key: PUBLIC_BASE_URL
         sync: false
+      - key: APP_URL
+        sync: false
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
@@ -17,6 +19,8 @@ services:
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
         sync: false
       - key: SMTP_USER
         sync: false
@@ -31,4 +35,6 @@ services:
       - key: TWILIO_AUTH_TOKEN
         sync: false
       - key: BRAVE_DB_PATH
+        sync: false
+      - key: ADMIN_CHAT_TIMEOUT_MINUTES
         sync: false

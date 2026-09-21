@@ -342,6 +342,28 @@ CREATE TABLE IF NOT EXISTS daily_reports (
  summary TEXT NOT NULL,
  created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ token_hash TEXT UNIQUE NOT NULL,
+ user_id TEXT NOT NULL,
+ expires_at TEXT NOT NULL,
+ used_at TEXT,
+ created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS admin_chat_sessions (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ public_id TEXT UNIQUE NOT NULL,
+ user_id TEXT UNIQUE NOT NULL,
+ started_at TEXT NOT NULL,
+ last_activity_at TEXT NOT NULL,
+ expires_at TEXT NOT NULL,
+ status TEXT DEFAULT 'open',
+ created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_products_status_random ON products(status);
+CREATE INDEX IF NOT EXISTS idx_services_status_random ON services(status);
+CREATE INDEX IF NOT EXISTS idx_messages_pair ON messages(sender_id,receiver_id,created_at);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_expiry ON password_reset_tokens(expires_at);
 `);
 
 // Upgrade older databases safely.

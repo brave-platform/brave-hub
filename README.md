@@ -120,7 +120,27 @@ The installable app is a PWA, not a Play Store APK. This is intentional: it can 
 
 ## Final additive upgrade
 - Password reset now reports delivery status clearly; real email delivery uses SMTP environment variables.
-- Users can change their username from Dashboard → Settings.
-- Admins can create, pause and activate sponsored image/video advertisements from Admin → Paid Advertisements.
+- Users can change their username from Dashboard â†’ Settings.
+- Admins can create, pause and activate sponsored image/video advertisements from Admin â†’ Paid Advertisements.
 - Active ads can display as timed interstitials with a configured skip-after delay and impression/click tracking.
 - BRAVE AI is available as a floating assistant across the app and can search the internal product/service catalogue and explain navigation.
+
+## Latest in-place upgrade
+
+This release keeps the existing Node.js/Express/SQLite architecture and adds:
+
+- Dedicated `/products.html` and `/services.html` marketplaces so Product and Service entry points no longer depend on the general marketplace.
+- A shuffled marketplace feed that mixes user-owned listings with UNIQUE BRAVE/admin catalogue listings while clearly identifying the seller/provider and linking to their public profile.
+- Admin-editable live/demo catalogue listings, including service listings.
+- WhatsApp-style user â†” administrator support chat with a configurable inactivity timeout (`ADMIN_CHAT_TIMEOUT_MINUTES`, default 30 minutes).
+- Persistent password-reset tokens stored in SQLite so reset links survive server restarts and are single-use/expiry checked.
+- SMTP `SMTP_SECURE` support with the recommended Gmail 587/STARTTLS configuration.
+- A larger Workshop business suite: business-plan builder, quotation/estimate maker, price-list maker, break-even planner, campaign planner, proposal maker, content calendar and expense summary, while retaining the existing tools.
+- A BRAVE AI chat interface with quick actions and real product/service results instead of a single plain form.
+- More prominent Product Marketplace and Services Marketplace calls-to-action on the public homepage.
+
+### SMTP for Gmail
+For Gmail on port 587, use `SMTP_SECURE=false` and a Gmail App Password. Do not commit `.env` or real credentials.
+
+### Admin chat
+The timeout is configurable in Render with `ADMIN_CHAT_TIMEOUT_MINUTES`. The default is 30 minutes of inactivity; sending a new message refreshes the session.

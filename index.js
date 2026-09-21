@@ -58,7 +58,8 @@ function transporter(){
  const pass=String(process.env.SMTP_PASS||'').replace(/\s/g,'');
  if(!host||!user||!pass)return null;
  const port=Number(process.env.SMTP_PORT||587);
- return nodemailer.createTransport({host,port,secure:port===465,auth:{user,pass}});
+ const secure=String(process.env.SMTP_SECURE||'').toLowerCase()==='true' || port===465;
+ return nodemailer.createTransport({host,port,secure,requireTLS:!secure && port===587,auth:{user,pass},connectionTimeout:15000,greetingTimeout:15000,socketTimeout:20000});
 }
 async function sendMail(to,subject,html){
  const t=transporter();
@@ -148,13 +149,13 @@ app.post('/change-password',requireUser,async(req,res)=>{const current=String(re
 
 app.post('/api/account/change-request',requireUser,(req,res)=>{const type=clean(req.body.type), reason=clean(req.body.reason), requestedValue=clean(req.body.requestedValue);const allowed=['phone number','email address','verification method','profile image','account deletion'];if(!allowed.includes(type))return res.status(400).json({message:'Unsupported protected change.'});const pending=db.prepare('SELECT 1 FROM protected_requests WHERE user_id=? AND type=? AND status=?').get(req.user.brave_id,type,'pending');if(pending)return res.status(409).json({message:'You already have a pending request of this type.'});db.prepare('INSERT INTO protected_requests(public_id,user_id,type,reason,requested_value) VALUES(?,?,?,?,?)').run(id('request'),req.user.brave_id,type,reason,requestedValue);security(req,'protected_change_request',req.user.brave_id,type,15);res.status(201).json({message:'Request sent to admin for review.'});});
 
-app.get('/api/products',(req,res)=>res.json(db.prepare("SELECT * FROM products WHERE status='active' ORDER BY featured DESC,id DESC").all().map(p=>({...p,publicUrl:publicUrl('/product/'+p.public_id)}))));
+app.get('/api/products',(req,res)=>res.json(db.prepare("SELECT * FROM products WHERE status='active' ORDER BY random()").all().map(p=>({...p,publicUrl:publicUrl('/product/'+p.public_id)}))));
 app.post('/api/products',requireUser,(req,res)=>{const name=clean(req.body.name||req.body.title);if(!name)return res.status(400).json({message:'Product name is required.'});const image=base64(req.body.image),video=base64(req.body.video),pdf=base64(req.body.pdf);for(const [v,label] of [[image,'image'],[video,'video'],[pdf,'PDF']])if(v&& !new RegExp('^data:(image|video|application/pdf)(/|;)').test(v))return res.status(400).json({message:`Invalid ${label} upload.`});const pid=id('product');db.prepare(`INSERT INTO products(public_id,owner_id,owner_name,owner_username,name,category,description,price,delivery_price,payment_method,image_data,video_data,pdf_data,featured,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(pid,req.user.brave_id,req.user.fullname,req.user.username,name,clean(req.body.category)||'General',clean(req.body.description),req.body.price===''?null:Number(req.body.price)||null,req.body.deliveryPrice===''?null:Number(req.body.deliveryPrice)||null,normalizePayment(req.body.paymentMethod,'product'),image,video,pdf,0,'active');db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),req.user.brave_id,'Product published','Your product is now visible in the marketplace.');res.status(201).json({message:'Product published successfully.',product:db.prepare('SELECT * FROM products WHERE public_id=?').get(pid)});});
 app.post('/api/admin/products',requireAdmin,(req,res)=>{const name=clean(req.body.name);if(!name)return res.status(400).json({message:'Product name is required.'});const pid=id('product');db.prepare(`INSERT INTO products(public_id,owner_id,owner_name,owner_username,name,category,description,price,delivery_price,payment_method,image_data,video_data,pdf_data,featured,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(pid,'ADMIN','UNIQUE BRAVE','uniquebrave',name,clean(req.body.category)||'Featured',clean(req.body.description),req.body.price===''?null:Number(req.body.price)||null,req.body.deliveryPrice===''?null:Number(req.body.deliveryPrice)||null,normalizePayment(req.body.paymentMethod,'product'),base64(req.body.image),base64(req.body.video),base64(req.body.pdf),1,'active');audit('admin_product_posted','product',pid,name);res.status(201).json({message:'Admin product posted.',product:db.prepare('SELECT * FROM products WHERE public_id=?').get(pid)});});
 app.get('/product/:id',(req,res)=>res.redirect('/marketplace.html?product='+encodeURIComponent(req.params.id)));
 app.get('/service/:id',(req,res)=>res.redirect('/marketplace.html?service='+encodeURIComponent(req.params.id)));
 
-app.get('/api/services',(req,res)=>res.json(db.prepare("SELECT * FROM services WHERE status='active' ORDER BY id DESC").all()));
+app.get('/api/services',(req,res)=>res.json(db.prepare("SELECT * FROM services WHERE status='active' ORDER BY random()").all()));
 app.post('/api/services',requireUser,(req,res)=>{const name=clean(req.body.name||req.body.title);if(!name)return res.status(400).json({message:'Service name is required.'});const image=base64(req.body.image),video=base64(req.body.video),pdf=base64(req.body.pdf);for(const [v,label,rx] of [[image,'image',/^data:image\//],[video,'video',/^data:video\//],[pdf,'PDF',/^data:application\/pdf(?:;|,)/]])if(v&&!rx.test(v))return res.status(400).json({message:`Invalid ${label} upload.`});const sid=id('service');db.prepare(`INSERT INTO services(public_id,owner_id,owner_name,owner_username,name,category,description,price,payment_method,image_data,video_data,pdf_data,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(sid,req.user.brave_id,req.user.fullname,req.user.username,name,clean(req.body.category)||'Professional service',clean(req.body.description),req.body.price===''?null:Number(req.body.price)||null,normalizePayment(req.body.paymentMethod,'service'),image,video,pdf,'active');db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),req.user.brave_id,'Service published','Your service is now visible in the marketplace.');res.status(201).json({message:'Service published successfully.',service:db.prepare('SELECT * FROM services WHERE public_id=?').get(sid)});});
 
 app.get('/api/timeline/feed', (req,res)=>res.json(db.prepare("SELECT * FROM timeline_posts WHERE status='active' ORDER BY id DESC LIMIT 100").all()));
@@ -180,9 +181,9 @@ app.post('/api/timeline/:id/comment',requireUser,(req,res)=>{
 });
 
 
-app.get('/api/search',(req,res)=>{const q=clean(req.query.q).toLowerCase();if(!q)return res.json({products:[],services:[],users:[]});const like='%'+q+'%';res.json({products:db.prepare("SELECT public_id,name,category,description,owner_name,owner_username,price,featured FROM products WHERE status='active' AND (lower(name) LIKE ? OR lower(category) LIKE ? OR lower(description) LIKE ?) ORDER BY featured DESC,id DESC LIMIT 30").all(like,like,like),services:db.prepare("SELECT public_id,name,category,description,owner_name,owner_username,price FROM services WHERE status='active' AND (lower(name) LIKE ? OR lower(category) LIKE ? OR lower(description) LIKE ?) ORDER BY id DESC LIMIT 30").all(like,like,like),users:db.prepare("SELECT username,fullname,country FROM users WHERE account_status='active' AND (lower(username) LIKE ? OR lower(fullname) LIKE ?) LIMIT 30").all(like,like)});});
+app.get('/api/search',(req,res)=>{const q=clean(req.query.q).toLowerCase();if(!q)return res.json({products:[],services:[],users:[]});const like='%'+q+'%';res.json({products:db.prepare("SELECT public_id,name,category,description,owner_name,owner_username,price,featured FROM products WHERE status='active' AND (lower(name) LIKE ? OR lower(category) LIKE ? OR lower(description) LIKE ?) ORDER BY random() LIMIT 30").all(like,like,like),services:db.prepare("SELECT public_id,name,category,description,owner_name,owner_username,price FROM services WHERE status='active' AND (lower(name) LIKE ? OR lower(category) LIKE ? OR lower(description) LIKE ?) ORDER BY id DESC LIMIT 30").all(like,like,like),users:db.prepare("SELECT username,fullname,country FROM users WHERE account_status='active' AND (lower(username) LIKE ? OR lower(fullname) LIKE ?) LIMIT 30").all(like,like)});});
 
-app.get('/api/profile/:username',(req,res)=>{const u=db.prepare('SELECT * FROM users WHERE username=? AND account_status=\'active\'').get(username(req.params.username));if(!u)return res.status(404).json({message:'Profile not found.'});const posts=db.prepare("SELECT * FROM timeline_posts WHERE user_id=? AND status='active' ORDER BY id DESC LIMIT 50").all(u.brave_id);const products=db.prepare("SELECT * FROM products WHERE owner_id=? AND status='active' ORDER BY featured DESC,id DESC LIMIT 50").all(u.brave_id);const services=db.prepare("SELECT * FROM services WHERE owner_id=? AND status='active' ORDER BY id DESC LIMIT 50").all(u.brave_id);res.json({user:safeUser(u),profileUrl:publicUrl('/u/'+u.username),posts,products,services});});
+app.get('/api/profile/:username',(req,res)=>{const u=db.prepare('SELECT * FROM users WHERE username=? AND account_status=\'active\'').get(username(req.params.username));if(!u)return res.status(404).json({message:'Profile not found.'});const posts=db.prepare("SELECT * FROM timeline_posts WHERE user_id=? AND status='active' ORDER BY id DESC LIMIT 50").all(u.brave_id);const products=db.prepare("SELECT * FROM products WHERE owner_id=? AND status='active' ORDER BY random() LIMIT 50").all(u.brave_id);const services=db.prepare("SELECT * FROM services WHERE owner_id=? AND status='active' ORDER BY id DESC LIMIT 50").all(u.brave_id);res.json({user:safeUser(u),profileUrl:publicUrl('/u/'+u.username),posts,products,services});});
 
 app.post('/api/records',requireUser,(req,res)=>{const rid=id('record');db.prepare('INSERT INTO records(public_id,user_id,record_type,title,details,amount,reference) VALUES(?,?,?,?,?,?,?)').run(rid,req.user.brave_id,clean(req.body.recordType)||'general',clean(req.body.title),clean(req.body.details),req.body.amount===''?null:Number(req.body.amount)||null,clean(req.body.reference));res.status(201).json({message:'Record saved.',record:db.prepare('SELECT * FROM records WHERE public_id=?').get(rid)});});
 app.get('/api/records',requireUser,(req,res)=>res.json({records:db.prepare('SELECT * FROM records WHERE user_id=? ORDER BY id DESC').all(req.user.brave_id)}));
@@ -258,7 +259,7 @@ app.post('/api/reports',requireUser,(req,res)=>{const rid=id('report');db.prepar
 app.post('/api/ai/chat',(req,res)=>{
  const text=clean(req.body.message); if(!text)return res.status(400).json({message:'Please enter a message.'});
  const locale=['ng','gb','us'].includes(req.body.locale)?req.body.locale:'ng'; const lower=text.toLowerCase();
- const p=db.prepare("SELECT * FROM products WHERE status='active' AND (lower(name) LIKE ? OR lower(category) LIKE ? OR lower(description) LIKE ?) ORDER BY featured DESC,id DESC LIMIT 5").all('%'+lower+'%','%'+lower+'%','%'+lower+'%');
+ const p=db.prepare("SELECT * FROM products WHERE status='active' AND (lower(name) LIKE ? OR lower(category) LIKE ? OR lower(description) LIKE ?) ORDER BY random() LIMIT 5").all('%'+lower+'%','%'+lower+'%','%'+lower+'%');
  const s=db.prepare("SELECT * FROM services WHERE status='active' AND (lower(name) LIKE ? OR lower(category) LIKE ? OR lower(description) LIKE ?) ORDER BY id DESC LIMIT 5").all('%'+lower+'%','%'+lower+'%','%'+lower+'%');
  const hello=/^(hi|hello|hey|how far|good morning|good afternoon|good evening|how are you|yo)\b/i.test(text);
  const thanks=/\b(thanks|thank you|tnx|appreciate)\b/i.test(lower);
@@ -290,13 +291,16 @@ app.post('/api/phone/send-otp',(req,res)=>res.json({message:'Phone verification 
 app.post('/api/phone/verify',(req,res)=>res.json({message:'Phone verification is currently optional because Twilio is not configured.',verified:false,optional:true}));
 
 // Password reset by email. Phone reset is intentionally not exposed on the login page.
-const resetTokens=new Map();
 app.post('/forgot-password',async(req,res)=>{
  const em=email(req.body.email); const u=db.prepare('SELECT * FROM users WHERE email=?').get(em);
  if(!u)return res.json({message:'If that email belongs to a UNIQUE BRAVE account, a reset link has been sent.'});
- const token=crypto.randomBytes(32).toString('hex'); resetTokens.set(token,{userId:u.brave_id,expires:Date.now()+30*60*1000});
+ const token=crypto.randomBytes(32).toString('hex');
+ const tokenHash=crypto.createHash('sha256').update(token).digest('hex');
+ const expiresAt=new Date(Date.now()+30*60*1000).toISOString();
+ db.prepare('DELETE FROM password_reset_tokens WHERE user_id=? OR expires_at<?').run(u.brave_id,now());
+ db.prepare('INSERT INTO password_reset_tokens(token_hash,user_id,expires_at) VALUES(?,?,?)').run(tokenHash,u.brave_id,expiresAt);
  const url=publicUrl('/reset-password.html?token='+token);
- const mail=await sendMail(em,'Reset your UNIQUE BRAVE password',`<p>Hello ${u.fullname},</p><p>Use this link to reset your password:</p><p><a href="${url}">${url}</a></p><p>This link expires in 30 minutes.</p>`);
+ const mail=await sendMail(em,'Reset your UNIQUE BRAVE password',`<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto"><h2 style="color:#32105f">UNIQUE BRAVE password reset</h2><p>Hello ${clean(u.fullname)},</p><p>Use the button below to create a new password. This link expires in 30 minutes.</p><p><a href="${url}" style="display:inline-block;background:#ffd83d;color:#32105f;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:800">Reset my password</a></p><p style="font-size:12px;color:#666">If you did not request this, you can ignore this email. Never share this link with anyone.</p></div>`);
  if(mail.sent)return res.json({message:'Reset link sent. Check your email.'});
  // Keep the button functional for local/self-hosted testing without SMTP. Never expose this fallback in production.
  if(process.env.NODE_ENV!=='production')return res.json({message:'Email delivery is not configured. Use the test reset link below.',resetUrl:url});
@@ -307,7 +311,23 @@ app.post('/forgot-password',async(req,res)=>{
  console.error('[PASSWORD RESET] Email delivery failed:',mail.error||mail.code||'unknown SMTP error');
  return res.status(502).json({message:'We could not deliver the reset email right now. Please try again later.'});
 });
-app.post('/reset-password',async(req,res)=>{const token=clean(req.body.token),pw=String(req.body.password||'');const r=resetTokens.get(token);if(!r||r.expires<Date.now())return res.status(400).json({message:'This reset link is invalid or expired.'});if(pw.length<8)return res.status(400).json({message:'Password must contain at least 8 characters.'});db.prepare('UPDATE users SET password_hash=?,updated_at=? WHERE brave_id=?').run(await bcrypt.hash(pw,10),now(),r.userId);resetTokens.delete(token);res.json({message:'Password reset successfully.'});});
+app.post('/reset-password',async(req,res)=>{
+ try{
+  const token=clean(req.body.token),pw=String(req.body.password||'');
+  if(!token||pw.length<8)return res.status(400).json({message:'Enter a valid reset token and a password of at least 8 characters.'});
+  const tokenHash=crypto.createHash('sha256').update(token).digest('hex');
+  const r=db.prepare('SELECT * FROM password_reset_tokens WHERE token_hash=? AND used_at IS NULL AND expires_at>?').get(tokenHash,now());
+  if(!r)return res.status(400).json({message:'This reset link is invalid or expired.'});
+  const nextHash=await bcrypt.hash(pw,10);
+  const tx=db.transaction(()=>{
+   db.prepare('UPDATE users SET password_hash=?,updated_at=? WHERE brave_id=?').run(nextHash,now(),r.user_id);
+   db.prepare('UPDATE password_reset_tokens SET used_at=? WHERE token_hash=?').run(now(),tokenHash);
+   db.prepare('DELETE FROM user_sessions WHERE user_id=?').run(r.user_id);
+  });
+  tx();
+  res.json({message:'Password reset successfully. Please log in again.'});
+ }catch(e){console.error('[PASSWORD RESET] reset failed:',e);res.status(500).json({message:'Unable to reset the password right now.'});}
+});
 
 // Admin
 app.post('/admin-login',(req,res)=>{const ok=email(req.body.email)===email(process.env.ADMIN_EMAIL||'') && String(req.body.password||'')===String(process.env.ADMIN_PASSWORD||'');if(!ok){security(req,'failed_admin_login','','Invalid admin credentials',70);return res.status(401).json({message:'Invalid administrator credentials.'});}const token=crypto.randomBytes(32).toString('hex');adminSessions.set(token,{createdAt:Date.now()});audit('admin_login');res.json({message:'Administrator login successful.',token});});
@@ -430,7 +450,7 @@ app.post('/api/admin/users/:id/message',requireAdmin,(req,res)=>{
  res.json({message:'Message sent to user.'});
 });
 app.post('/api/admin/users/:id/action',requireAdmin,(req,res)=>{const action=clean(req.body.action);const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(req.params.id);if(!u)return res.status(404).json({message:'User not found.'});let status=u.account_status;if(action==='suspend')status='suspended';else if(action==='restrict')status='restricted';else if(action==='restore')status='active';else return res.status(400).json({message:'Invalid user action.'});db.prepare('UPDATE users SET account_status=?,updated_at=? WHERE brave_id=?').run(status,now(),u.brave_id);audit('user_'+action,'user',u.brave_id);res.json({message:'User status updated.',user:safeUser(db.prepare('SELECT * FROM users WHERE brave_id=?').get(u.brave_id))});});
-app.get('/api/admin/products',requireAdmin,(req,res)=>res.json({products:db.prepare('SELECT * FROM products ORDER BY featured DESC,id DESC').all()}));
+app.get('/api/admin/products',requireAdmin,(req,res)=>res.json({products:db.prepare('SELECT * FROM products ORDER BY random()').all()}));
 app.get('/api/admin/services',requireAdmin,(req,res)=>res.json({services:db.prepare('SELECT * FROM services ORDER BY id DESC').all()}));
 app.post('/api/admin/content/:id/action',requireAdmin,(req,res)=>{const type=clean(req.body.contentType),action=clean(req.body.action),table=type==='product'?'products':type==='service'?'services':null;if(!table)return res.status(400).json({message:'Invalid content type.'});const row=db.prepare(`SELECT * FROM ${table} WHERE public_id=?`).get(req.params.id);if(!row)return res.status(404).json({message:'Content not found.'});if(action==='approve')db.prepare(`UPDATE ${table} SET status='active' WHERE public_id=?`).run(req.params.id);else if(action==='remove')db.prepare(`UPDATE ${table} SET status='removed' WHERE public_id=?`).run(req.params.id);else if(action==='feature'&&table==='products')db.prepare('UPDATE products SET featured=1 WHERE public_id=?').run(req.params.id);else if(action==='unfeature'&&table==='products')db.prepare('UPDATE products SET featured=0 WHERE public_id=?').run(req.params.id);else return res.status(400).json({message:'Invalid content action.'});audit('content_'+action,type,req.params.id);res.json({message:'Content action completed.'});});
 app.get('/api/admin/protected-requests',requireAdmin,(req,res)=>res.json({requests:db.prepare('SELECT r.*,u.fullname,u.username,u.email,u.phone FROM protected_requests r LEFT JOIN users u ON u.brave_id=r.user_id ORDER BY r.status ASC,r.id DESC').all()}));
@@ -459,6 +479,7 @@ require('./backend/feature_additions')({app,db,helpers:{requireUser,requireAdmin
 app.put('/api/products/:id', requireOwnerOrAdmin, (req,res)=>{
   const p=db.prepare('SELECT * FROM products WHERE public_id=?').get(req.params.id);
   if(!p) return res.status(404).json({message:'Product not found.'});
+  if(!req.admin && p.owner_id!==req.user.brave_id) return res.status(403).json({message:'You can only edit your own product.'});
   const name=clean(req.body.name ?? p.name) || p.name;
   const category=clean(req.body.category ?? p.category) || p.category;
   const description=clean(req.body.description ?? p.description);
@@ -471,9 +492,10 @@ app.put('/api/products/:id', requireOwnerOrAdmin, (req,res)=>{
   res.json({message:'Product updated successfully.',product:db.prepare('SELECT * FROM products WHERE public_id=?').get(p.public_id)});
 });
 
-app.patch('/api/products/:id/stock', requireAdmin, (req,res)=>{
+app.patch('/api/products/:id/stock', requireOwnerOrAdmin, (req,res)=>{
   const p=db.prepare('SELECT * FROM products WHERE public_id=?').get(req.params.id);
   if(!p) return res.status(404).json({message:'Product not found.'});
+  if(!req.admin && p.owner_id!==req.user.brave_id) return res.status(403).json({message:'You can only change stock for your own product.'});
   const stock=Math.max(0,Number(req.body.stock));
   if(!Number.isFinite(stock)) return res.status(400).json({message:'Enter a valid stock quantity.'});
   db.prepare('UPDATE products SET stock=?,quantity=?,updated_at=? WHERE public_id=?').run(stock,stock,now(),p.public_id);
@@ -483,14 +505,15 @@ app.patch('/api/products/:id/stock', requireAdmin, (req,res)=>{
 app.delete('/api/products/:id', requireOwnerOrAdmin, (req,res)=>{
   const p=db.prepare('SELECT * FROM products WHERE public_id=?').get(req.params.id);
   if(!p) return res.status(404).json({message:'Product not found.'});
-  if(!req.admin && p.owner_id!==req.user.brave_id)return res.status(403).json({message:'You can only delete your own product.'});
+  if(!req.admin && p.owner_id!==req.user.brave_id) return res.status(403).json({message:'You can only remove your own product.'});
   db.prepare('UPDATE products SET status="deleted",updated_at=? WHERE public_id=?').run(now(),p.public_id);
   res.json({message:'Product deleted from the marketplace.'});
 });
 
-app.put('/api/services/:id', requireAdmin, (req,res)=>{
+app.put('/api/services/:id', requireOwnerOrAdmin, (req,res)=>{
   const x=db.prepare('SELECT * FROM services WHERE public_id=?').get(req.params.id);
   if(!x) return res.status(404).json({message:'Service not found.'});
+  if(!req.admin && x.owner_id!==req.user.brave_id) return res.status(403).json({message:'You can only edit your own service.'});
   const name=clean(req.body.name ?? x.name) || x.name;
   const category=clean(req.body.category ?? x.category) || x.category;
   const description=clean(req.body.description ?? x.description);
@@ -501,9 +524,10 @@ app.put('/api/services/:id', requireAdmin, (req,res)=>{
   res.json({message:'Service updated successfully.',service:db.prepare('SELECT * FROM services WHERE public_id=?').get(x.public_id)});
 });
 
-app.delete('/api/services/:id', requireAdmin, (req,res)=>{
+app.delete('/api/services/:id', requireOwnerOrAdmin, (req,res)=>{
   const x=db.prepare('SELECT * FROM services WHERE public_id=?').get(req.params.id);
   if(!x) return res.status(404).json({message:'Service not found.'});
+  if(!req.admin && x.owner_id!==req.user.brave_id) return res.status(403).json({message:'You can only remove your own service.'});
   db.prepare('UPDATE services SET status="deleted" WHERE public_id=?').run(x.public_id);
   res.json({message:'Service deleted from the marketplace.'});
 });

@@ -573,5 +573,104 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
     );
   } catch(e) { console.error('Daily metric warning:', e.message); }
 
+  // Complete marketplace discovery layer: user-owned and administrator-owned listings are shuffled together,
+  // while the API still exposes who owns each listing and links back to the owner's public profile.
+  const ownerLabel = (row) => {
+    if(row.owner_id && row.owner_id !== 'ADMIN' && row.owner_id !== 'CATALOGUE_STAGING' && row.owner_id !== 'catalog' && row.owner_id !== 'demo') return 'BRAVE Member';
+    return 'UNIQUE BRAVE';
+  };
+  app.get('/api/marketplace/feed', (req,res)=>{
+    const type=['product','service','all'].includes(clean(req.query.type)) ? clean(req.query.type) : 'all';
+    const q=clean(req.query.q).toLowerCase(), category=clean(req.query.category).toLowerCase();
+    const like='%'+q+'%';
+    const mapProduct = p => ({...p, listingType:'product',ownerProfileUrl:p.owner_username?publicUrl('/u/'+p.owner_username):'',ownerProfileImage:p.profile_image||'',ownerLabel:ownerLabel(p),isUserOwned:!!(p.owner_id && !['ADMIN','CATALOGUE_STAGING','catalog','demo'].includes(p.owner_id)),isAdminOwned:['ADMIN','CATALOGUE_STAGING','catalog','demo'].includes(p.owner_id),publicUrl:publicUrl('/product/'+p.public_id)});
+    const mapService = x => ({...x, listingType:'service',ownerProfileUrl:x.owner_username?publicUrl('/u/'+x.owner_username):'',ownerProfileImage:x.profile_image||'',ownerLabel:ownerLabel(x),isUserOwned:!!(x.owner_id && !['ADMIN','CATALOGUE_STAGING','catalog','demo'].includes(x.owner_id)),isAdminOwned:['ADMIN','CATALOGUE_STAGING','catalog','demo'].includes(x.owner_id),publicUrl:publicUrl('/service/'+x.public_id)});
+    let products=[],services=[];
+    if(type==='all'||type==='product'){
+      products=db.prepare(`SELECT p.*,u.profile_image FROM products p LEFT JOIN users u ON u.brave_id=p.owner_id WHERE p.status='active' AND (?='' OR lower(p.name) LIKE ? OR lower(p.category) LIKE ? OR lower(p.description) LIKE ?) AND (?='' OR lower(p.category) LIKE ?) ORDER BY random() LIMIT 120`).all(q,like,like,like,category,'%'+category+'%').map(mapProduct);
+    }
+    if(type==='all'||type==='service'){
+      services=db.prepare(`SELECT s.*,u.profile_image FROM services s LEFT JOIN users u ON u.brave_id=s.owner_id WHERE s.status='active' AND (?='' OR lower(s.name) LIKE ? OR lower(s.category) LIKE ? OR lower(s.description) LIKE ?) AND (?='' OR lower(s.category) LIKE ?) ORDER BY random() LIMIT 120`).all(q,like,like,like,category,'%'+category+'%').map(mapService);
+    }
+    // Shuffle after fetching so admin/demo listings cannot monopolise the first rows.
+    const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+    products=shuffle(products);services=shuffle(services);
+    res.json({products,services,items:shuffle([...products,...services]),meta:{userProducts:products.filter(x=>x.isUserOwned).length,adminProducts:products.filter(x=>x.isAdminOwned).length,userServices:services.filter(x=>x.isUserOwned).length,adminServices:services.filter(x=>x.isAdminOwned).length}});
+  });
+  app.get('/api/services/:id',(req,res)=>{
+    const service=db.prepare("SELECT s.*,u.profile_image FROM services s LEFT JOIN users u ON u.brave_id=s.owner_id WHERE s.public_id=? AND s.status='active'").get(req.params.id);
+    if(!service)return res.status(404).json({message:'Service not found or no longer available.'});
+    res.json({service:{...service,ownerProfileImage:service.profile_image||'',ownerProfileUrl:service.owner_username?publicUrl('/u/'+service.owner_username):'',ownerLabel:ownerLabel(service)}});
+  });
+  app.get('/api/marketplace/categories',(req,res)=>{
+    const products=db.prepare("SELECT DISTINCT category FROM products WHERE status='active' AND category<>'' ORDER BY category").all().map(x=>x.category);
+    const services=db.prepare("SELECT DISTINCT category FROM services WHERE status='active' AND category<>'' ORDER BY category").all().map(x=>x.category);
+    res.json({products,services});
+  });
+  app.get('/api/my-listings',requireUser,(req,res)=>{
+    const products=db.prepare("SELECT * FROM products WHERE owner_id=? AND status<>'deleted' ORDER BY id DESC").all(req.user.brave_id);
+    const services=db.prepare("SELECT * FROM services WHERE owner_id=? AND status<>'deleted' ORDER BY id DESC").all(req.user.brave_id);
+    res.json({products,services,profile:{username:req.user.username,fullname:req.user.fullname,profileImage:req.user.profile_image||'',profileUrl:publicUrl('/u/'+req.user.username)}});
+  });
+
+  // Keep the three plans explicit and useful. This only updates plan metadata; it does not touch subscriptions.
+  const planFeatures={
+    basic:['Marketplace access','Buy and sell products','Offer services','Public profile','Standard messaging','Basic Workshop tools','Basic records','Standard support'],
+    premium:['Everything in Basic','Featured seller/provider profile','Expanded Workshop business tools','Priority marketplace discovery','Advanced records and invoices','Business profile tools','Customer follow-up tools','Priority support'],
+    luxury:['Everything in Premium','Advanced business Workshop suite','Enhanced listing visibility','Business analytics and activity reports','Priority advisor access','Advanced promotional tools','Expanded business records','Early access to new BRAVE tools']
+  };
+  for(const [code,features] of Object.entries(planFeatures)){
+    try{db.prepare('UPDATE plans SET features=? WHERE code=?').run(JSON.stringify(features),code);}catch(e){console.error('Plan metadata warning:',e.message)}
+  }
+
+  // WhatsApp-style administrator/user support chat with an explicit inactivity timeout.
+  const chatMinutes=Math.max(5,Number(process.env.ADMIN_CHAT_TIMEOUT_MINUTES||30)||30);
+  const chatExpiry=()=>new Date(Date.now()+chatMinutes*60*1000).toISOString();
+  const refreshAdminChat=(uid)=>{
+    let s=db.prepare("SELECT * FROM admin_chat_sessions WHERE user_id=? AND status='open' ORDER BY id DESC LIMIT 1").get(uid);
+    if(s && new Date(s.expires_at).getTime()<=Date.now()){
+      db.prepare("UPDATE admin_chat_sessions SET status='expired',last_activity_at=? WHERE public_id=?").run(now(),s.public_id); s=null;
+    }
+    return s;
+  };
+  const startAdminChat=(uid)=>{
+    const current=refreshAdminChat(uid); if(current)return current;
+    const sid=id('admin-chat'); const started=now(), expires=chatExpiry();
+    db.prepare('INSERT INTO admin_chat_sessions(public_id,user_id,started_at,last_activity_at,expires_at,status) VALUES(?,?,?,?,?,?)').run(sid,uid,started,started,expires,'open');
+    return db.prepare('SELECT * FROM admin_chat_sessions WHERE public_id=?').get(sid);
+  };
+  app.get('/api/admin-chat',requireUser,(req,res)=>{
+    const session=refreshAdminChat(req.user.brave_id); const rows=db.prepare("SELECT * FROM messages WHERE ((sender_id=? AND receiver_id='ADMIN') OR (sender_id='ADMIN' AND receiver_id=?)) ORDER BY id ASC LIMIT 300").all(req.user.brave_id,req.user.brave_id);
+    res.json({session,timeoutMinutes:chatMinutes,messages:rows});
+  });
+  app.post('/api/admin-chat',requireUser,(req,res)=>{
+    const msg=clean(req.body.message); if(!msg)return res.status(400).json({message:'Write a message first.'});
+    const session=startAdminChat(req.user.brave_id); const mid=id('msg');
+    db.prepare('INSERT INTO messages(public_id,sender_id,receiver_id,message,context) VALUES(?,?,?,?,?)').run(mid,req.user.brave_id,'ADMIN',msg,'admin:user');
+    db.prepare('UPDATE admin_chat_sessions SET last_activity_at=?,expires_at=? WHERE public_id=?').run(now(),chatExpiry(),session.public_id);
+    db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),req.user.brave_id,'Admin chat','Your message was sent to the UNIQUE BRAVE administrator.');
+    audit('user_admin_chat_message','user',req.user.brave_id,msg);
+    res.status(201).json({message:'Message sent.',session:db.prepare('SELECT * FROM admin_chat_sessions WHERE public_id=?').get(session.public_id),item:db.prepare('SELECT * FROM messages WHERE public_id=?').get(mid)});
+  });
+  app.post('/api/admin/users/:id/chat/start',requireAdmin,(req,res)=>{
+    const u=db.prepare('SELECT * FROM users WHERE brave_id=? AND account_status="active"').get(req.params.id); if(!u)return res.status(404).json({message:'User not found.'});
+    const session=startAdminChat(u.brave_id); res.json({session,timeoutMinutes:chatMinutes});
+  });
+  app.get('/api/admin/users/:id/chat/live',requireAdmin,(req,res)=>{
+    const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(req.params.id); if(!u)return res.status(404).json({message:'User not found.'});
+    const session=refreshAdminChat(u.brave_id); const messages=db.prepare("SELECT * FROM messages WHERE ((sender_id=? AND receiver_id='ADMIN') OR (sender_id='ADMIN' AND receiver_id=?)) ORDER BY id ASC LIMIT 300").all(u.brave_id,u.brave_id);
+    res.json({session,timeoutMinutes:chatMinutes,messages,user:{id:u.brave_id,fullname:u.fullname,username:u.username,profileImage:u.profile_image||''}});
+  });
+  app.post('/api/admin/users/:id/chat/live',requireAdmin,(req,res)=>{
+    const msg=clean(req.body.message); const u=db.prepare('SELECT * FROM users WHERE brave_id=? AND account_status="active"').get(req.params.id); if(!u)return res.status(404).json({message:'User not found.'}); if(!msg)return res.status(400).json({message:'Message is required.'});
+    const session=startAdminChat(u.brave_id), mid=id('msg');
+    db.prepare('INSERT INTO messages(public_id,sender_id,receiver_id,message,context) VALUES(?,?,?,?,?)').run(mid,'ADMIN',u.brave_id,msg,'admin:user');
+    db.prepare('UPDATE admin_chat_sessions SET last_activity_at=?,expires_at=? WHERE public_id=?').run(now(),chatExpiry(),session.public_id);
+    db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),u.brave_id,'UNIQUE BRAVE Admin','You have a new message from the UNIQUE BRAVE administrator.');
+    audit('admin_user_chat_message','user',u.brave_id,msg);
+    res.status(201).json({message:'Admin message sent.',session:db.prepare('SELECT * FROM admin_chat_sessions WHERE public_id=?').get(session.public_id)});
+  });
+  app.post('/api/admin/users/:id/chat/close',requireAdmin,(req,res)=>{db.prepare("UPDATE admin_chat_sessions SET status='closed',last_activity_at=? WHERE user_id=? AND status='open'").run(now(),req.params.id);res.json({message:'Chat closed.'});});
+
   console.log('BRAVE additive feature layer loaded: staging catalogue, persistent sessions, receipt validation, seller chat, profiles, apprentices, plans, AI suggestions, staff controls and admin tools.');
 };
