@@ -59,8 +59,9 @@ function writeMigrationFile(db,userId,dir) {
   fs.mkdirSync(dir,{recursive:true});
   const data=snapshot(db,userId);
   const safeName=String(data.user.username||userId).replace(/[^a-z0-9_-]/gi,'_');
-  const target=path.join(dir,`user-${safeName}.brave.json`);
-  fs.writeFileSync(target,JSON.stringify(data,null,2),'utf8');
+  const target=path.join(dir,`user-${safeName}.brave.enc`);
+  // Migration exports stay encrypted; never write passwords, OTPs or raw credentials to disk.
+  fs.writeFileSync(target,encrypt(data),'utf8');
   return target;
 }
 module.exports={snapshot,save,read,writeMigrationFile};

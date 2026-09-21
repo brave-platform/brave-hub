@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
 const storageService = require('./backend/storage_service');
 const path = require('path');
 const fs = require('fs');
@@ -72,28 +71,29 @@ function requireOwnerOrAdmin(req,res,next){const u=currentUser(req);if(u && u.ac
 function audit(action,targetType='',targetId='',details=''){db.prepare('INSERT INTO admin_audit(public_id,action,target_type,target_id,details) VALUES(?,?,?,?,?)').run(id('audit'),action,targetType,targetId,details);}
 function security(req,eventType,userId='',details='',score=0){db.prepare('INSERT INTO security_events(public_id,user_id,event_type,ip,user_agent,details,risk_score) VALUES(?,?,?,?,?,?,?)').run(id('sec'),userId,eventType,req.ip,clean(req.get('user-agent')),details,score);}
 function publicUrl(p){return PUBLIC_BASE_URL+p;}
-function transporter(){
- const host=String(process.env.SMTP_HOST||'').trim();
- const user=String(process.env.SMTP_USER||'').trim();
- const pass=String(process.env.SMTP_PASS||'').replace(/\s/g,'');
- if(!host||!user||!pass)return null;
- const port=Number(process.env.SMTP_PORT||587);
- const secure=String(process.env.SMTP_SECURE||'').toLowerCase()==='true' || port===465;
- return nodemailer.createTransport({host,port,secure,requireTLS:!secure && port===587,auth:{user,pass},connectionTimeout:15000,greetingTimeout:15000,socketTimeout:20000});
-}
 async function sendMail(to,subject,html){
- const t=transporter();
- if(!t){
-   console.error('[EMAIL] SMTP is not configured. Required: SMTP_HOST, SMTP_USER and SMTP_PASS.');
-   return {sent:false,code:'SMTP_NOT_CONFIGURED'};
+ const apiKey=String(process.env.RESEND_API_KEY||'').trim();
+ const from=String(process.env.RESEND_FROM||'onboarding@resend.dev').trim();
+ if(!apiKey){
+   console.error('[EMAIL] Resend is not configured. Required: RESEND_API_KEY.');
+   return {sent:false,code:'RESEND_NOT_CONFIGURED'};
  }
  try{
-   await t.sendMail({from:String(process.env.SMTP_FROM||process.env.SMTP_USER).trim(),to,subject,html});
-   console.log('[EMAIL] Password reset email sent successfully to',to);
+   const response=await fetch('https://api.resend.com/emails',{
+     method:'POST',
+     headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+     body:JSON.stringify({from,to:[to],subject,html})
+   });
+   const body=await response.text();
+   if(!response.ok){
+     console.error('[EMAIL] Resend delivery failed:',response.status,body);
+     return {sent:false,code:'RESEND_SEND_FAILED',error:body||`HTTP ${response.status}`};
+   }
+   console.log('[EMAIL] Email sent successfully via Resend to',to);
    return {sent:true};
  }catch(e){
-   console.error('[EMAIL] SMTP delivery failed:',e && e.message ? e.message : e);
-   return {sent:false,code:'SMTP_SEND_FAILED',error:e && e.message ? e.message : String(e)};
+   console.error('[EMAIL] Resend request failed:',e && e.message ? e.message : e);
+   return {sent:false,code:'RESEND_SEND_FAILED',error:e && e.message ? e.message : String(e)};
  }
 }
 
@@ -328,11 +328,11 @@ app.post('/forgot-password',async(req,res)=>{
  if(mail.sent)return res.json({message:'Reset link sent. Check your email.'});
  // Keep the button functional for local/self-hosted testing without SMTP. Never expose this fallback in production.
  if(process.env.NODE_ENV!=='production')return res.json({message:'Email delivery is not configured. Use the test reset link below.',resetUrl:url});
- if(mail.code==='SMTP_NOT_CONFIGURED'){
-   console.error('[PASSWORD RESET] SMTP configuration is missing on the server.');
+ if(mail.code==='RESEND_NOT_CONFIGURED'){
+   console.error('[PASSWORD RESET] Resend configuration is missing on the server.');
    return res.status(503).json({message:'Password reset email service is not configured on the server.'});
  }
- console.error('[PASSWORD RESET] Email delivery failed:',mail.error||mail.code||'unknown SMTP error');
+ console.error('[PASSWORD RESET] Email delivery failed:',mail.error||mail.code||'unknown Resend error');
  return res.status(502).json({message:'We could not deliver the reset email right now. Please try again later.'});
 });
 app.post('/reset-password',async(req,res)=>{
@@ -675,9 +675,7 @@ app.get('/api/brave/faq',(req,res)=>{
 app.use((req,res,next)=>{if(req.path.startsWith('/api/')||req.path==='/login'||req.path==='/register')return res.status(404).json({message:'API route not found.'});next();});
 app.listen(PORT,()=>{
  console.log(`UNIQUE BRAVE COM backend is running on port ${PORT}`);
- const smtpReady=!!transporter();
- console.log(`[EMAIL] SMTP configuration detected: ${smtpReady ? 'YES' : 'NO'}`);
- if(smtpReady){
-   transporter().verify().then(()=>console.log('[EMAIL] SMTP connection verified successfully.')).catch(e=>console.error('[EMAIL] SMTP connection verification failed:',e && e.message ? e.message : e));
- }
+ const resendReady=!!String(process.env.RESEND_API_KEY||'').trim();
+ console.log(`[EMAIL] Resend configuration detected: ${resendReady ? 'YES' : 'NO'}`);
+ if(!resendReady) console.warn('[EMAIL] Set RESEND_API_KEY and RESEND_FROM on the server to enable password-reset email.');
 });
