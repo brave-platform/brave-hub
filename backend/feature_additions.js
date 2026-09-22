@@ -238,7 +238,7 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
       ['showcase-powerbank','Fast-Charge Power Bank','Electronics','Portable power bank for phones and everyday devices.',25000,'/images/catalog/powerbank.svg']
     ];
     const ins=db.prepare(`INSERT OR IGNORE INTO products(public_id,owner_id,owner_name,owner_username,name,category,description,price,delivery_price,payment_method,image_url,featured,status,stock,quantity,location,delivery_estimate,tags,published_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
-    demoProducts.forEach((x,i)=>ins.run(x[0],'BRAVE_SHOWCASE','UNIQUE BRAVE','uniquebrave',x[1],x[2],x[3],x[4],0,'pay_on_delivery',x[5],i<6,'active',20,20,'Nigeria','1-3 days','showcase,featured',now(),now(),now()));
+    demoProducts.forEach((x,i)=>ins.run(x[0],'BRAVE_SHOWCASE','UNIQUE BRAVE','uniquebrave',x[1],x[2],x[3],x[4],0,'pay_on_delivery',x[5],i<6?1:0,'active',20,20,'Nigeria','1-3 days','showcase,featured',now(),now(),now()));
     const serviceImages=['phone','laptop','camera','speaker','shirt','bag','chair','powerbank'];
     const demoServices=[
       ['showcase-design','Graphic Design','Creative & Digital','Logos, flyers, social media graphics and business branding.',15000],
