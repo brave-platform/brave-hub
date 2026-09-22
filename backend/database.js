@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS services (
  payment_method TEXT DEFAULT 'pay_after_service',
  image_data TEXT DEFAULT '',
  video_data TEXT DEFAULT '',
+ image_url TEXT DEFAULT '',
  status TEXT DEFAULT 'active',
  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -372,6 +373,7 @@ for (const sql of [
   "ALTER TABLE products ADD COLUMN pdf_data TEXT DEFAULT ''",
   "ALTER TABLE services ADD COLUMN pdf_data TEXT DEFAULT ''",
   "ALTER TABLE services ADD COLUMN payment_method TEXT DEFAULT 'pay_after_service'",
+  "ALTER TABLE services ADD COLUMN image_url TEXT DEFAULT ''",
   "ALTER TABLE users ADD COLUMN profile_image TEXT DEFAULT ''",
   "ALTER TABLE users ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP",
   "ALTER TABLE users ADD COLUMN terms_accepted_at TEXT",
@@ -398,3 +400,6 @@ try {
 
 console.log('BRAVE database connected successfully.');
 module.exports = db;
+
+
+
