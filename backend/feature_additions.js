@@ -10,6 +10,14 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
 
   // Additive migration layer. Existing columns and tables are kept.
   ensureColumn('users', "cover_image TEXT DEFAULT ''");
+  ensureColumn('users', "location TEXT DEFAULT ''");
+  ensureColumn('users', "rating REAL DEFAULT 0");
+  ensureColumn('users', "rating_count INTEGER DEFAULT 0");
+  ensureColumn('admin_chat_sessions', "admin_responded_at TEXT");
+  ensureColumn('admin_chat_sessions', "response_deadline_at TEXT");
+  ensureColumn('admin_chat_sessions', "response_required INTEGER DEFAULT 1");
+  ensureColumn('products', "image_url TEXT DEFAULT ''");
+  ensureColumn('services', "image_url TEXT DEFAULT ''");
   ensureColumn('users', "last_login_at TEXT");
   ensureColumn('users', "preferred_language TEXT DEFAULT 'ng'");
   ensureColumn('products', "old_price REAL");
@@ -230,7 +238,7 @@ module.exports = function registerBraveAdditions({app, db, helpers}) {
       ['showcase-powerbank','Fast-Charge Power Bank','Electronics','Portable power bank for phones and everyday devices.',25000,'/images/catalog/powerbank.svg']
     ];
     const ins=db.prepare(`INSERT OR IGNORE INTO products(public_id,owner_id,owner_name,owner_username,name,category,description,price,delivery_price,payment_method,image_url,featured,status,stock,quantity,location,delivery_estimate,tags,published_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
-    demoProducts.forEach((x,i)=>ins.run(x[0],'BRAVE_SHOWCASE','UNIQUE BRAVE','uniquebrave',x[1],x[2],x[3],x[4],0,'pay_on_delivery',x[5],i<6 ? 1 : 0,'active',20,20,'Nigeria','1-3 days','showcase,featured',now(),now(),now()));
+    demoProducts.forEach((x,i)=>ins.run(x[0],'BRAVE_SHOWCASE','UNIQUE BRAVE','uniquebrave',x[1],x[2],x[3],x[4],0,'pay_on_delivery',x[5],i<6,'active',20,20,'Nigeria','1-3 days','showcase,featured',now(),now(),now()));
     const serviceImages=['phone','laptop','camera','speaker','shirt','bag','chair','powerbank'];
     const demoServices=[
       ['showcase-design','Graphic Design','Creative & Digital','Logos, flyers, social media graphics and business branding.',15000],
@@ -690,63 +698,57 @@ app.get('/api/account/storage/export', requireUser, (req,res)=>{
   });
 
   // Keep the three plans explicit and useful. This only updates plan metadata; it does not touch subscriptions.
+  // Keep the six existing plans consistent with the actual feature tiers.
   const planFeatures={
-    basic:['Marketplace access','Buy and sell products','Offer services','Public profile','Standard messaging','Basic Workshop tools','Basic records','Standard support'],
-    premium:['Everything in Basic','Featured seller/provider profile','Expanded Workshop business tools','Priority marketplace discovery','Advanced records and invoices','Business profile tools','Customer follow-up tools','Priority support'],
-    luxury:['Everything in Premium','Advanced business Workshop suite','Enhanced listing visibility','Business analytics and activity reports','Priority advisor access','Advanced promotional tools','Expanded business records','Early access to new BRAVE tools']
+    basic:['Marketplace access','Buy and sell products','Offer services','Public profile and direct link','Timeline posting','Standard messaging','Basic BRAVE AI','Basic Workshop tools','Basic records','Standard support'],
+    'starter-business':['Everything in Basic','Up to 25 active listings','Seller/service profile tools','Negotiation chat tools','Basic business records','Daily activity overview'],
+    premium:['Everything in Starter Business','Featured profile options','Expanded listings and media','Advanced Workshop tools','Priority marketplace discovery','Advanced records and invoices','Enhanced AI product suggestions','Customer follow-up tools','Priority support'],
+    professional:['Everything in Premium','Higher catalogue limits','Business growth tools','Advanced records and reports','Priority advisor access','Promotional placement options','Detailed business overview'],
+    luxury:['Everything in Professional','Advanced marketplace analytics','Expanded team planning','Advanced advertising tools','Premium AI assistance','Enhanced customer-service tools','Priority admin support'],
+    enterprise:['Everything in Luxury','Custom business setup','Multi-user team administration','Advanced operational reporting','Enterprise catalogue controls','Priority support and escalation','Custom platform assistance']
   };
   for(const [code,features] of Object.entries(planFeatures)){
     try{db.prepare('UPDATE plans SET features=? WHERE code=?').run(JSON.stringify(features),code);}catch(e){console.error('Plan metadata warning:',e.message)}
   }
 
-  // WhatsApp-style administrator/user support chat with an explicit inactivity timeout.
+  // Threaded administrator/user support chat. A user message waits up to 30 minutes for an admin response.
+  // If the admin does not respond in that window, the thread is closed and the next user message starts a fresh thread.
+  db.exec(`CREATE TABLE IF NOT EXISTS admin_chat_threads(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, public_id TEXT UNIQUE NOT NULL, user_id TEXT NOT NULL,
+    status TEXT DEFAULT 'open', started_at TEXT NOT NULL, last_user_at TEXT, last_admin_at TEXT,
+    response_deadline_at TEXT, expires_at TEXT, admin_responded_at TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );`);
+  ensureColumn('messages', "thread_id TEXT DEFAULT ''");
   const chatMinutes=Math.max(5,Number(process.env.ADMIN_CHAT_TIMEOUT_MINUTES||30)||30);
-  const chatExpiry=()=>new Date(Date.now()+chatMinutes*60*1000).toISOString();
-  const refreshAdminChat=(uid)=>{
-    let s=db.prepare("SELECT * FROM admin_chat_sessions WHERE user_id=? AND status='open' ORDER BY id DESC LIMIT 1").get(uid);
-    if(s && new Date(s.expires_at).getTime()<=Date.now()){
-      db.prepare("UPDATE admin_chat_sessions SET status='expired',last_activity_at=? WHERE public_id=?").run(now(),s.public_id); s=null;
+  const plusMinutes=m=>new Date(Date.now()+m*60*1000).toISOString();
+  const latestThread=uid=>db.prepare("SELECT * FROM admin_chat_threads WHERE user_id=? ORDER BY id DESC LIMIT 1").get(uid);
+  const closeExpiredThread=uid=>{
+    let t=latestThread(uid); if(!t||t.status!=='open')return t;
+    const deadline=t.response_deadline_at?new Date(t.response_deadline_at).getTime():0;
+    const expiry=t.expires_at?new Date(t.expires_at).getTime():0;
+    if((t.admin_responded_at?expiry:deadline) && (t.admin_responded_at?expiry:deadline)<=Date.now()){
+      db.prepare("UPDATE admin_chat_threads SET status='expired' WHERE public_id=?").run(t.public_id); t=null;
     }
-    return s;
+    return t;
   };
-  const startAdminChat=(uid)=>{
-    const current=refreshAdminChat(uid); if(current)return current;
-    const sid=id('admin-chat'); const started=now(), expires=chatExpiry();
-    db.prepare('INSERT INTO admin_chat_sessions(public_id,user_id,started_at,last_activity_at,expires_at,status) VALUES(?,?,?,?,?,?)').run(sid,uid,started,started,expires,'open');
-    return db.prepare('SELECT * FROM admin_chat_sessions WHERE public_id=?').get(sid);
-  };
+  const startThread=uid=>{const t=closeExpiredThread(uid);if(t)return t;const sid=id('admin-chat-thread'),started=now();db.prepare('INSERT INTO admin_chat_threads(public_id,user_id,status,started_at,last_user_at,response_deadline_at) VALUES(?,?,?,?,?,?)').run(sid,uid,'open',started,started,plusMinutes(chatMinutes));return db.prepare('SELECT * FROM admin_chat_threads WHERE public_id=?').get(sid)};
+  const threadMessages=tid=>db.prepare('SELECT * FROM messages WHERE thread_id=? ORDER BY id ASC LIMIT 300').all(tid);
   app.get('/api/admin-chat',requireUser,(req,res)=>{
-    const session=refreshAdminChat(req.user.brave_id); const rows=db.prepare("SELECT * FROM messages WHERE ((sender_id=? AND receiver_id='ADMIN') OR (sender_id='ADMIN' AND receiver_id=?)) ORDER BY id ASC LIMIT 300").all(req.user.brave_id,req.user.brave_id);
-    res.json({session,timeoutMinutes:chatMinutes,messages:rows});
+    const session=closeExpiredThread(req.user.brave_id); const messages=session?threadMessages(session.public_id):[];
+    res.json({session,timeoutMinutes:chatMinutes,messages,waitingForAdmin:!!(session&&!session.admin_responded_at)});
   });
   app.post('/api/admin-chat',requireUser,(req,res)=>{
-    const msg=clean(req.body.message); if(!msg)return res.status(400).json({message:'Write a message first.'});
-    const session=startAdminChat(req.user.brave_id); const mid=id('msg');
-    db.prepare('INSERT INTO messages(public_id,sender_id,receiver_id,message,context) VALUES(?,?,?,?,?)').run(mid,req.user.brave_id,'ADMIN',msg,'admin:user');
-    db.prepare('UPDATE admin_chat_sessions SET last_activity_at=?,expires_at=? WHERE public_id=?').run(now(),chatExpiry(),session.public_id);
-    db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),req.user.brave_id,'Admin chat','Your message was sent to the UNIQUE BRAVE administrator.');
-    audit('user_admin_chat_message','user',req.user.brave_id,msg);
-    res.status(201).json({message:'Message sent.',session:db.prepare('SELECT * FROM admin_chat_sessions WHERE public_id=?').get(session.public_id),item:db.prepare('SELECT * FROM messages WHERE public_id=?').get(mid)});
+    const msg=clean(req.body.message);if(!msg)return res.status(400).json({message:'Write a message first.'});
+    let session=closeExpiredThread(req.user.brave_id);if(!session)session=startThread(req.user.brave_id);
+    const mid=id('msg');db.prepare('INSERT INTO messages(public_id,sender_id,receiver_id,message,context,thread_id) VALUES(?,?,?,?,?,?)').run(mid,req.user.brave_id,'ADMIN',msg,'admin:user',session.public_id);
+    db.prepare('UPDATE admin_chat_threads SET last_user_at=?,response_deadline_at=?,expires_at=NULL WHERE public_id=?').run(now(),plusMinutes(chatMinutes),session.public_id);
+    db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),req.user.brave_id,'Admin chat','Your message was sent. The administrator has 30 minutes to respond before this support thread closes.');
+    audit('user_admin_chat_message','user',req.user.brave_id,msg);res.status(201).json({message:'Message sent.',session:db.prepare('SELECT * FROM admin_chat_threads WHERE public_id=?').get(session.public_id),item:db.prepare('SELECT * FROM messages WHERE public_id=?').get(mid)});
   });
-  app.post('/api/admin/users/:id/chat/start',requireAdmin,(req,res)=>{
-    const u=db.prepare('SELECT * FROM users WHERE brave_id=? AND account_status="active"').get(req.params.id); if(!u)return res.status(404).json({message:'User not found.'});
-    const session=startAdminChat(u.brave_id); res.json({session,timeoutMinutes:chatMinutes});
-  });
-  app.get('/api/admin/users/:id/chat/live',requireAdmin,(req,res)=>{
-    const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(req.params.id); if(!u)return res.status(404).json({message:'User not found.'});
-    const session=refreshAdminChat(u.brave_id); const messages=db.prepare("SELECT * FROM messages WHERE ((sender_id=? AND receiver_id='ADMIN') OR (sender_id='ADMIN' AND receiver_id=?)) ORDER BY id ASC LIMIT 300").all(u.brave_id,u.brave_id);
-    res.json({session,timeoutMinutes:chatMinutes,messages,user:{id:u.brave_id,fullname:u.fullname,username:u.username,profileImage:u.profile_image||''}});
-  });
-  app.post('/api/admin/users/:id/chat/live',requireAdmin,(req,res)=>{
-    const msg=clean(req.body.message); const u=db.prepare('SELECT * FROM users WHERE brave_id=? AND account_status="active"').get(req.params.id); if(!u)return res.status(404).json({message:'User not found.'}); if(!msg)return res.status(400).json({message:'Message is required.'});
-    const session=startAdminChat(u.brave_id), mid=id('msg');
-    db.prepare('INSERT INTO messages(public_id,sender_id,receiver_id,message,context) VALUES(?,?,?,?,?)').run(mid,'ADMIN',u.brave_id,msg,'admin:user');
-    db.prepare('UPDATE admin_chat_sessions SET last_activity_at=?,expires_at=? WHERE public_id=?').run(now(),chatExpiry(),session.public_id);
-    db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),u.brave_id,'UNIQUE BRAVE Admin','You have a new message from the UNIQUE BRAVE administrator.');
-    audit('admin_user_chat_message','user',u.brave_id,msg);
-    res.status(201).json({message:'Admin message sent.',session:db.prepare('SELECT * FROM admin_chat_sessions WHERE public_id=?').get(session.public_id)});
-  });
-  app.post('/api/admin/users/:id/chat/close',requireAdmin,(req,res)=>{db.prepare("UPDATE admin_chat_sessions SET status='closed',last_activity_at=? WHERE user_id=? AND status='open'").run(now(),req.params.id);res.json({message:'Chat closed.'});});
+  app.post('/api/admin/users/:id/chat/start',requireAdmin,(req,res)=>{const u=db.prepare('SELECT * FROM users WHERE brave_id=? AND account_status="active"').get(req.params.id);if(!u)return res.status(404).json({message:'User not found.'});const session=startThread(u.brave_id);res.json({session,timeoutMinutes:chatMinutes});});
+  app.get('/api/admin/users/:id/chat/live',requireAdmin,(req,res)=>{const u=db.prepare('SELECT * FROM users WHERE brave_id=?').get(req.params.id);if(!u)return res.status(404).json({message:'User not found.'});const session=closeExpiredThread(u.brave_id);const messages=session?threadMessages(session.public_id):[];res.json({session,timeoutMinutes:chatMinutes,messages,user:{id:u.brave_id,fullname:u.fullname,username:u.username,profileImage:u.profile_image||''}});});
+  app.post('/api/admin/users/:id/chat/live',requireAdmin,(req,res)=>{const msg=clean(req.body.message);const u=db.prepare('SELECT * FROM users WHERE brave_id=? AND account_status="active"').get(req.params.id);if(!u)return res.status(404).json({message:'User not found.'});if(!msg)return res.status(400).json({message:'Message is required.'});let session=closeExpiredThread(u.brave_id);if(!session)session=startThread(u.brave_id);const mid=id('msg');db.prepare('INSERT INTO messages(public_id,sender_id,receiver_id,message,context,thread_id) VALUES(?,?,?,?,?,?)').run(mid,'ADMIN',u.brave_id,msg,'admin:user',session.public_id);db.prepare('UPDATE admin_chat_threads SET last_admin_at=?,admin_responded_at=?,response_deadline_at=NULL,expires_at=? WHERE public_id=?').run(now(),now(),plusMinutes(chatMinutes),session.public_id);db.prepare('INSERT INTO notifications(public_id,user_id,title,message) VALUES(?,?,?,?)').run(id('note'),u.brave_id,'UNIQUE BRAVE Admin','The administrator has responded to your support message.');audit('admin_user_chat_message','user',u.brave_id,msg);res.status(201).json({message:'Admin message sent.',session:db.prepare('SELECT * FROM admin_chat_threads WHERE public_id=?').get(session.public_id)});});
+  app.post('/api/admin/users/:id/chat/close',requireAdmin,(req,res)=>{db.prepare("UPDATE admin_chat_threads SET status='closed' WHERE user_id=? AND status='open'").run(req.params.id);res.json({message:'Chat closed.'});});
 
   console.log('BRAVE additive feature layer loaded: staging catalogue, persistent sessions, receipt validation, seller chat, profiles, apprentices, plans, AI suggestions, staff controls and admin tools.');
 };

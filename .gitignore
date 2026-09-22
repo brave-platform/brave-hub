@@ -8,3 +8,5 @@ backend/*.db-wal
 storage/migrated/*.db
 storage/migrated/*.json
 !storage/migrated/SCHEMA_VERSION.json
+storage/migrated/users/*
+!storage/migrated/users/.gitkeep

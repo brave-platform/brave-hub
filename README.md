@@ -144,3 +144,20 @@ For Gmail on port 587, use `SMTP_SECURE=false` and a Gmail App Password. Do not 
 
 ### Admin chat
 The timeout is configurable in Render with `ADMIN_CHAT_TIMEOUT_MINUTES`. The default is 30 minutes of inactivity; sending a new message refreshes the session.
+
+
+## Completion layer
+This release keeps the existing marketplace and adds: admin editing of every public catalogue listing, richer public profiles/timelines with reviews and ratings, plan entitlement display, mobile four-up product browsing, Jumia-style order subtotal/delivery/total presentation, persistent-session recovery on refresh, a 30-minute unanswered admin-chat response deadline, affordable everyday catalogue items from NGN 500+, and a wallet that remains explicitly Coming Soon.
+
+### Resend for all users
+Set `RESEND_API_KEY` and `RESEND_FROM` in Render. `RESEND_FROM` must use a domain verified in Resend for delivery to arbitrary BRAVE users. The code never exposes the API key to the browser.
+
+
+## 2.5 platform completion layer
+- Product marketplace supports tap-to-expand galleries, colour/design variants, variant price/stock and payment arrangement display.
+- Products, services and Timeline accept image, video, audio and file media where supported by the browser/server limits.
+- User sessions default to 90 days and renew while the account is actively used.
+- Encrypted user migration snapshots and database migration history live under `storage/migrated/` and `backend/migrations/`.
+- Admin Platform Settings controls marketplace/upload/support/payment-display behaviour.
+- Wallet remains Coming Soon.
+- `android-wrapper/` is a separate APK source that connects to the same backend/database.

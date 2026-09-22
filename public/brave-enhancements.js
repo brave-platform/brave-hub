@@ -2,7 +2,7 @@
   const path=location.pathname;
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const token=()=>localStorage.getItem('braveToken')||'';
-  const api=async(url,opt={})=>{opt.headers={...(opt.headers||{}),Authorization:'Bearer '+token()};if(opt.body&&!opt.headers['Content-Type'])opt.headers['Content-Type']='application/json';const r=await fetch(url,opt);let d={};try{d=await r.json()}catch{};return {r,d}};
+  const api=async(url,opt={})=>{const make=async(useToken)=>{const headers={...(opt.headers||{})};if(useToken&&token())headers.Authorization='Bearer '+token();if(opt.body&&!headers['Content-Type'])headers['Content-Type']='application/json';return fetch(url,Object.assign({},opt,{headers,credentials:'include'}))};let r=await make(true);let d={};try{d=await r.json()}catch{};if(r.status===401&&token()){localStorage.removeItem('braveToken');r=await make(false);d={};try{d=await r.json()}catch{}}return {r,d}};
   const fileData=async f=>new Promise(resolve=>{if(!f)return resolve('');const rd=new FileReader();rd.onload=()=>resolve(rd.result);rd.onerror=()=>resolve('');rd.readAsDataURL(f)});
   const modal=(html)=>{let m=document.getElementById('braveEnhModal');if(!m){m=document.createElement('div');m.id='braveEnhModal';m.className='brave-enh-modal';document.body.appendChild(m)}m.innerHTML=`<div class="brave-enh-card"><button class="brave-enh-x" onclick="document.getElementById('braveEnhModal').remove()">×</button>${html}</div>`;m.style.display='flex'};
   function injectStyle(){if(document.getElementById('brave-enh-style'))return;const s=document.createElement('style');s.id='brave-enh-style';s.textContent=`

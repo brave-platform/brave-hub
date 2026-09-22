@@ -63,7 +63,6 @@ CREATE TABLE IF NOT EXISTS services (
  payment_method TEXT DEFAULT 'pay_after_service',
  image_data TEXT DEFAULT '',
  video_data TEXT DEFAULT '',
- image_url TEXT DEFAULT '',
  status TEXT DEFAULT 'active',
  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -373,11 +372,18 @@ for (const sql of [
   "ALTER TABLE products ADD COLUMN pdf_data TEXT DEFAULT ''",
   "ALTER TABLE services ADD COLUMN pdf_data TEXT DEFAULT ''",
   "ALTER TABLE services ADD COLUMN payment_method TEXT DEFAULT 'pay_after_service'",
-  "ALTER TABLE services ADD COLUMN image_url TEXT DEFAULT ''",
   "ALTER TABLE users ADD COLUMN profile_image TEXT DEFAULT ''",
   "ALTER TABLE users ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP",
   "ALTER TABLE users ADD COLUMN terms_accepted_at TEXT",
 "ALTER TABLE users ADD COLUMN account_type TEXT DEFAULT 'Buyer'",
+  "ALTER TABLE users ADD COLUMN location TEXT DEFAULT ''",
+  "ALTER TABLE users ADD COLUMN rating REAL DEFAULT 0",
+  "ALTER TABLE users ADD COLUMN rating_count INTEGER DEFAULT 0",
+  "ALTER TABLE admin_chat_sessions ADD COLUMN admin_responded_at TEXT",
+  "ALTER TABLE admin_chat_sessions ADD COLUMN response_deadline_at TEXT",
+  "ALTER TABLE admin_chat_sessions ADD COLUMN response_required INTEGER DEFAULT 1",
+  "ALTER TABLE products ADD COLUMN image_url TEXT DEFAULT ''",
+  "ALTER TABLE services ADD COLUMN image_url TEXT DEFAULT ''",
   "ALTER TABLE products ADD COLUMN stock INTEGER",
   "ALTER TABLE products ADD COLUMN quantity INTEGER",
   "ALTER TABLE products ADD COLUMN sku TEXT",
@@ -400,6 +406,3 @@ try {
 
 console.log('BRAVE database connected successfully.');
 module.exports = db;
-
-
-
