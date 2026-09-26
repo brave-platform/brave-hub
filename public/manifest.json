@@ -1,0 +1,53 @@
+{
+  "name": "UNIQUE BRAVE",
+  "short_name": "UNIQUE BRAVE",
+  "description": "Buy. Sell. Find Services. Build. Work. Grow.",
+  "start_url": "/home",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#f8f5fc",
+  "theme_color": "#32105f",
+  "orientation": "portrait-primary",
+  "id": "unique-brave",
+  "icons": [
+    {
+      "src": "/images/brave-lion-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "shopping",
+    "productivity",
+    "social"
+  ],
+  "shortcuts": [
+    {
+      "name": "Marketplace",
+      "url": "/marketplace.html",
+      "icons": [
+        {
+          "src": "/images/brave-lion-icon.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "url": "/dashboard.html",
+      "icons": [
+        {
+          "src": "/images/brave-lion-icon.png",
+          "sizes": "512x512"
+        }
+      ]
+    }
+  ]
+}

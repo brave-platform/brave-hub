@@ -1,0 +1,21 @@
+{
+  "name": "unique-brave",
+  "version": "2.8.0",
+  "private": true,
+  "description": "UNIQUE BRAVE marketplace and personal business platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "backup": "node scripts/backup-db.js"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nodemailer": "^7.0.6"
+  }
+}
