@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: unique-brave
+    runtime: node
+    buildCommand: npm install --no-audit
+    startCommand: npm start
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: TWILIO_VERIFY_SERVICE_SID
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: BRAVE_DB_PATH
+        sync: false
+      - key: ADMIN_CHAT_TIMEOUT_MINUTES
+        sync: false
+      - key: BRAVE_STORAGE_KEY
+        sync: false
+      - key: BRAVE_MIGRATED_DIR
+        sync: false
+      - key: BRAVE_AUTO_DB_BACKUP
+        sync: false
