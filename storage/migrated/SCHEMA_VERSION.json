@@ -1,0 +1,7 @@
+{
+  "schema": "BRAVE-MIGRATED-1",
+  "purpose": "persistent migration storage",
+  "passwords": "hashed_in_database_only",
+  "user_snapshots": "encrypted_server_side",
+  "created_for_release": "2026-09-21"
+}
